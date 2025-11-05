@@ -4,8 +4,7 @@ import { musicHMRPlugin } from './plugins/musicHMR';
 export default defineConfig({
   plugins: [
     musicHMRPlugin({
-      fadeTime: 300, // ms
-      maintainPosition: true,
+      fadeTimeMs: 300,
     }),
   ],
   server: {

@@ -1,5 +1,6 @@
 import * as Tone from 'tone';
-import type { Note, Duration, Velocity, NoteName } from '@contour/core';
+import type { Note, Duration, NoteName } from '@contour/core';
+import { Velocity } from '@contour/core';
 
 /**
  * Musical wrapper around Tone.Synth.
@@ -26,7 +27,7 @@ export class MusicalSynth {
   playNote(
     note: Note | NoteName,
     duration: Duration,
-    velocity: Velocity = 80 as Velocity,
+    velocity: Velocity = Velocity(80),
     time?: number
   ): void {
     const noteName = typeof note === 'string' ? note : note.name;
@@ -38,7 +39,7 @@ export class MusicalSynth {
   /**
    * Start a note (attack phase).
    */
-  noteOn(note: Note | NoteName, velocity: Velocity = 80 as Velocity, time?: number): void {
+  noteOn(note: Note | NoteName, velocity: Velocity = Velocity(80), time?: number): void {
     const noteName = typeof note === 'string' ? note : note.name;
     const normalizedVelocity = velocity / 127;
 

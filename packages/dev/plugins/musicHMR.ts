@@ -2,9 +2,7 @@ import type { Plugin } from 'vite';
 
 interface MusicHMROptions {
   /** Fade duration in milliseconds */
-  fadeTime?: number;
-  /** Whether to maintain playback position across reloads */
-  maintainPosition?: boolean;
+  fadeTimeMs?: number;
 }
 
 /**
@@ -19,8 +17,7 @@ interface MusicHMROptions {
  * This prevents audio glitches (clicks, pops) during hot-reload.
  */
 export function musicHMRPlugin(options: MusicHMROptions = {}): Plugin {
-  const fadeTime = options.fadeTime ?? 300;
-  const maintainPosition = options.maintainPosition ?? true;
+  const fadeTimeMs = options.fadeTimeMs ?? 300;
 
   return {
     name: 'contour-music-hmr',
@@ -40,7 +37,7 @@ export function musicHMRPlugin(options: MusicHMROptions = {}): Plugin {
 
           // Import HMRHandler dynamically to avoid circular dependencies
           import('@contour/tone-adapter').then(({ HMRHandler }) => {
-            hmrHandler = new HMRHandler(${fadeTime / 1000});
+            hmrHandler = new HMRHandler(${fadeTimeMs / 1000});
 
             import.meta.hot.accept(async (newModule) => {
               console.log('[Contour] Preparing graceful audio reload...');

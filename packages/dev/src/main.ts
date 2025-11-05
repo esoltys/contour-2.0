@@ -1,4 +1,4 @@
-import { PatternBuilder, Durations, Velocity, BPM } from '@contour/core';
+import { PatternBuilder, Durations, Velocity } from '@contour/core';
 import { PatternScheduler, Tone } from '@contour/tone-adapter';
 
 // Global scheduler instance

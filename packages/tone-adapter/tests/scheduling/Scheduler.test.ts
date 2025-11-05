@@ -58,7 +58,7 @@ describe('PatternScheduler', () => {
 
       // Check that the scheduled time includes the offset
       expect(scheduleSpy).toHaveBeenCalled();
-      const [callback, time] = scheduleSpy.mock.calls[0];
+      const [, time] = scheduleSpy.mock.calls[0];
       expect(time).toBeGreaterThanOrEqual(startTime);
     });
 
