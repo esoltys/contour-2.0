@@ -303,7 +303,6 @@ Test coverage includes:
 ## Technology Stack
 
 - **[Tone.js](https://tonejs.github.io/)** - Web Audio synthesis and scheduling
-- **[Tonal.js](https://github.com/tonaljs/tonal)** - Music theory utilities
 - **[Vite](https://vitejs.dev/)** - Build tooling with instant HMR
 - **[TypeScript](https://www.typescriptlang.org/)** - Type safety and developer experience
 - **[Vitest](https://vitest.dev/)** - Testing framework

@@ -37,7 +37,7 @@ pattern().fromNotation('C4 D E F G A B C5').build();
 ```
 
 ### 4. **Chord Symbols**
-Use chord symbols powered by Tonal.js:
+Use chord symbols with built-in chord parser:
 
 ```typescript
 pattern().fromNotation('Cmaj7 Dm7 G7').build();

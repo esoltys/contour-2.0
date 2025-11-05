@@ -82,9 +82,7 @@ Create `packages/core/package.json`:
     "test:watch": "vitest",
     "type-check": "tsc --noEmit"
   },
-  "dependencies": {
-    "@tonaljs/tonal": "^5.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "typescript": "^5.3.0",
     "vitest": "^1.0.0",
@@ -654,6 +652,5 @@ Once these criteria are met, you're ready to proceed with Pattern system impleme
 - **PRODUCT_REQUIREMENTS.md** - User stories and goals
 - **ARCHITECTURE_GUIDE.md** - Comprehensive research and patterns
 - **Tone.js Docs** - https://tonejs.github.io/
-- **Tonal.js Docs** - https://github.com/tonaljs/tonal
 
 Remember: Focus on test-driven development. Write tests that express the desired behavior, then implement to make them pass. This ensures correctness and makes refactoring safe.

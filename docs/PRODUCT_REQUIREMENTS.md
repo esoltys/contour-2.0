@@ -339,7 +339,7 @@ Contour empowers developers to compose music using familiar programming patterns
 - Slash chords work: `chord('C/E')` has E in bass
 
 **Technical Notes:**
-- Use Tonal.js for chord parsing
+- Custom lightweight chord parser for common chord types
 - Provide default voicing strategies
 - Allow custom voicing overrides
 
@@ -454,7 +454,6 @@ Contour empowers developers to compose music using familiar programming patterns
 ### Dependency Constraints
 
 - **Tone.js**: 14.8+ (audio engine)
-- **Tonal.js**: 5.0+ (music theory)
 - **Vite**: 5.0+ (build tooling)
 - **Vitest**: 1.0+ (testing)
 
