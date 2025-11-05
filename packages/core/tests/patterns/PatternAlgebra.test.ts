@@ -4,7 +4,6 @@ import { describe, it, expect } from 'vitest';
 import { Pattern } from '../../src/patterns/Pattern';
 import { pattern } from '../../src/patterns/PatternBuilder';
 import { Durations } from '../../src/types/music';
-import { Velocity, Seconds, Duration, MIDINote } from '../../src/types/brands';
 import fc from 'fast-check';
 
 describe('Pattern Algebra', () => {

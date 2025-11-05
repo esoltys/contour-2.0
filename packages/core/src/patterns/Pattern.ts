@@ -275,6 +275,8 @@ function euclideanRhythm(steps: number, pulses: number): boolean[] {
       left -= right;
     } else {
       right -= left;
+      // Swap left and right to continue combining the smaller group into the larger.
+      // This maintains the correct structure for the next iteration of the algorithm.
       [left, right] = [right, left];
     }
   }

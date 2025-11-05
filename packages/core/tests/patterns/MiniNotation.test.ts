@@ -236,13 +236,14 @@ describe('MiniNotation', () => {
     });
 
     it('provides position information in errors', () => {
+      let error: unknown;
       try {
         parseMiniNotation('C4 $ E4');
-        expect.fail('Should have thrown');
       } catch (e) {
-        expect(e).toBeInstanceOf(MiniNotationError);
-        expect((e as MiniNotationError).position).toBeGreaterThanOrEqual(0);
+        error = e;
       }
+      expect(error).toBeInstanceOf(MiniNotationError);
+      expect((error as MiniNotationError).position).toBeGreaterThanOrEqual(0);
     });
   });
 

@@ -13,7 +13,6 @@
 import {
   pattern,
   Pattern,
-  parseMiniNotation,
   Durations,
   Velocity,
 } from '@contour/core';

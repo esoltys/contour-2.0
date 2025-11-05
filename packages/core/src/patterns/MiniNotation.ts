@@ -347,12 +347,16 @@ interface GenerationContext {
  * Generate events from parsed elements.
  */
 class EventGenerator {
-  private context: GenerationContext = {
-    defaultOctave: '4',
-    defaultDuration: Durations.quarter,
-    defaultVelocity: Velocity(80),
-    currentTime: Seconds(0),
-  };
+  private context: GenerationContext;
+
+  constructor(options: Partial<GenerationContext> = {}) {
+    this.context = {
+      defaultOctave: options.defaultOctave ?? '4',
+      defaultDuration: options.defaultDuration ?? Durations.quarter,
+      defaultVelocity: options.defaultVelocity ?? Velocity(80),
+      currentTime: options.currentTime ?? Seconds(0),
+    };
+  }
 
   generate(elements: ParsedElement[]): Event[] {
     const events: Event[] = [];
@@ -538,17 +542,11 @@ export function parseMiniNotationWithDefaults(
   const parser = new MiniNotationParser(tokens);
   const elements = parser.parse();
 
-  const generator = new EventGenerator();
-  // Override defaults
-  if (options.defaultOctave !== undefined) {
-    (generator as any).context.defaultOctave = options.defaultOctave;
-  }
-  if (options.defaultDuration !== undefined) {
-    (generator as any).context.defaultDuration = options.defaultDuration;
-  }
-  if (options.defaultVelocity !== undefined) {
-    (generator as any).context.defaultVelocity = options.defaultVelocity;
-  }
+  const generator = new EventGenerator({
+    defaultOctave: options.defaultOctave,
+    defaultDuration: options.defaultDuration,
+    defaultVelocity: options.defaultVelocity,
+  });
 
   return generator.generate(elements);
 }
