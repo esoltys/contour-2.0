@@ -15,6 +15,8 @@ import {
   Pattern,
   Durations,
   Velocity,
+  type Event,
+  type NoteEvent,
 } from '@contour/core';
 
 // ============================================================================
@@ -89,7 +91,7 @@ const scale = pattern()
   .build();
 
 console.log('C major scale using octave persistence:');
-scale.events.forEach((e, i) => {
+scale.events.forEach((e: Event, i: number) => {
   if (e.type === 'note') {
     console.log(`  ${i + 1}. ${e.note.name}`);
   }
@@ -107,9 +109,9 @@ const jazzChords = pattern()
   .build();
 
 console.log('Jazz chord progression (ii-V-I in C):');
-jazzChords.events.forEach((e, i) => {
+jazzChords.events.forEach((e: Event, i: number) => {
   if (e.type === 'chord') {
-    console.log(`  ${i + 1}. ${e.notes.map(n => n.name).join(', ')}`);
+    console.log(`  ${i + 1}. ${e.notes.map((n) => n.name).join(', ')}`);
   }
 });
 console.log();
@@ -141,7 +143,7 @@ const ascendingScale = pattern().fromNotation('C4 D E F').build();
 const palindromeScale = ascendingScale.palindrome();
 
 console.log('Palindrome (up then down):');
-palindromeScale.events.forEach((e, i) => {
+palindromeScale.events.forEach((e: Event, i: number) => {
   if (e.type === 'note') {
     console.log(`  ${i + 1}. ${e.note.name}`);
   }
@@ -158,7 +160,7 @@ const euclideanRhythm = Pattern.euclidean(16, 5);
 
 console.log('Euclidean(16, 5) - Classic clave rhythm:');
 const rhythmVisualization = euclideanRhythm.events
-  .map(e => e.type === 'note' ? 'X' : '.')
+  .map((e: Event) => e.type === 'note' ? 'X' : '.')
   .join(' ');
 console.log(`  ${rhythmVisualization}`);
 console.log();
@@ -173,7 +175,7 @@ const patterns = [
 
 patterns.forEach(({ steps, pulses, name }) => {
   const p = Pattern.euclidean(steps, pulses);
-  const viz = p.events.map(e => e.type === 'note' ? 'X' : '.').join(' ');
+  const viz = p.events.map((e: Event) => e.type === 'note' ? 'X' : '.').join(' ');
   console.log(`  ${name} (${steps}, ${pulses}): ${viz}`);
 });
 console.log();
@@ -187,8 +189,8 @@ const euclidean1 = Pattern.euclidean(8, 3, 0); // No rotation
 const euclidean2 = Pattern.euclidean(8, 3, 2); // Rotate by 2
 
 console.log('Euclidean(8, 3) - Different rotations:');
-console.log(`  Original: ${euclidean1.events.map(e => e.type === 'note' ? 'X' : '.').join(' ')}`);
-console.log(`  Rotated:  ${euclidean2.events.map(e => e.type === 'note' ? 'X' : '.').join(' ')}`);
+console.log(`  Original: ${euclidean1.events.map((e: Event) => e.type === 'note' ? 'X' : '.').join(' ')}`);
+console.log(`  Rotated:  ${euclidean2.events.map((e: Event) => e.type === 'note' ? 'X' : '.').join(' ')}`);
 console.log();
 
 // ============================================================================
@@ -236,7 +238,7 @@ const liveMelody = pattern()
   .transpose(0); // Try: 7 (perfect fifth), -12 (octave down)
 
 const liveRhythm = Pattern.euclidean(16, 7) // Try different numbers!
-  .map((e, i) => ({
+  .map((e: NoteEvent, i: number) => ({
     ...e,
     velocity: Velocity(40 + i * 5), // Crescendo
   }));

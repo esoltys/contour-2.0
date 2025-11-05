@@ -4,9 +4,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "build": "tsc",
-    "start": "pnpm build && node dist/index.js",
-    "dev": "node --watch-path=. --import tsx/esm index.ts"
+    "start": "tsx index.ts",
+    "dev": "tsx watch index.ts"
   },
   "dependencies": {
     "@contour/core": "workspace:*"

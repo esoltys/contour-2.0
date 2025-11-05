@@ -71,8 +71,11 @@ Pattern.euclidean(8, 3, 2);
 ## Running the Demo
 
 ```bash
-# Install dependencies
+# From the project root, install all dependencies first
 pnpm install
+
+# Navigate to the demo directory
+cd examples/live-coding-demo
 
 # Run the demo
 pnpm start
