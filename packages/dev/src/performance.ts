@@ -1,4 +1,4 @@
-import { PatternBuilder, Pattern } from '@contour/core';
+import { Pattern, pattern } from '@contour/core';
 import { PatternScheduler, Tone } from '@contour/tone-adapter';
 import { PATTERN_PRESETS, type PatternPreset } from './patterns/presets.js';
 import loader from '@monaco-editor/loader';

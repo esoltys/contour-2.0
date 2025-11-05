@@ -1,5 +1,3 @@
-import { pattern } from '@contour/core';
-
 /**
  * Pattern preset definitions
  */
