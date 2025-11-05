@@ -49,7 +49,7 @@ cd packages/dev
 pnpm dev
 ```
 
-Open http://localhost:5173 in your browser. The demo includes an interactive example with playback controls.
+Open http://localhost:3000 in your browser. The demo includes an interactive example with playback controls.
 
 ### Running Examples
 
@@ -70,7 +70,7 @@ pnpm test
 # For audio playback, use the browser-based dev server instead:
 cd ../../packages/dev
 pnpm dev
-# Then open http://localhost:5173
+# Then open http://localhost:3000
 ```
 
 #### Interactive Performance Grid
@@ -80,7 +80,7 @@ Explore live pattern performance with the interactive grid interface:
 ```bash
 cd packages/dev
 pnpm dev
-# Open http://localhost:5173/performance.html
+# Open http://localhost:3000/performance.html
 ```
 
 This demo showcases:
