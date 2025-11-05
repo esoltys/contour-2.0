@@ -1,13 +1,18 @@
 /**
  * Playback script for Bach Invention No. 4
  *
+ * NOTE: This script is designed for browser environments where Tone.js
+ * can access the Web Audio API. For Node.js usage, use export-midi.ts instead.
+ *
+ * To run audio playback:
+ *   1. cd ../../packages/dev
+ *   2. pnpm dev
+ *   3. Open http://localhost:5173 in your browser
+ *
  * This demonstrates:
  * - Loading a composition
  * - Scheduling with CompositionScheduler
- * - Starting playback
- *
- * Usage:
- *   npm run play:bach
+ * - Starting playback in browser
  */
 
 import { createBachInvention4 } from './invention.js';
@@ -72,9 +77,9 @@ async function main() {
   }
 }
 
-// Run if called directly
-if (require.main === module) {
+export { main };
+
+// Run if called directly (ESM version)
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
-
-export { main };

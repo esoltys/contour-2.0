@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@contour/core": "workspace:*",
-    "@contour/plugin-midi": "workspace:*"
+    "@contour/plugin-midi": "workspace:*",
+    "@contour/tone-adapter": "workspace:*"
   },
   "devDependencies": {
     "vitest": "^1.0.0",

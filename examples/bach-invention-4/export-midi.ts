@@ -7,7 +7,11 @@
 import { MIDIRenderer } from '@contour/plugin-midi';
 import { createBachInvention4 } from './invention';
 import { writeFile } from 'fs/promises';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 async function main() {
   console.log('Exporting Bach Invention No. 4 to MIDI...\n');
