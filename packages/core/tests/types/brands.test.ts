@@ -122,18 +122,15 @@ describe('Branded Types', () => {
       expect(dur).toBe(0.25);
     });
 
-    it('accepts positive values', () => {
+    it('accepts non-negative values', () => {
+      expect(Duration(0)).toBe(0);
       expect(Duration(1)).toBe(1);
       expect(Duration(0.0001)).toBe(0.0001);
     });
 
-    it('throws on zero', () => {
-      expect(() => Duration(0)).toThrow('Duration must be positive');
-    });
-
     it('throws on negative values', () => {
-      expect(() => Duration(-1)).toThrow('Duration must be positive');
-      expect(() => Duration(-0.001)).toThrow('Duration must be positive');
+      expect(() => Duration(-1)).toThrow('Duration must be non-negative');
+      expect(() => Duration(-0.001)).toThrow('Duration must be non-negative');
     });
   });
 

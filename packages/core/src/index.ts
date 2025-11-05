@@ -7,10 +7,13 @@ export * from './types/music';
 
 // Primitives
 export * from './primitives/Note';
+export * from './primitives/Event';
+
+// Patterns (Phase 2)
+export * from './patterns/Pattern';
+export * from './patterns/PatternBuilder';
 
 // To be added in future phases:
-// export * from './patterns/Pattern';
-// export * from './patterns/PatternBuilder';
 // export * from './composition/Voice';
 // export * from './composition/Track';
 // export * from './composition/Composition';
