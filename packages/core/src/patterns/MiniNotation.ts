@@ -5,7 +5,7 @@ import type { NoteName } from '../types/music.js';
 import { Durations } from '../types/music.js';
 import { Duration, Velocity, Seconds } from '../types/brands.js';
 import type { Event, NoteEvent, RestEvent, ChordEvent } from '../primitives/Event.js';
-import { Chord } from '@tonaljs/chord';
+import { parseChord } from './chordParser.js';
 
 /**
  * Token types for mini-notation lexer.
@@ -420,9 +420,9 @@ class EventGenerator {
   }
 
   private createChordEvent(chordStr: string, duration: Duration): ChordEvent {
-    // Parse chord symbol using Tonal.js
+    // Parse chord symbol
     try {
-      const chordData = Chord.get(chordStr);
+      const chordData = parseChord(chordStr);
       if (!chordData.notes || chordData.notes.length === 0) {
         throw new Error(`Invalid chord: ${chordStr}`);
       }
