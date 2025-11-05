@@ -1,0 +1,18 @@
+{
+  "name": "bach-invention-4",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "export": "tsx export-midi.ts"
+  },
+  "dependencies": {
+    "@contour/core": "workspace:*",
+    "@contour/plugin-midi": "workspace:*"
+  },
+  "devDependencies": {
+    "vitest": "^1.0.0",
+    "tsx": "^4.0.0"
+  }
+}
