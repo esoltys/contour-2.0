@@ -13,7 +13,7 @@ export * from './primitives/Event';
 export * from './patterns/Pattern';
 export * from './patterns/PatternBuilder';
 
-// To be added in future phases:
-// export * from './composition/Voice';
-// export * from './composition/Track';
-// export * from './composition/Composition';
+// Composition (Phase 4)
+export * from './composition/Voice';
+export * from './composition/Track';
+export * from './composition/Composition';

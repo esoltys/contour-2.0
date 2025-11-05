@@ -1,5 +1,6 @@
 // Scheduling
 export { PatternScheduler } from './scheduling/Scheduler';
+export { CompositionScheduler } from './scheduling/CompositionScheduler';
 
 // Musical Wrappers
 export { MusicalSynth } from './wrappers/MusicalSynth';
