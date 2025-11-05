@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { musicHMRPlugin } from './plugins/musicHMR';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
@@ -15,9 +16,21 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        performance: resolve(__dirname, 'performance.html'),
+      },
+    },
   },
   resolve: {
     // Ensure proper resolution of workspace packages
     preserveSymlinks: true,
+  },
+  optimizeDeps: {
+    include: ['monaco-editor'],
+  },
+  worker: {
+    format: 'es',
   },
 });

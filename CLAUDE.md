@@ -30,7 +30,7 @@ Read documents in this order for full context:
 ## Core Principles
 
 ### What We're Building On
-- **Tone.js 14.8+** - Audio engine and scheduling (don't reinvent this)
+- **Tone.js 15.0+** - Audio engine and scheduling (don't reinvent this)
 - **Vite** - Build tooling with instant hot-reload
 - **TypeScript 5.3+** - Full type safety for musical concepts
 

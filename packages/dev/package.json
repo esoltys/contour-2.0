@@ -11,9 +11,12 @@
   "dependencies": {
     "@contour/core": "workspace:*",
     "@contour/tone-adapter": "workspace:*",
+    "@monaco-editor/loader": "^1.6.1",
     "automation-events": "^7.1.13",
+    "monaco-editor": "^0.54.0",
     "standardized-audio-context": "^25.3.77",
-    "tone": "^14.8.0",
+    "state-local": "^1.0.7",
+    "tone": "^15.0.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
