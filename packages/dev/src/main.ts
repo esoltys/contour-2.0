@@ -144,8 +144,6 @@ console.log(`
 ║                                        ║
 ║     🎵 Contour 2.0 Dev Server 🎵      ║
 ║                                        ║
-║  Phase 3: Tone.js Integration          ║
-║                                        ║
 ║  Try editing this file while playing!  ║
 ║  Hot-reload will fade audio smoothly.  ║
 ║                                        ║

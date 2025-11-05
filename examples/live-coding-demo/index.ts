@@ -1,7 +1,7 @@
 /**
  * Live Coding Demo - Showcasing Mini-Notation and Pattern Algebra
  *
- * This demo demonstrates the concise, expressive syntax enabled by Phase 6:
+ * This demo demonstrates Contour's concise, expressive syntax:
  * - Mini-notation for rapid pattern creation
  * - Pattern algebra operations
  * - Euclidean rhythms

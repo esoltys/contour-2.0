@@ -620,8 +620,6 @@ function init() {
 ║                                        ║
 ║   🎵 Contour Live Performance 🎵      ║
 ║                                        ║
-║  Phase 7: Interactive Interface        ║
-║                                        ║
 ║  Click "Start Audio" to begin!         ║
 ║  Then click pads to trigger patterns.  ║
 ║                                        ║
