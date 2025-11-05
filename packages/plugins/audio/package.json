@@ -14,7 +14,7 @@
     "@contour/core": "workspace:*",
     "@contour/tone-adapter": "workspace:*",
     "audiobuffer-to-wav": "^1.0.0",
-    "tone": "^14.9.17"
+    "tone": "^15.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
