@@ -23,7 +23,7 @@ Each ADR follows this structure:
 The original Contour implemented a custom multi-voice playback system, which became a maintenance burden and distracted from core composition features. We needed a robust audio engine that handles scheduling, synthesis, and effects without reinventing the wheel.
 
 ### Decision
-Use Tone.js 14.8+ as the foundational audio library. Build a four-layer architecture on top:
+Use Tone.js 15.0+ as the foundational audio library. Build a four-layer architecture on top:
 1. Tone.js primitives (unchanged)
 2. Musical wrappers (thin adapters with musical terminology)
 3. Composition abstractions (Voice, Track, Pattern)

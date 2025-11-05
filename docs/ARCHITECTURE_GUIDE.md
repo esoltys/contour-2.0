@@ -125,7 +125,7 @@ These questions can't be answered through research alone—they require building
 
 ## Recommendations: What to do now
 
-**Start with Vite, TypeScript 5.3+, and Tone.js 14.8+ as your foundation**. Add Tonal.js for music theory utilities rather than building chord parsing from scratch. Implement branded types for Hz, BPM, Seconds, and MIDI note numbers immediately—this prevents unit mixing bugs that become deeply embedded. Design your four-layer architecture with clear boundaries: Tone.js primitives untouched at the bottom, thin musical wrappers above, composition abstractions in the middle, and DSL syntax at the top.
+**Start with Vite, TypeScript 5.3+, and Tone.js 15.0+ as your foundation**. Implement branded types for Hz, BPM, Seconds, and MIDI note numbers immediately—this prevents unit mixing bugs that become deeply embedded. Design your four-layer architecture with clear boundaries: Tone.js primitives untouched at the bottom, thin musical wrappers above, composition abstractions in the middle, and DSL syntax at the top.
 
 **Adopt the hybrid declarative-functional pattern** explicitly inspired by React. Use JSON-serializable configurations for instrument presets, effect settings, and static definitions. Use functional composition with pipe, map, transpose, and retrograde for dynamic musical transformations. This combination gives you shareable configs alongside powerful programmatic composition, satisfying both the casual user wanting presets and the power user needing algorithmic control.
 

@@ -453,7 +453,7 @@ Contour empowers developers to compose music using familiar programming patterns
 
 ### Dependency Constraints
 
-- **Tone.js**: 14.8+ (audio engine)
+- **Tone.js**: 15.0+ (audio engine)
 - **Vite**: 5.0+ (build tooling)
 - **Vitest**: 1.0+ (testing)
 
