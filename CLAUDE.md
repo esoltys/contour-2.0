@@ -32,7 +32,6 @@ Read documents in this order for full context:
 ### What We're Building On
 - **Tone.js 14.8+** - Audio engine and scheduling (don't reinvent this)
 - **Vite** - Build tooling with instant hot-reload
-- **Tonal.js** - Music theory utilities (chord parsing, scales)
 - **TypeScript 5.3+** - Full type safety for musical concepts
 
 ### What We're Creating
@@ -44,7 +43,7 @@ Read documents in this order for full context:
 ### What We're Avoiding
 - **Reinventing playback** - This killed the original Contour
 - **Scope creep on exports** - MusicXML was a distraction; focus on core composition first
-- **Custom parsers** - Use existing libraries (Tonal.js for chords, etc.)
+- **Heavy dependencies** - Keep dependencies minimal; implement simple music theory utilities in-house
 - **Tight coupling** - Keep layers independent and testable
 
 ## Development Workflow
