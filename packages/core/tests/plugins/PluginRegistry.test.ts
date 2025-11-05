@@ -4,7 +4,7 @@ import {
   RendererPlugin,
   RenderResult,
 } from '../../src/plugins/RendererPlugin';
-import { Composition, BPM, Seconds } from '../../src';
+import { Composition, BPM } from '../../src';
 
 // Mock plugin for testing
 class MockRenderer implements RendererPlugin<{ quality: number }> {

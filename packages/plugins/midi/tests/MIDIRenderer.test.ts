@@ -7,7 +7,7 @@ import {
   PatternBuilder,
   BPM,
   Durations,
-  C, D, E, F, G, A, B,
+  C, D, E, F, G, A,
 } from '@contour/core';
 
 describe('MIDIRenderer', () => {

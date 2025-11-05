@@ -154,7 +154,7 @@ export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
         context.transport.start(0);
       },
       renderDuration,
-      1, // Number of channels (mono)
+      1, // Number of channels: Hardcoded to mono for simplicity. Tone.js internally uses stereo processing, but we export as mono to reduce file size.
       this.config.sampleRate
     );
 

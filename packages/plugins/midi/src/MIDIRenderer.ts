@@ -88,10 +88,6 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     // Create MIDI file
     const file = new jsmidgen.File();
 
-    // Set tempo (microseconds per quarter note)
-    // BPM to microseconds: (60,000,000 / BPM)
-    const microsecondsPerQuarterNote = Math.round(60000000 / composition.tempo);
-
     // For each track in the composition
     for (const track of composition.tracks) {
       // For each voice in the track, create a separate MIDI track
@@ -139,9 +135,9 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     // Convert events to MIDI
     for (const event of pattern.events) {
       if (event.type === 'note') {
-        this.addNoteEvent(midiTrack, event);
+        this.addNoteEvent(midiTrack, event, tempo);
       } else if (event.type === 'chord') {
-        this.addChordEvent(midiTrack, event);
+        this.addChordEvent(midiTrack, event, tempo);
       }
       // Rests don't generate MIDI events
     }
@@ -150,13 +146,18 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
   /**
    * Add a note event to MIDI track.
    */
-  private addNoteEvent(midiTrack: any, event: NoteEvent): void {
+  private addNoteEvent(midiTrack: any, event: NoteEvent, tempo: number): void {
     const midiNote = event.pitch;
     const velocity = event.velocity;
 
-    // Convert duration from our unit to ticks
-    // Our duration is in seconds, need to convert based on tempo
-    const durationTicks = Math.round(event.duration * this.config.ticksPerBeat);
+    // Convert duration from fraction of whole note to ticks
+    // Duration is stored as fraction of whole note (0.25 = quarter note)
+    // Formula: duration (in whole notes) * 4 (quarter notes per whole) * ticksPerBeat
+    const durationTicks = Math.round(event.duration * 4 * this.config.ticksPerBeat);
+
+    // Convert time from seconds to ticks
+    // Formula: time (seconds) * tempo (BPM) / 60 (seconds per minute) * ticksPerBeat
+    const timeTicks = Math.round((event.time * tempo * this.config.ticksPerBeat) / 60);
 
     // Add note at the event's time
     // jsmidgen expects: channel, pitch, duration (in ticks), time (in ticks), velocity
@@ -164,7 +165,7 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
       0, // channel
       midiNote,
       durationTicks,
-      Math.round(event.time * this.config.ticksPerBeat), // time in ticks
+      timeTicks,
       velocity
     );
   }
@@ -172,11 +173,15 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
   /**
    * Add a chord event to MIDI track.
    */
-  private addChordEvent(midiTrack: any, event: ChordEvent): void {
+  private addChordEvent(midiTrack: any, event: ChordEvent, tempo: number): void {
     // For chords, add each note separately at the same time
     const velocity = event.velocity;
-    const durationTicks = Math.round(event.duration * this.config.ticksPerBeat);
-    const timeTicks = Math.round(event.time * this.config.ticksPerBeat);
+
+    // Convert duration from fraction of whole note to ticks
+    const durationTicks = Math.round(event.duration * 4 * this.config.ticksPerBeat);
+
+    // Convert time from seconds to ticks
+    const timeTicks = Math.round((event.time * tempo * this.config.ticksPerBeat) / 60);
 
     for (const note of event.notes) {
       midiTrack.addNote(
