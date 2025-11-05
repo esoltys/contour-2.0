@@ -85,8 +85,10 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
    * for each voice in the composition.
    */
   async render(composition: Composition): Promise<RenderResult> {
-    // Create MIDI file
-    const file = new jsmidgen.File();
+    // Create MIDI file with configured ticks per beat
+    const file = new jsmidgen.File({
+      ticks: this.config.ticksPerBeat
+    });
 
     // For each track in the composition
     for (const track of composition.tracks) {
@@ -94,9 +96,12 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
       for (const voice of track.voices) {
         const midiTrack = new jsmidgen.Track();
 
-        // Set tempo on first track
+        // Set tempo and key signature on first track
         if (file.tracks.length === 0) {
           midiTrack.setTempo(composition.tempo);
+          // Set key signature: D minor (1 flat, minor mode)
+          // Key signature format: sf = -1 (1 flat), mi = 1 (minor)
+          midiTrack.setKeySignature(-1, 1);
         }
 
         // Add track name
@@ -111,7 +116,9 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     }
 
     // Generate MIDI file buffer
-    const midiData = Buffer.from(file.toBytes());
+    // toBytes() returns a string, but we need to convert it to raw bytes
+    // using 'binary' encoding to avoid UTF-8 interpretation
+    const midiData = Buffer.from(file.toBytes(), 'binary');
 
     return {
       data: midiData,
@@ -132,67 +139,76 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
   private addEventsToTrack(midiTrack: any, voice: Voice, tempo: number): void {
     const pattern = voice.pattern;
 
-    // Convert events to MIDI
+    // Collect all MIDI events (note on/off) with absolute times
+    interface MidiNoteEvent {
+      time: number;  // Absolute time in ticks
+      type: 'on' | 'off';
+      pitch: number;
+      velocity: number;
+    }
+
+    const midiEvents: MidiNoteEvent[] = [];
+
+    // Convert pattern events to MIDI note on/off events
     for (const event of pattern.events) {
       if (event.type === 'note') {
-        this.addNoteEvent(midiTrack, event, tempo);
+        const startTimeTicks = Math.round((event.time as number) * 4 * this.config.ticksPerBeat);
+        const durationTicks = Math.round((event.duration as number) * 4 * this.config.ticksPerBeat);
+        const endTimeTicks = startTimeTicks + durationTicks;
+
+        midiEvents.push({
+          time: startTimeTicks,
+          type: 'on',
+          pitch: event.pitch,
+          velocity: event.velocity,
+        });
+        midiEvents.push({
+          time: endTimeTicks,
+          type: 'off',
+          pitch: event.pitch,
+          velocity: event.velocity,
+        });
       } else if (event.type === 'chord') {
-        this.addChordEvent(midiTrack, event, tempo);
+        const startTimeTicks = Math.round((event.time as number) * 4 * this.config.ticksPerBeat);
+        const durationTicks = Math.round((event.duration as number) * 4 * this.config.ticksPerBeat);
+        const endTimeTicks = startTimeTicks + durationTicks;
+
+        for (const note of event.notes) {
+          midiEvents.push({
+            time: startTimeTicks,
+            type: 'on',
+            pitch: note.pitch,
+            velocity: event.velocity,
+          });
+          midiEvents.push({
+            time: endTimeTicks,
+            type: 'off',
+            pitch: note.pitch,
+            velocity: event.velocity,
+          });
+        }
       }
       // Rests don't generate MIDI events
     }
-  }
 
-  /**
-   * Add a note event to MIDI track.
-   */
-  private addNoteEvent(midiTrack: any, event: NoteEvent, tempo: number): void {
-    const midiNote = event.pitch;
-    const velocity = event.velocity;
+    // Sort events by time
+    midiEvents.sort((a, b) => a.time - b.time);
 
-    // Convert duration from fraction of whole note to ticks
-    // Duration is stored as fraction of whole note (0.25 = quarter note)
-    // Formula: duration (in whole notes) * 4 (quarter notes per whole) * ticksPerBeat
-    const durationTicks = Math.round(event.duration * 4 * this.config.ticksPerBeat);
+    // Convert absolute times to delta times and add to track
+    let lastTime = 0;
+    for (const event of midiEvents) {
+      const deltaTime = event.time - lastTime;
 
-    // Convert time from seconds to ticks
-    // Formula: time (seconds) * tempo (BPM) / 60 (seconds per minute) * ticksPerBeat
-    const timeTicks = Math.round((event.time * tempo * this.config.ticksPerBeat) / 60);
+      if (event.type === 'on') {
+        midiTrack.addNoteOn(0, event.pitch, deltaTime, event.velocity);
+      } else {
+        midiTrack.addNoteOff(0, event.pitch, deltaTime, event.velocity);
+      }
 
-    // Add note at the event's time
-    // jsmidgen expects: channel, pitch, duration (in ticks), time (in ticks), velocity
-    midiTrack.addNote(
-      0, // channel
-      midiNote,
-      durationTicks,
-      timeTicks,
-      velocity
-    );
-  }
-
-  /**
-   * Add a chord event to MIDI track.
-   */
-  private addChordEvent(midiTrack: any, event: ChordEvent, tempo: number): void {
-    // For chords, add each note separately at the same time
-    const velocity = event.velocity;
-
-    // Convert duration from fraction of whole note to ticks
-    const durationTicks = Math.round(event.duration * 4 * this.config.ticksPerBeat);
-
-    // Convert time from seconds to ticks
-    const timeTicks = Math.round((event.time * tempo * this.config.ticksPerBeat) / 60);
-
-    for (const note of event.notes) {
-      midiTrack.addNote(
-        0, // channel
-        note.pitch,
-        durationTicks,
-        timeTicks,
-        velocity
-      );
+      lastTime = event.time;
     }
   }
+
 
   /**
    * Map instrument name to GM MIDI instrument number.
