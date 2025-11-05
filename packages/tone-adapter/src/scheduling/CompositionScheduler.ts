@@ -194,7 +194,7 @@ export class CompositionScheduler {
   /**
    * Get the current state of the transport.
    */
-  get state(): Tone.TransportState {
+  get state(): 'started' | 'stopped' | 'paused' {
     return Tone.Transport.state;
   }
 

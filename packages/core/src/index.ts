@@ -17,3 +17,6 @@ export * from './patterns/PatternBuilder';
 export * from './composition/Voice';
 export * from './composition/Track';
 export * from './composition/Composition';
+
+// Plugins (Phase 5)
+export * from './plugins/RendererPlugin';
