@@ -22,7 +22,7 @@ class PerformanceState {
   isAudioStarted = false;
   isPlaying = false;
   bpm = 120;
-  volume = -10;
+  volume = -6;
   metronomeEnabled = false;
   waveformAnalyzer: Tone.Analyser | null = null;
   monaco: typeof Monaco | null = null;
@@ -481,7 +481,7 @@ async function playDemoJam() {
 
   // Demo sequence: gradually bring in different elements
   const demoSequence = [
-    { padIndex: 0, delay: 0 },      // Kick
+    { padIndex: 0, delay: 500 },    // Kick
     { padIndex: 2, delay: 2000 },   // Hat
     { padIndex: 4, delay: 4000 },   // Bass
     { padIndex: 8, delay: 6000 },   // Arp
@@ -489,18 +489,46 @@ async function playDemoJam() {
     { padIndex: 9, delay: 10000 },  // Melody
   ];
 
-  for (const { padIndex, delay } of demoSequence) {
+  // Activate first pad and start playback immediately
+  const firstPad = state.pads.get('pad-0');
+  if (firstPad) {
+    firstPad.isActive = true;
+    if (!firstPad.pattern) {
+      try {
+        firstPad.pattern = compilePattern(firstPad.code);
+      } catch (error) {
+        console.error('[Contour] Failed to compile demo pattern:', error);
+        return;
+      }
+    }
+    updatePadVisual('pad-0');
+    playAll();
+  }
+
+  // Add remaining pads while playing
+  for (let i = 1; i < demoSequence.length; i++) {
+    const { padIndex, delay } = demoSequence[i];
     setTimeout(() => {
       const padId = `pad-${padIndex}`;
       const pad = state.pads.get(padId);
-      if (pad && !pad.isActive) {
-        togglePad(padId);
+      if (pad && !pad.isActive && state.isPlaying) {
+        pad.isActive = true;
+        if (!pad.pattern) {
+          try {
+            pad.pattern = compilePattern(pad.code);
+          } catch (error) {
+            console.error(`[Contour] Failed to compile pattern for ${padId}:`, error);
+            return;
+          }
+        }
+        // Schedule this new pattern
+        if (state.scheduler) {
+          state.scheduler.schedule(pad.pattern);
+        }
+        updatePadVisual(padId);
       }
     }, delay);
   }
-
-  // Start playback
-  setTimeout(() => playAll(), 100);
 }
 
 // ============================================================================
