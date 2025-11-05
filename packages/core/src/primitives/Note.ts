@@ -71,7 +71,7 @@ export class Note {
     // Parse note name to MIDI number
     // C4 = 60, A4 = 69, etc.
     // Support negative octaves for MIDI notes 0-11 (C-1 to B-1)
-    const match = name.match(/^([A-G])([#b]?)(-?\d)$/);
+    const match = name.match(/^([A-G])([#b]?)(-?\d+)$/);
     if (!match) {
       throw new Error(`Invalid note name: ${name}`);
     }

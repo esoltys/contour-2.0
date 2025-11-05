@@ -41,9 +41,9 @@ describe('Branded Types', () => {
     });
 
     it('throws on invalid BPM', () => {
-      expect(() => BPM(0)).toThrow('BPM must be between 0 and 999');
-      expect(() => BPM(-10)).toThrow('BPM must be between 0 and 999');
-      expect(() => BPM(1000)).toThrow('BPM must be between 0 and 999');
+      expect(() => BPM(0)).toThrow('BPM must be greater than 0 and up to 999');
+      expect(() => BPM(-10)).toThrow('BPM must be greater than 0 and up to 999');
+      expect(() => BPM(1000)).toThrow('BPM must be greater than 0 and up to 999');
     });
 
     it('handles decimal BPM values', () => {

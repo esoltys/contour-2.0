@@ -52,7 +52,7 @@ export const Hz = (value: number): Hz => {
 
 export const BPM = (value: number): BPM => {
   if (value <= 0 || value > 999) {
-    throw new RangeError(`BPM must be between 0 and 999, got ${value}`);
+    throw new RangeError(`BPM must be greater than 0 and up to 999, got ${value}`);
   }
   return value as BPM;
 };
