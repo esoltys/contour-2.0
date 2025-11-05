@@ -7,6 +7,9 @@ Contour enables developers to compose music using functional patterns, explore a
 ## Features
 
 - **Functional Composition** - Build music using composable, immutable patterns inspired by TidalCycles
+- **Mini-Notation** - Concise, expressive syntax for rapid pattern creation
+- **Live Coding** - Perfect for performances with hot-reload and instant feedback
+- **Euclidean Rhythms** - Generate algorithmically interesting patterns using Bjorklund's algorithm
 - **Music Theory Exploration** - Create microtonal music, complex polyrhythms, and algorithmic compositions
 - **Type Safety** - Branded types prevent unit mixing (Hz vs BPM) at compile time
 - **Hot Module Reload** - Instant feedback with graceful audio transitions
@@ -70,6 +73,25 @@ pnpm dev
 # Then open http://localhost:5173
 ```
 
+#### Live Coding Demo
+
+Explore mini-notation and pattern algebra with interactive examples:
+
+```bash
+cd examples/live-coding-demo
+pnpm install
+pnpm start
+
+# Or run with hot-reload for live coding
+pnpm dev
+```
+
+This demo showcases:
+- Mini-notation syntax (repetition, rests, grouping, duration)
+- Pattern algebra operations (stack, append, palindrome)
+- Euclidean rhythms for algorithmic composition
+- Octave persistence and chord symbols
+
 #### Plugin Examples
 
 Export examples demonstrating the plugin architecture:
@@ -89,6 +111,7 @@ contour/
 │   └── dev/            # Vite dev server with HMR
 ├── examples/
 │   ├── bach-invention-4/  # Bach Invention No. 4 example
+│   ├── live-coding-demo/  # Mini-notation and pattern algebra demo
 │   └── export-plugins.ts  # Plugin demonstration
 └── docs/               # Complete documentation
 ```
@@ -115,6 +138,26 @@ const transposed = pattern.transpose(5);  // New pattern
 // pattern is unchanged
 ```
 
+### Mini-Notation
+
+Concise syntax for rapid pattern creation:
+
+```typescript
+// Verbose approach
+pattern()
+  .note('C4', Durations.quarter)
+  .note('E4', Durations.quarter)
+  .note('G4', Durations.quarter)
+  .build();
+
+// Mini-notation approach
+pattern().fromNotation('C4 E4 G4').build();
+
+// Advanced features
+pattern().fromNotation('C4*4 ~ [E4 G4] C5@2').build();
+// C4 repeated 4 times, rest, E4/G4 subdivision, C5 held longer
+```
+
 ### Pattern Algebra
 
 Compose patterns functionally:
@@ -124,6 +167,14 @@ const melody = pattern(['C4', 'E4', 'G4'])
   .fast(2)                    // Double speed
   .every(4, p => p.rev())     // Reverse every 4th cycle
   .transpose(5);              // Up 5 semitones
+
+// Combine patterns
+const p1 = pattern().fromNotation('C4 E4').build();
+const p2 = pattern().fromNotation('G4 C5').build();
+
+p1.stack(p2);      // Play simultaneously
+p1.append(p2);     // Play sequentially
+p1.palindrome();   // Forward then reverse
 ```
 
 ### Four-Layer Architecture
@@ -190,6 +241,29 @@ const transformed = base
 const conditional = base.every(4, p => p.rev());  // Reverse every 4th cycle
 ```
 
+### Mini-Notation and Euclidean Rhythms
+
+```typescript
+// Concise pattern creation with mini-notation
+const melody = pattern()
+  .fromNotation('C4 E4 G4 C5')
+  .build();
+
+// Rhythm patterns with repetition, rests, and grouping
+const drums = pattern()
+  .fromNotation('C2*4 ~ [E3 G3] C4@2')
+  .build();
+
+// Euclidean rhythms for algorithmic composition
+const rhythm = Pattern.euclidean(16, 5);  // 5 pulses in 16 steps
+const shifted = Pattern.euclidean(8, 3, 2);  // With rotation
+
+// Combine with transformations
+const generative = Pattern.euclidean(16, 11)
+  .transpose(60)  // MIDI note C4
+  .fast(2);
+```
+
 ### Exporting
 
 ```typescript
@@ -240,11 +314,16 @@ This project is currently in active development. See [CLAUDE.md](CLAUDE.md) for 
 
 ## Development Status
 
-- ✅ **Phase 1**: Foundation (type system, project structure)
-- ✅ **Phase 2**: Pattern system (transformations, immutability)
-- ✅ **Phase 3**: Tone.js integration (scheduling, HMR)
-- ✅ **Phase 4**: Composition system (Voice, Track, Composition)
-- ✅ **Phase 5**: Plugin architecture (audio, MIDI renderers)
+### Core Features
+
+- ✅ **Type System** - Branded types, compile-time unit safety
+- ✅ **Pattern System** - Transformations, immutability, functional composition
+- ✅ **Mini-Notation** - Concise TidalCycles-inspired syntax
+- ✅ **Pattern Algebra** - Stack, append, palindrome operations
+- ✅ **Euclidean Rhythms** - Bjorklund's algorithm for generative patterns
+- ✅ **Tone.js Integration** - Scheduling, hot-reload with graceful audio transitions
+- ✅ **Composition System** - Voice, Track, Composition abstractions
+- ✅ **Plugin Architecture** - Extensible renderers (audio, MIDI)
 
 ### Acceptance Criteria
 
@@ -253,6 +332,7 @@ This project is currently in active development. See [CLAUDE.md](CLAUDE.md) for 
 - ✅ Audio playback with hot-reload
 - ✅ Type-safe musical primitives
 - ✅ Pattern transformations and algebra
+- ✅ Live coding capabilities with mini-notation
 
 ## License
 
