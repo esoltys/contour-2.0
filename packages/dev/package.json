@@ -11,6 +11,7 @@
   "dependencies": {
     "@contour/core": "workspace:*",
     "@contour/tone-adapter": "workspace:*",
+    "@tonaljs/chord": "^6.0.0",
     "automation-events": "^7.1.13",
     "standardized-audio-context": "^25.3.77",
     "tone": "^14.8.0",

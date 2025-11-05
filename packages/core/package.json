@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@tonaljs/tonal": "^4.10.0"
+    "@tonaljs/chord": "^6.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

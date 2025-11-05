@@ -5,7 +5,7 @@ import type { NoteName } from '../types/music.js';
 import { Durations } from '../types/music.js';
 import { Duration, Velocity, Seconds } from '../types/brands.js';
 import type { Event, NoteEvent, RestEvent, ChordEvent } from '../primitives/Event.js';
-import { Chord } from '@tonaljs/tonal';
+import { Chord } from '@tonaljs/chord';
 
 /**
  * Token types for mini-notation lexer.
@@ -428,7 +428,7 @@ class EventGenerator {
       }
 
       // Add default octave to notes
-      const notes = chordData.notes.map(noteName => {
+      const notes = chordData.notes.map((noteName: string) => {
         // If note doesn't have octave, add default
         if (!/\d$/.test(noteName)) {
           return new Note(`${noteName}${this.context.defaultOctave}` as NoteName);
