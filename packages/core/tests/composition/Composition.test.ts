@@ -4,7 +4,7 @@ import { Track } from '../../src/composition/Track';
 import { Voice } from '../../src/composition/Voice';
 import { PatternBuilder } from '../../src/patterns/PatternBuilder';
 import { C, D, E, F, G, A, B } from '../../src/primitives/Note';
-import { BPM, Seconds } from '../../src/types/brands';
+import { BPM } from '../../src/types/brands';
 import { Durations } from '../../src/types/music';
 
 describe('Composition', () => {

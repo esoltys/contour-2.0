@@ -125,6 +125,8 @@ export class Composition {
       return createSeconds(0);
     }
 
+    // Duration is branded as Duration (fraction of whole note), but is a number at runtime
+    // We can safely use it with Math.max() since all branded types are numbers
     const maxDuration = Math.max(
       ...this.tracks.flatMap(track =>
         track.voices.map(voice => voice.pattern.duration as number)

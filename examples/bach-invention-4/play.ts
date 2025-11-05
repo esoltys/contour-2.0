@@ -15,7 +15,7 @@ import { CompositionScheduler } from '@contour/tone-adapter';
 
 async function main() {
   console.log('🎹 Bach Invention No. 4 in D minor (BWV 775)');
-  console.log('=' .repeat(50));
+  console.log('='.repeat(50));
 
   // Create the composition
   const invention = createBachInvention4();
@@ -56,6 +56,7 @@ async function main() {
     console.log(`  State: ${scheduler.state}`);
 
     // Wait for composition to finish
+    // Duration is branded as Seconds but is a number at runtime
     const duration = invention.duration as number;
     await new Promise(resolve => setTimeout(resolve, (duration + 1) * 1000));
 

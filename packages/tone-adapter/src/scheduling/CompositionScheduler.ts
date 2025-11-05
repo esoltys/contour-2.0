@@ -75,7 +75,7 @@ export class CompositionScheduler {
 
     // Schedule each event in the voice's pattern
     voice.pattern.events.forEach(event => {
-      const eventTime = startTime + event.time;
+      const eventTime = Seconds(startTime + event.time);
 
       if (event.type === 'note') {
         this.scheduleNoteEvent(event, eventTime, synth);
