@@ -1,0 +1,1125 @@
+# Contour: Technical Specification
+
+**Version:** 2.0  
+**Last Updated:** November 2025  
+**Status:** Implementation Ready
+
+## Overview
+
+This document specifies the technical architecture, API contracts, and implementation details for Contour. All TypeScript interfaces and classes defined here are normative—implementations must match these signatures exactly.
+
+## Architecture Overview
+
+### Four-Layer System
+
+```
+â"Œâ"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"
+â"‚ Layer 4: DSL Syntax                                  â"‚
+â"‚ (User-facing API: track(), sequence(), parallel())    â"‚
+â""â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¬â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"˜
+                        â"‚
+â"Œâ"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¼â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"
+â"‚ Layer 3: Composition Abstractions                     â"‚
+â"‚ (Voice, Track, Composition, Pattern)                  â"‚
+â""â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¬â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"˜
+                        â"‚
+â"Œâ"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¼â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"
+â"‚ Layer 2: Musical Wrappers                            â"‚
+â"‚ (Thin adapters with musical terminology)             â"‚
+â""â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¬â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"˜
+                        â"‚
+â"Œâ"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"¼â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"
+â"‚ Layer 1: Tone.js Primitives (Unchanged)              â"‚
+â"‚ (Synth, Transport, Signal, Effects)                   â"‚
+â""â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"˜
+```
+
+**Critical Principle:** Users must always be able to drop down to any layer when they need fine control. Never hide Tone.js completely.
+
+## Type System
+
+### Branded Types
+
+Branded types prevent unit mixing at compile time:
+
+```typescript
+// packages/core/src/types/brands.ts
+
+/**
+ * Frequency in Hertz. Prevents mixing with other numeric types.
+ */
+export type Hz = number & { readonly __brand: 'Hz' };
+
+/**
+ * Tempo in beats per minute.
+ */
+export type BPM = number & { readonly __brand: 'BPM' };
+
+/**
+ * Time in seconds.
+ */
+export type Seconds = number & { readonly __brand: 'Seconds' };
+
+/**
+ * MIDI note number (0-127).
+ */
+export type MIDINote = number & { readonly __brand: 'MIDINote' };
+
+/**
+ * Musical velocity (0-127).
+ */
+export type Velocity = number & { readonly __brand: 'Velocity' };
+
+// Constructor functions with validation
+export const Hz = (value: number): Hz => {
+  if (value < 20 || value > 20000) {
+    throw new RangeError(`Hz must be between 20 and 20000, got ${value}`);
+  }
+  return value as Hz;
+};
+
+export const BPM = (value: number): BPM => {
+  if (value <= 0 || value > 999) {
+    throw new RangeError(`BPM must be between 0 and 999, got ${value}`);
+  }
+  return value as BPM;
+};
+
+export const Seconds = (value: number): Seconds => {
+  if (value < 0) {
+    throw new RangeError(`Seconds cannot be negative, got ${value}`);
+  }
+  return value as Seconds;
+};
+
+export const MIDINote = (value: number): MIDINote => {
+  if (!Number.isInteger(value) || value < 0 || value > 127) {
+    throw new RangeError(`MIDI note must be integer 0-127, got ${value}`);
+  }
+  return value as MIDINote;
+};
+
+export const Velocity = (value: number): Velocity => {
+  if (!Number.isInteger(value) || value < 0 || value > 127) {
+    throw new RangeError(`Velocity must be integer 0-127, got ${value}`);
+  }
+  return value as Velocity;
+};
+```
+
+### Musical Type Primitives
+
+```typescript
+// packages/core/src/types/music.ts
+
+/**
+ * Musical note letter names.
+ */
+export type NoteLetter = 'C' | 'D' | 'E' | 'F' | 'G' | 'A' | 'B';
+
+/**
+ * Accidentals (sharp, flat, natural).
+ */
+export type Accidental = '' | '#' | 'b';
+
+/**
+ * Octave number (scientific pitch notation).
+ */
+export type Octave = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
+
+/**
+ * Complete note name with compile-time validation.
+ * Examples: 'C4', 'F#5', 'Bb3'
+ */
+export type NoteName = `${NoteLetter}${Accidental}${Octave}`;
+
+/**
+ * Musical duration as fraction of whole note.
+ * 1 = whole, 0.5 = half, 0.25 = quarter, etc.
+ */
+export type Duration = number & { readonly __brand: 'Duration' };
+
+export const Duration = (value: number): Duration => {
+  if (value <= 0) {
+    throw new RangeError(`Duration must be positive, got ${value}`);
+  }
+  return value as Duration;
+};
+
+/**
+ * Common duration constants.
+ */
+export const Durations = {
+  whole: Duration(1),
+  half: Duration(0.5),
+  quarter: Duration(0.25),
+  eighth: Duration(0.125),
+  sixteenth: Duration(0.0625),
+  thirtysecond: Duration(0.03125),
+  
+  // Dotted durations
+  dottedHalf: Duration(0.75),
+  dottedQuarter: Duration(0.375),
+  dottedEighth: Duration(0.1875),
+} as const;
+```
+
+### Interval and Chord Types
+
+```typescript
+// packages/core/src/types/harmony.ts
+
+/**
+ * Musical interval in semitones.
+ */
+export type Interval = number & { readonly __brand: 'Interval' };
+
+export const Interval = (semitones: number): Interval => {
+  return semitones as Interval;
+};
+
+/**
+ * Common interval constants.
+ */
+export const Intervals = {
+  unison: Interval(0),
+  minorSecond: Interval(1),
+  majorSecond: Interval(2),
+  minorThird: Interval(3),
+  majorThird: Interval(4),
+  perfectFourth: Interval(5),
+  augmentedFourth: Interval(6), // tritone
+  perfectFifth: Interval(7),
+  minorSixth: Interval(8),
+  majorSixth: Interval(9),
+  minorSeventh: Interval(10),
+  majorSeventh: Interval(11),
+  octave: Interval(12),
+} as const;
+
+/**
+ * Chord quality types.
+ */
+export type ChordQuality = 
+  | 'major' | 'minor' | 'diminished' | 'augmented'
+  | 'sus2' | 'sus4'
+  | 'major7' | 'minor7' | 'dominant7' | 'diminished7' | 'halfDiminished7'
+  | 'major9' | 'minor9' | 'dominant9'
+  | 'major11' | 'minor11' | 'dominant11'
+  | 'major13' | 'minor13' | 'dominant13';
+
+/**
+ * Chord symbol parser result.
+ */
+export interface ChordSymbol {
+  root: NoteName;
+  quality: ChordQuality;
+  extensions: number[];
+  alterations: string[];
+  bass?: NoteName; // For slash chords
+}
+```
+
+## Core Classes
+
+### Note Class
+
+```typescript
+// packages/core/src/primitives/Note.ts
+
+/**
+ * Immutable representation of a musical note.
+ */
+export class Note {
+  readonly pitch: MIDINote;
+  readonly name: NoteName;
+  readonly frequency: Hz;
+  
+  constructor(name: NoteName, octave?: Octave) {
+    // If octave provided separately, combine with name
+    // Otherwise parse from NoteName
+    this.name = octave ? `${name}${octave}` as NoteName : name;
+    this.pitch = this.noteToPitch(this.name);
+    this.frequency = this.pitchToFrequency(this.pitch);
+  }
+  
+  /**
+   * Transpose by semitones (returns new Note).
+   */
+  transpose(semitones: number): Note {
+    const newPitch = MIDINote(this.pitch + semitones);
+    return Note.fromMIDI(newPitch);
+  }
+  
+  /**
+   * Get enharmonic equivalent (e.g., C# <-> Db).
+   */
+  enharmonic(): Note {
+    // Implementation determines enharmonic spelling
+    throw new Error('Not implemented');
+  }
+  
+  /**
+   * Interval from this note to another.
+   */
+  intervalTo(other: Note): Interval {
+    return Interval(other.pitch - this.pitch);
+  }
+  
+  /**
+   * Create Note from MIDI number.
+   */
+  static fromMIDI(pitch: MIDINote): Note {
+    // Convert MIDI to NoteName
+    throw new Error('Not implemented');
+  }
+  
+  /**
+   * Create Note from frequency.
+   */
+  static fromFrequency(freq: Hz): Note {
+    // Convert Hz to nearest MIDI note
+    throw new Error('Not implemented');
+  }
+  
+  private noteToPitch(name: NoteName): MIDINote {
+    // Parse NoteName to MIDI number
+    throw new Error('Not implemented');
+  }
+  
+  private pitchToFrequency(pitch: MIDINote): Hz {
+    // A4 = 440 Hz, 12-TET tuning
+    return Hz(440 * Math.pow(2, (pitch - 69) / 12));
+  }
+}
+
+/**
+ * Convenience functions for common notes.
+ */
+export const C = (octave: Octave = '4') => new Note(`C${octave}` as NoteName);
+export const Db = (octave: Octave = '4') => new Note(`Db${octave}` as NoteName);
+export const D = (octave: Octave = '4') => new Note(`D${octave}` as NoteName);
+// ... all note names
+```
+
+### Event Interface
+
+```typescript
+// packages/core/src/primitives/Event.ts
+
+/**
+ * Musical event in time.
+ */
+export interface MusicalEvent {
+  readonly time: Seconds;
+  readonly duration: Duration;
+  readonly velocity: Velocity;
+}
+
+/**
+ * Note event (extends MusicalEvent).
+ */
+export interface NoteEvent extends MusicalEvent {
+  readonly type: 'note';
+  readonly pitch: MIDINote;
+  readonly note: Note;
+}
+
+/**
+ * Rest event.
+ */
+export interface RestEvent extends MusicalEvent {
+  readonly type: 'rest';
+}
+
+/**
+ * Chord event (multiple simultaneous notes).
+ */
+export interface ChordEvent extends MusicalEvent {
+  readonly type: 'chord';
+  readonly notes: Note[];
+}
+
+export type Event = NoteEvent | RestEvent | ChordEvent;
+```
+
+### Pattern Class
+
+```typescript
+// packages/core/src/patterns/Pattern.ts
+
+/**
+ * Immutable pattern of musical events.
+ */
+export class Pattern {
+  readonly events: ReadonlyArray<Event>;
+  readonly duration: Duration;
+  
+  constructor(events: Event[]) {
+    this.events = Object.freeze([...events]);
+    this.duration = this.calculateDuration();
+  }
+  
+  /**
+   * Transpose all notes by semitones (returns new Pattern).
+   */
+  transpose(semitones: number): Pattern {
+    const newEvents = this.events.map(event => {
+      if (event.type === 'note') {
+        return {
+          ...event,
+          note: event.note.transpose(semitones),
+          pitch: MIDINote(event.pitch + semitones),
+        };
+      }
+      if (event.type === 'chord') {
+        return {
+          ...event,
+          notes: event.notes.map(n => n.transpose(semitones)),
+        };
+      }
+      return event;
+    });
+    return new Pattern(newEvents);
+  }
+  
+  /**
+   * Reverse the pattern (retrograde).
+   */
+  retrograde(): Pattern {
+    const totalDuration = this.duration;
+    const newEvents = [...this.events].reverse().map(event => ({
+      ...event,
+      time: Seconds(totalDuration - event.time - event.duration),
+    }));
+    return new Pattern(newEvents);
+  }
+  
+  /**
+   * Change speed (fast multiplies speed, slow divides).
+   */
+  fast(factor: number): Pattern {
+    const newEvents = this.events.map(event => ({
+      ...event,
+      time: Seconds(event.time / factor),
+      duration: Duration(event.duration / factor),
+    }));
+    return new Pattern(newEvents);
+  }
+  
+  slow(factor: number): Pattern {
+    return this.fast(1 / factor);
+  }
+  
+  /**
+   * Apply transformation every N cycles.
+   */
+  every(n: number, transform: (p: Pattern) => Pattern): Pattern {
+    // Implementation applies transform conditionally
+    throw new Error('Not implemented');
+  }
+  
+  /**
+   * Functional map over events.
+   */
+  map<T extends Event>(fn: (event: Event) => T): Pattern {
+    return new Pattern(this.events.map(fn));
+  }
+  
+  /**
+   * Functional filter.
+   */
+  filter(predicate: (event: Event) => boolean): Pattern {
+    return new Pattern(this.events.filter(predicate));
+  }
+  
+  private calculateDuration(): Duration {
+    if (this.events.length === 0) return Duration(0);
+    const lastEvent = this.events[this.events.length - 1];
+    return Duration(lastEvent.time + lastEvent.duration);
+  }
+}
+```
+
+### PatternBuilder Class
+
+```typescript
+// packages/core/src/patterns/PatternBuilder.ts
+
+/**
+ * Fluent builder for constructing patterns.
+ */
+export class PatternBuilder {
+  private events: Event[] = [];
+  private currentTime: Seconds = Seconds(0);
+  private defaultDuration: Duration = Durations.quarter;
+  private defaultVelocity: Velocity = Velocity(80);
+  
+  /**
+   * Add a single note.
+   */
+  note(
+    note: Note | NoteName,
+    duration?: Duration,
+    velocity?: Velocity
+  ): this {
+    const noteObj = typeof note === 'string' ? new Note(note) : note;
+    const dur = duration ?? this.defaultDuration;
+    const vel = velocity ?? this.defaultVelocity;
+    
+    this.events.push({
+      type: 'note',
+      time: this.currentTime,
+      duration: dur,
+      velocity: vel,
+      pitch: noteObj.pitch,
+      note: noteObj,
+    });
+    
+    this.currentTime = Seconds(this.currentTime + dur);
+    return this;
+  }
+  
+  /**
+   * Add multiple notes sequentially.
+   */
+  notes(
+    notes: (Note | NoteName)[],
+    duration?: Duration,
+    velocity?: Velocity
+  ): this {
+    for (const note of notes) {
+      this.note(note, duration, velocity);
+    }
+    return this;
+  }
+  
+  /**
+   * Add a chord (simultaneous notes).
+   */
+  chord(
+    notes: (Note | NoteName)[],
+    duration?: Duration,
+    velocity?: Velocity
+  ): this {
+    const noteObjs = notes.map(n => 
+      typeof n === 'string' ? new Note(n) : n
+    );
+    const dur = duration ?? this.defaultDuration;
+    const vel = velocity ?? this.defaultVelocity;
+    
+    this.events.push({
+      type: 'chord',
+      time: this.currentTime,
+      duration: dur,
+      velocity: vel,
+      notes: noteObjs,
+    });
+    
+    this.currentTime = Seconds(this.currentTime + dur);
+    return this;
+  }
+  
+  /**
+   * Add a rest.
+   */
+  rest(duration?: Duration): this {
+    const dur = duration ?? this.defaultDuration;
+    
+    this.events.push({
+      type: 'rest',
+      time: this.currentTime,
+      duration: dur,
+      velocity: Velocity(0),
+    });
+    
+    this.currentTime = Seconds(this.currentTime + dur);
+    return this;
+  }
+  
+  /**
+   * Set default duration for subsequent notes.
+   */
+  withDuration(duration: Duration): this {
+    this.defaultDuration = duration;
+    return this;
+  }
+  
+  /**
+   * Set default velocity for subsequent notes.
+   */
+  withVelocity(velocity: Velocity): this {
+    this.defaultVelocity = velocity;
+    return this;
+  }
+  
+  /**
+   * Apply crescendo (gradual velocity increase).
+   */
+  crescendo(startVel: number, endVel: number): this {
+    const numEvents = this.events.length;
+    this.events = this.events.map((event, i) => ({
+      ...event,
+      velocity: Velocity(
+        Math.round(startVel + (endVel - startVel) * (i / numEvents))
+      ),
+    }));
+    return this;
+  }
+  
+  /**
+   * Apply humanization (slight timing and velocity randomness).
+   */
+  humanize(timingAmount: number = 0.05, velocityAmount: number = 0.1): this {
+    // Implementation adds controlled randomness
+    return this;
+  }
+  
+  /**
+   * Apply swing rhythm.
+   */
+  swing(amount: number = 0.15): this {
+    // Implementation delays off-beats
+    return this;
+  }
+  
+  /**
+   * Build immutable Pattern.
+   */
+  build(): Pattern {
+    return new Pattern(this.events);
+  }
+}
+
+/**
+ * Factory function for creating patterns.
+ */
+export const pattern = (name?: string): PatternBuilder => {
+  return new PatternBuilder();
+};
+```
+
+## Composition System
+
+### Voice Class
+
+```typescript
+// packages/core/src/composition/Voice.ts
+
+/**
+ * Single voice in a composition (one pattern + instrument).
+ */
+export class Voice {
+  readonly pattern: Pattern;
+  readonly instrument: string; // Tone.js instrument identifier
+  
+  constructor(pattern: Pattern, instrument: string = 'synth') {
+    this.pattern = pattern;
+    this.instrument = instrument;
+  }
+  
+  /**
+   * Transform the voice's pattern.
+   */
+  transform(fn: (p: Pattern) => Pattern): Voice {
+    return new Voice(fn(this.pattern), this.instrument);
+  }
+}
+```
+
+### Track Class
+
+```typescript
+// packages/core/src/composition/Track.ts
+
+/**
+ * Track containing one or more voices.
+ */
+export class Track {
+  readonly name: string;
+  readonly voices: ReadonlyArray<Voice>;
+  
+  constructor(name: string, voices: Voice[]) {
+    this.name = name;
+    this.voices = Object.freeze([...voices]);
+  }
+  
+  /**
+   * Add a voice to this track.
+   */
+  addVoice(voice: Voice): Track {
+    return new Track(this.name, [...this.voices, voice]);
+  }
+  
+  /**
+   * Transform all voices in the track.
+   */
+  transform(fn: (v: Voice) => Voice): Track {
+    return new Track(
+      this.name,
+      this.voices.map(fn)
+    );
+  }
+}
+```
+
+### Composition Class
+
+```typescript
+// packages/core/src/composition/Composition.ts
+
+/**
+ * Complete composition with multiple tracks.
+ */
+export class Composition {
+  readonly title: string;
+  readonly tempo: BPM;
+  readonly timeSignature: { numerator: number; denominator: number };
+  readonly tracks: ReadonlyArray<Track>;
+  
+  constructor(
+    title: string,
+    tempo: BPM = BPM(120),
+    timeSignature: { numerator: number; denominator: number } = { numerator: 4, denominator: 4 }
+  ) {
+    this.title = title;
+    this.tempo = tempo;
+    this.timeSignature = timeSignature;
+    this.tracks = [];
+  }
+  
+  /**
+   * Add a track to the composition.
+   */
+  addTrack(track: Track): Composition {
+    const comp = Object.create(Composition.prototype);
+    comp.title = this.title;
+    comp.tempo = this.tempo;
+    comp.timeSignature = this.timeSignature;
+    comp.tracks = Object.freeze([...this.tracks, track]);
+    return comp;
+  }
+  
+  /**
+   * Change tempo (returns new Composition).
+   */
+  withTempo(tempo: BPM): Composition {
+    const comp = Object.create(Composition.prototype);
+    comp.title = this.title;
+    comp.tempo = tempo;
+    comp.timeSignature = this.timeSignature;
+    comp.tracks = this.tracks;
+    return comp;
+  }
+  
+  /**
+   * Calculate total duration.
+   */
+  get duration(): Seconds {
+    const maxDuration = Math.max(
+      ...this.tracks.flatMap(track =>
+        track.voices.map(voice => voice.pattern.duration)
+      )
+    );
+    return Seconds(maxDuration);
+  }
+}
+```
+
+## Plugin Architecture
+
+### Renderer Plugin Interface
+
+```typescript
+// packages/core/src/plugins/RendererPlugin.ts
+
+/**
+ * Result of rendering operation.
+ */
+export interface RenderResult {
+  data: Buffer | Blob | ArrayBuffer;
+  format: string;
+  metadata: {
+    duration: Seconds;
+    sampleRate?: number;
+    bitDepth?: number;
+    [key: string]: unknown;
+  };
+}
+
+/**
+ * Base interface for all renderer plugins.
+ */
+export interface RendererPlugin<TConfig = unknown> {
+  /** Unique plugin identifier */
+  readonly name: string;
+  
+  /** Semantic version */
+  readonly version: string;
+  
+  /** Plugin dependencies (other plugin names) */
+  readonly dependencies?: string[];
+  
+  /**
+   * Initialize the plugin with configuration.
+   */
+  initialize(config: TConfig): Promise<void>;
+  
+  /**
+   * Render a composition to the plugin's format.
+   */
+  render(composition: Composition): Promise<RenderResult>;
+  
+  /**
+   * Cleanup resources.
+   */
+  shutdown(): Promise<void>;
+}
+
+/**
+ * Plugin registry for managing renderers.
+ */
+export class PluginRegistry {
+  private plugins = new Map<string, RendererPlugin>();
+  
+  /**
+   * Register a plugin.
+   */
+  register<T>(plugin: RendererPlugin<T>): void {
+    // Validate dependencies exist
+    if (plugin.dependencies) {
+      for (const dep of plugin.dependencies) {
+        if (!this.plugins.has(dep)) {
+          throw new Error(
+            `Plugin ${plugin.name} depends on ${dep} which is not registered`
+          );
+        }
+      }
+    }
+    
+    this.plugins.set(plugin.name, plugin);
+  }
+  
+  /**
+   * Get plugin by name.
+   */
+  get(name: string): RendererPlugin {
+    const plugin = this.plugins.get(name);
+    if (!plugin) {
+      throw new Error(`Plugin ${name} not found`);
+    }
+    return plugin;
+  }
+  
+  /**
+   * Get all registered plugins.
+   */
+  getAll(): RendererPlugin[] {
+    return Array.from(this.plugins.values());
+  }
+}
+```
+
+### Audio Renderer Plugin
+
+```typescript
+// packages/plugins/audio/AudioRenderer.ts
+
+export interface AudioRendererConfig {
+  sampleRate: number;
+  bitDepth: 16 | 24 | 32;
+  format: 'wav' | 'mp3' | 'ogg';
+  mp3Bitrate?: number; // kbps for MP3
+}
+
+export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
+  readonly name = 'audio';
+  readonly version = '1.0.0';
+  
+  private config!: AudioRendererConfig;
+  
+  async initialize(config: AudioRendererConfig): Promise<void> {
+    this.config = config;
+  }
+  
+  async render(composition: Composition): Promise<RenderResult> {
+    // Use Tone.Offline to render offline
+    const duration = composition.duration;
+    
+    const buffer = await Tone.Offline(({ transport }) => {
+      // Set up composition in Tone.js
+      // Schedule all events
+      // Start transport
+    }, duration);
+    
+    // Convert buffer to desired format
+    const audioData = this.encodeAudio(buffer);
+    
+    return {
+      data: audioData,
+      format: this.config.format,
+      metadata: {
+        duration,
+        sampleRate: this.config.sampleRate,
+        bitDepth: this.config.bitDepth,
+      },
+    };
+  }
+  
+  async shutdown(): Promise<void> {
+    // Cleanup
+  }
+  
+  private encodeAudio(buffer: AudioBuffer): Buffer {
+    // Implement encoding based on format
+    throw new Error('Not implemented');
+  }
+}
+```
+
+## Tone.js Integration Layer
+
+### Musical Scheduler
+
+```typescript
+// packages/tone-adapter/src/scheduling/Scheduler.ts
+
+/**
+ * Schedules Pattern events to Tone.Transport.
+ */
+export class PatternScheduler {
+  private scheduledEvents: number[] = [];
+  
+  /**
+   * Schedule a pattern to play.
+   */
+  schedule(pattern: Pattern, startTime: Seconds = Seconds(0)): void {
+    pattern.events.forEach(event => {
+      const eventTime = Seconds(startTime + event.time);
+      
+      if (event.type === 'note') {
+        const id = Tone.Transport.schedule((time) => {
+          // Trigger note at precise time
+          this.triggerNote(event, time);
+        }, eventTime);
+        
+        this.scheduledEvents.push(id);
+      }
+      
+      // Handle other event types...
+    });
+  }
+  
+  /**
+   * Clear all scheduled events.
+   */
+  clear(): void {
+    this.scheduledEvents.forEach(id => {
+      Tone.Transport.clear(id);
+    });
+    this.scheduledEvents = [];
+  }
+  
+  private triggerNote(event: NoteEvent, time: number): void {
+    // Convert Note to Tone.js format and trigger
+    // This is where Layer 2 wrappers come in
+  }
+}
+```
+
+### Hot Module Replacement Handler
+
+```typescript
+// packages/tone-adapter/src/hmr/HMRHandler.ts
+
+/**
+ * Handles hot-reload without audio glitches.
+ */
+export class HMRHandler {
+  private fadeTime = 0.3; // seconds
+  
+  /**
+   * Prepare for module reload (fade out audio).
+   */
+  async prepareReload(): Promise<void> {
+    const master = Tone.getDestination();
+    
+    // Fade out over fadeTime
+    await master.volume.rampTo(-60, this.fadeTime);
+    
+    // Stop transport cleanly
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
+  }
+  
+  /**
+   * Restore audio after reload (fade in).
+   */
+  async afterReload(): Promise<void> {
+    const master = Tone.getDestination();
+    
+    // Fade back in
+    await master.volume.rampTo(0, this.fadeTime);
+    
+    // Restart transport if it was playing
+    Tone.Transport.start();
+  }
+}
+```
+
+## Testing Utilities
+
+### Musical Matchers
+
+```typescript
+// packages/testing/src/matchers.ts
+
+declare global {
+  namespace jest {
+    interface Matchers<R> {
+      toBeInKey(key: NoteName, mode: 'major' | 'minor'): R;
+      toHaveRange(low: NoteName, high: NoteName): R;
+      toBeRhythmicallyValid(): R;
+      toMatchAudioBuffer(reference: AudioBuffer, threshold: number): R;
+    }
+  }
+}
+
+export const musicalMatchers = {
+  toBeInKey(
+    received: Pattern,
+    key: NoteName,
+    mode: 'major' | 'minor'
+  ) {
+    // Implementation checks if all notes are in the key
+    const scale = mode === 'major' 
+      ? majorScale(key)
+      : minorScale(key);
+    
+    const allInKey = received.events.every(event => {
+      if (event.type === 'note') {
+        return scale.contains(event.note);
+      }
+      return true;
+    });
+    
+    return {
+      pass: allInKey,
+      message: () => `Expected pattern to be in ${key} ${mode}`,
+    };
+  },
+  
+  // Other matchers...
+};
+```
+
+## Configuration
+
+### Vite Configuration
+
+```typescript
+// packages/dev/vite.config.ts
+
+import { defineConfig } from 'vite';
+import { musicHMRPlugin } from './plugins/musicHMR';
+
+export default defineConfig({
+  plugins: [
+    musicHMRPlugin({
+      fadeTime: 300, // ms
+      maintainPosition: true,
+    }),
+  ],
+  server: {
+    port: 3000,
+    hmr: {
+      overlay: true,
+    },
+  },
+  build: {
+    target: 'esnext',
+    lib: {
+      entry: 'src/index.ts',
+      formats: ['es'],
+    },
+  },
+});
+```
+
+### TypeScript Configuration
+
+```typescript
+// tsconfig.json
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  }
+}
+```
+
+## Performance Requirements
+
+### Timing Precision
+- **Scheduling accuracy**: < 1ms jitter using AudioContext time
+- **Hot-reload latency**: < 100ms from save to audio update
+- **Never use**: setTimeout, setInterval for audio scheduling
+
+### Memory Management
+- **Dispose AudioNodes**: Always call `.dispose()` on Tone.js objects
+- **Pattern immutability**: Prevents memory leaks from shared references
+- **Event pooling**: Consider object pooling for high-frequency events
+
+### Concurrency
+- **Maximum voices**: 100+ simultaneous without glitches
+- **Web Workers**: Consider for heavy DSP or pattern generation
+- **Look-ahead scheduling**: 0.1s buffer prevents JavaScript timing issues
+
+## Security Considerations
+
+### Plugin Sandboxing
+- Plugins should not have direct DOM access
+- Consider running in separate context or Worker
+- Validate all plugin configurations
+
+### User Input
+- Validate all note names and musical values
+- Sanitize file paths in export operations
+- Rate limit hot-reload to prevent abuse
+
+## Browser Compatibility
+
+### Required APIs
+- **Web Audio API**: AudioContext, AudioNode scheduling
+- **ES2022**: Class fields, top-level await
+- **ESM**: Native module support
+
+### Known Limitations
+- **iOS Safari**: Requires user gesture before audio
+- **Firefox**: Slight timing differences in AudioContext
+- **Safari**: No SharedArrayBuffer (affects some advanced features)
+
+## Next Steps for Implementation
+
+1. **Create project structure** following monorepo layout
+2. **Implement branded types** as foundation
+3. **Build Note class** with comprehensive tests
+4. **Implement Pattern and PatternBuilder** with transformations
+5. **Create Tone.js integration layer** with scheduling
+6. **Add hot-reload support** with Vite plugin
+7. **Implement Composition system** with Voice and Track
+8. **Build plugin architecture** with Audio renderer
+9. **Create acceptance test** with Bach Invention No. 4
+
+All interfaces in this document are normative. Implementations must match these signatures exactly for API compatibility.
