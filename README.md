@@ -73,24 +73,23 @@ pnpm dev
 # Then open http://localhost:5173
 ```
 
-#### Live Coding Demo
+#### Interactive Performance Grid
 
-Explore mini-notation and pattern algebra with interactive examples:
+Explore live pattern performance with the interactive grid interface:
 
 ```bash
-cd examples/live-coding-demo
-pnpm install
-pnpm start
-
-# Or run with hot-reload for live coding
+cd packages/dev
 pnpm dev
+# Open http://localhost:5173/performance.html
 ```
 
 This demo showcases:
-- Mini-notation syntax (repetition, rests, grouping, duration)
-- Pattern algebra operations (stack, append, palindrome)
-- Euclidean rhythms for algorithmic composition
-- Octave persistence and chord symbols
+- 4x4 grid of triggerable pattern pads with real-time audio
+- Live pattern editing with Monaco Editor
+- 16 preset patterns (drums, bass, melody, effects)
+- Global transport controls (play/pause, tempo, volume)
+- Pattern algebra and mini-notation in action
+- Keyboard shortcuts for hands-free performance
 
 #### Plugin Examples
 
@@ -108,10 +107,10 @@ contour/
 │   ├── core/           # Musical primitives, patterns, composition system
 │   ├── tone-adapter/   # Tone.js integration layer
 │   ├── plugins/        # Renderer plugins (audio, MIDI)
-│   └── dev/            # Vite dev server with HMR
+│   └── dev/            # Vite dev server with HMR and performance grid
 ├── examples/
 │   ├── bach-invention-4/  # Bach Invention No. 4 example
-│   ├── live-coding-demo/  # Mini-notation and pattern algebra demo
+│   ├── live-coding-demo/  # Console-based pattern demo
 │   └── export-plugins.ts  # Plugin demonstration
 └── docs/               # Complete documentation
 ```
@@ -311,28 +310,6 @@ Test coverage includes:
 
 This project is currently in active development. See [CLAUDE.md](CLAUDE.md) for development workflow and coding standards.
 
-## Development Status
-
-### Core Features
-
-- ✅ **Type System** - Branded types, compile-time unit safety
-- ✅ **Pattern System** - Transformations, immutability, functional composition
-- ✅ **Mini-Notation** - Concise TidalCycles-inspired syntax
-- ✅ **Pattern Algebra** - Stack, append, palindrome operations
-- ✅ **Euclidean Rhythms** - Bjorklund's algorithm for generative patterns
-- ✅ **Tone.js Integration** - Scheduling, hot-reload with graceful audio transitions
-- ✅ **Composition System** - Voice, Track, Composition abstractions
-- ✅ **Plugin Architecture** - Extensible renderers (audio, MIDI)
-
-### Acceptance Criteria
-
-- ✅ Bach Invention No. 4 implementation (examples/bach-invention-4/)
-- ✅ MIDI export functionality
-- ✅ Audio playback with hot-reload
-- ✅ Type-safe musical primitives
-- ✅ Pattern transformations and algebra
-- ✅ Live coding capabilities with mini-notation
-
 ## License
 
 MIT
@@ -355,4 +332,4 @@ Unlike traditional DAWs or notation software, Contour enables:
 - **Functional patterns** - Compose with immutability and transformations
 - **Developer experience** - Hot-reload, TypeScript tooling, familiar patterns
 
-Make TypeScript sing!
+**Music composition as code**
