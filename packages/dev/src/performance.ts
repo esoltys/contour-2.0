@@ -209,8 +209,11 @@ function togglePad(padId: string) {
       }
     }
 
-    // If playing, schedule immediately
-    if (state.isPlaying) {
+    // Auto-start playback if not already playing
+    if (!state.isPlaying) {
+      playAll();
+    } else {
+      // If already playing, schedule this pattern immediately
       state.scheduler.schedule(pad.pattern);
     }
   } else {
@@ -340,6 +343,12 @@ async function initMonaco() {
 
   try {
     state.monaco = await loader.init();
+
+    // Add TypeScript definitions for the runtime context
+    state.monaco.languages.typescript.typescriptDefaults.addExtraLib(`
+      import { PatternBuilder } from '@contour/core';
+      declare function pattern(): PatternBuilder;
+    `, 'ts:contour-runtime.d.ts');
 
     // Create editor instance
     state.editor = state.monaco.editor.create(elements.monacoEditor, {
@@ -573,19 +582,21 @@ function initEventListeners() {
     }
 
     // Number keys 1-9 and Q-I: trigger pads 0-15
-    const keyMap: { [key: string]: number } = {
-      '1': 0, '2': 1, '3': 2, '4': 3,
-      'q': 4, 'w': 5, 'e': 6, 'r': 7,
-      'a': 8, 's': 9, 'd': 10, 'f': 11,
-      'z': 12, 'x': 13, 'c': 14, 'v': 15
+    // Use e.code instead of e.key to handle Shift properly
+    const codeMap: { [code: string]: number } = {
+      'Digit1': 0, 'Digit2': 1, 'Digit3': 2, 'Digit4': 3,
+      'KeyQ': 4, 'KeyW': 5, 'KeyE': 6, 'KeyR': 7,
+      'KeyA': 8, 'KeyS': 9, 'KeyD': 10, 'KeyF': 11,
+      'KeyZ': 12, 'KeyX': 13, 'KeyC': 14, 'KeyV': 15
     };
 
-    const padIndex = keyMap[e.key.toLowerCase()];
+    const padIndex = codeMap[e.code];
     if (padIndex !== undefined && state.isAudioStarted) {
       const padId = `pad-${padIndex}`;
 
       // Shift + key: edit pattern
       if (e.shiftKey) {
+        e.preventDefault(); // Prevent default browser behavior
         openEditor(padId);
       } else {
         togglePad(padId);
