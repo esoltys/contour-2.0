@@ -79,8 +79,8 @@ export const Velocity = (value: number): Velocity => {
 };
 
 export const Duration = (value: number): Duration => {
-  if (value <= 0) {
-    throw new RangeError(`Duration must be positive, got ${value}`);
+  if (value < 0) {
+    throw new RangeError(`Duration must be non-negative, got ${value}`);
   }
   return value as Duration;
 };

@@ -1,9 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Pattern } from '../../src/patterns/Pattern';
 import type { NoteEvent, RestEvent, ChordEvent, Event } from '../../src/primitives/Event';
-import { Note, C, D, E, F, G, A, B } from '../../src/primitives/Note';
+import { Note, C, D, E, F, G } from '../../src/primitives/Note';
 import { Seconds, Velocity, MIDINote, Duration } from '../../src/types/brands';
-import { Durations } from '../../src/types/music';
 import * as fc from 'fast-check';
 
 // Helper function to create note events

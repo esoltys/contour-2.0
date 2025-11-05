@@ -214,6 +214,6 @@ export class PatternBuilder {
 /**
  * Factory function for creating patterns.
  */
-export const pattern = (name?: string): PatternBuilder => {
+export const pattern = (): PatternBuilder => {
   return new PatternBuilder();
 };

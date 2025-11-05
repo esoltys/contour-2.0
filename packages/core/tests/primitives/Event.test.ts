@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import type { MusicalEvent, NoteEvent, RestEvent, ChordEvent, Event } from '../../src/primitives/Event';
 import { Note, C, D, E, G } from '../../src/primitives/Note';
-import { Seconds, Velocity, MIDINote } from '../../src/types/brands';
-import { Duration, Durations } from '../../src/types/music';
+import { Seconds, Velocity } from '../../src/types/brands';
+import { Durations } from '../../src/types/music';
 
 describe('Event interfaces', () => {
   describe('NoteEvent', () => {

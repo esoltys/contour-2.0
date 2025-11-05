@@ -130,7 +130,7 @@ export class Pattern {
    * Calculate the total duration of the pattern.
    */
   private calculateDuration(): Duration {
-    if (this.events.length === 0) return 0 as Duration;
+    if (this.events.length === 0) return Duration(0);
 
     // Find the event that ends last
     let maxEndTime = 0;

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { PatternBuilder, pattern } from '../../src/patterns/PatternBuilder';
 import type { NoteEvent, ChordEvent, RestEvent } from '../../src/primitives/Event';
-import { Note, C, D, E, F, G, A, B } from '../../src/primitives/Note';
-import { Velocity, Duration } from '../../src/types/brands';
+import { C, D, E, G } from '../../src/primitives/Note';
+import { Velocity } from '../../src/types/brands';
 import { Durations } from '../../src/types/music';
 
 describe('PatternBuilder', () => {
