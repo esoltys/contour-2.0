@@ -1,6 +1,8 @@
 # Live Coding Demo - Contour Mini-Notation
 
-This example showcases the powerful mini-notation system and pattern algebra introduced in Phase 6 of Contour.
+This example showcases the powerful mini-notation system and pattern algebra. This is a **console-based demonstration** that visualizes patterns as text output.
+
+**Note:** This demo does not play audio. For audio playback, use the browser-based dev server at `packages/dev` or the `bach-invention-4` example which exports MIDI files.
 
 ## Features Demonstrated
 
@@ -77,11 +79,35 @@ pnpm install
 # Navigate to the demo directory
 cd examples/live-coding-demo
 
-# Run the demo
+# Run the demo (displays pattern structures as console output)
 pnpm start
 
 # Run with hot-reload for live coding
 pnpm dev
+```
+
+## Hearing Your Patterns (Audio Playback)
+
+This demo visualizes patterns as text. To hear audio playback:
+
+### Option 1: Browser-Based Dev Server (Recommended for Live Coding)
+```bash
+# From project root
+cd packages/dev
+pnpm dev
+# Open http://localhost:5173
+```
+The dev server includes:
+- Real-time audio playback with Tone.js
+- Hot-reload with graceful audio transitions
+- Play/pause controls
+
+### Option 2: Export to MIDI
+```bash
+# From project root
+cd examples/bach-invention-4
+pnpm export
+# Opens the generated .mid file in your MIDI player
 ```
 
 ## Live Coding Experience

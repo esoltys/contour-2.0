@@ -16,7 +16,6 @@ import {
   Durations,
   Velocity,
   type Event,
-  type NoteEvent,
 } from '@contour/core';
 
 // ============================================================================
@@ -238,7 +237,7 @@ const liveMelody = pattern()
   .transpose(0); // Try: 7 (perfect fifth), -12 (octave down)
 
 const liveRhythm = Pattern.euclidean(16, 7) // Try different numbers!
-  .map((e: NoteEvent, i: number) => ({
+  .map((e: Event, i: number) => ({
     ...e,
     velocity: Velocity(40 + i * 5), // Crescendo
   }));
