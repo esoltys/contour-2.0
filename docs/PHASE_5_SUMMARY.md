@@ -198,14 +198,44 @@ const all = registry.getAll();
 5. Add golden file tests for audio comparison
 6. Set up browser-based test environment for full audio tests
 
+## MIDI Renderer Bug Fixes (Post-Implementation)
+
+After initial implementation, several critical bugs were discovered and fixed in the MIDI renderer:
+
+### 1. **UTF-8 Encoding Bug**
+- **Problem**: Binary MIDI data was being treated as UTF-8 text, corrupting the file
+- **Solution**: Use `Buffer.from(data, 'binary')` instead of `Buffer.from(data)`
+- **Impact**: File size reduced from 1425 bytes to correct 972 bytes
+
+### 2. **Delta Time Conversion Bug**
+- **Problem**: Passing absolute times to jsmidgen which expects delta times (time since last event)
+- **Solution**: Collect all events, sort by time, convert absolute times to delta times
+- **Impact**: Fixed duration from 7m46s to correct ~10 seconds
+
+### 3. **Ticks Per Beat Configuration**
+- **Problem**: jsmidgen defaulted to 128 ticks/beat while calculations used 480 ticks/beat
+- **Solution**: Pass `{ticks: 480}` to File constructor
+- **Impact**: Fixed 3.75x slowdown (37s to correct 10.6s)
+
+### 4. **Key Signature**
+- **Added**: Proper D minor key signature (1 flat, minor mode) to first track
+- **Result**: MIDI files now correctly indicate D minor
+
+### Final Result
+- ✅ Duration: 10.6 seconds (correct for 4.25 whole notes at 96 BPM)
+- ✅ Tempo: 96 BPM preserved correctly
+- ✅ Key: D minor with proper signature
+- ✅ Timing: All notes play at correct positions with proper durations
+- ✅ Verified: Tested in multiple online MIDI players, displays and sounds correct
+
 ## Conclusion
 
 Phase 5 is **COMPLETE** with all acceptance criteria met:
 
 - ✅ Plugin architecture implemented with type safety
 - ✅ Audio renderer (WAV) functional
-- ✅ MIDI renderer (SMF Format 1) fully tested and working
-- ✅ Bach Invention exports successfully
+- ✅ MIDI renderer (SMF Format 1) fully tested and working with correct timing
+- ✅ Bach Invention exports successfully to valid MIDI
 - ✅ Multiple plugins working together
 
 The plugin system is extensible, type-safe, and allows multiple output formats without modifying the core library. This completes the Contour 2.0 implementation as specified in the technical requirements.

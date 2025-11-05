@@ -1,385 +1,279 @@
-# Contour v2.0 Documentation Package
+# Contour 2.0
 
-**Complete documentation for rebooting Contour as a TypeScript music composition framework**
+**A TypeScript-first music composition framework for algorithmic and generative music**
 
-This package contains everything needed to build Contour from scratch using AI-assisted development (Claude Code) or human developers.
+Contour enables developers to compose music using functional patterns, explore advanced music theory concepts, and create compositions impossible on physical instruments.
 
-## 📚 Document Overview
+## Features
 
-### 1. **CLAUDE.md** - Start Here!
-**Purpose:** Meta-guide for AI-assisted development  
-**Read First:** Yes - explains how to use all other documents  
-**Key Content:**
-- Project vision and principles
-- Documentation hierarchy
-- Development workflow and phases
-- Code generation guidelines
-- Testing requirements
-- Common pitfalls to avoid
+- **Functional Composition** - Build music using composable, immutable patterns inspired by TidalCycles
+- **Music Theory Exploration** - Create microtonal music, complex polyrhythms, and algorithmic compositions
+- **Type Safety** - Branded types prevent unit mixing (Hz vs BPM) at compile time
+- **Hot Module Reload** - Instant feedback with graceful audio transitions
+- **Multiple Export Formats** - Render to audio playback, MP3/WAV files, or MIDI
+- **Plugin Architecture** - Extensible renderer system
 
-### 2. **PRODUCT_REQUIREMENTS.md**
-**Purpose:** What we're building and why  
-**Audience:** Product understanding, user stories  
-**Key Content:**
-- Vision: "Make TypeScript the language of algorithmic music"
-- Target users (developers, music theory nerds, live coders)
-- Core value propositions (computer-only music, functional patterns)
-- User stories and acceptance criteria
-- Success metrics (Bach Invention No. 4 as acceptance test)
+## Quick Start
 
-### 3. **ARCHITECTURE_GUIDE.md**
-**Purpose:** Comprehensive research and lessons learned  
-**Audience:** Deep architectural understanding  
-**Key Content:**
-- What went wrong with original Contour
-- How existing systems work (TidalCycles, Sonic Pi, Strudel)
-- Public domain compositions for testing
-- Multi-notation system support
-- Build tooling decisions (Vite vs webpack)
-- Plugin architecture patterns
-- Testing strategies
+### Prerequisites
 
-### 4. **TECHNICAL_SPEC.md**
-**Purpose:** API contracts and implementation details  
-**Audience:** Implementation reference  
-**Key Content:**
-- Type system (branded types, template literals)
-- Core classes (Note, Pattern, PatternBuilder)
-- Composition system (Voice, Track, Composition)
-- Plugin architecture
-- Tone.js integration layer
-- Testing utilities
-- All interfaces are normative (must match exactly)
+- Node.js 18+
+- pnpm 8+
 
-### 5. **QUICK_START.md**
-**Purpose:** First implementation steps  
-**Audience:** Getting started with development  
-**Key Content:**
-- Phase 1: Project foundation setup
-- Phase 2: Type system implementation
-- Phase 3: Note class development
-- Step-by-step with code examples
-- Test-driven development workflow
-- Success criteria for each phase
+### Installation
 
-### 6. **ARCHITECTURE_DECISIONS.md**
-**Purpose:** Record of major technical decisions  
-**Audience:** Understanding rationale behind choices  
-**Key Content:**
-- ADR format and usage
-- Existing decisions (Tone.js, Vite, branded types, etc.)
-- Context, consequences, and alternatives
-- Living document (update as decisions are made)
+```bash
+# Clone the repository
+git clone https://github.com/esoltys/contour-2.0.git
+cd contour-2.0
 
-## 🚀 How to Use This Package
+# Install dependencies
+pnpm install
 
-### For Claude Code (AI-Assisted Development)
+# Run type checking
+pnpm type-check
 
-1. **Initialize your coding session** by referencing `CLAUDE.md` first
-2. **Understand the vision** by reading `PRODUCT_REQUIREMENTS.md`
-3. **Review architecture patterns** in `ARCHITECTURE_GUIDE.md`
-4. **Reference API contracts** in `TECHNICAL_SPEC.md` during implementation
-5. **Follow implementation steps** in `QUICK_START.md`
-6. **Document decisions** in `ARCHITECTURE_DECISIONS.md` as you make them
+# Run tests
+pnpm test
+```
 
-**Key Principle:** CLAUDE.md explains the workflow and coding standards. Always consult it when uncertain about patterns or practices.
+### Running the Demo
 
-### For Human Developers
+Start the development server with hot-reload:
 
-**Day 1: Understanding**
-- Read PRODUCT_REQUIREMENTS.md for vision and goals
-- Skim ARCHITECTURE_GUIDE.md for research findings
-- Read CLAUDE.md for development workflow
+```bash
+cd packages/dev
+pnpm dev
+```
 
-**Day 2-3: Setup**
-- Follow QUICK_START.md to set up project structure
-- Implement branded types and Note class
-- Get first tests passing
+Open http://localhost:5173 in your browser. The demo includes an interactive example with playback controls.
 
-**Week 2+: Development**
-- Use TECHNICAL_SPEC.md as API reference
-- Implement Pattern system following TDD
-- Consult ARCHITECTURE_GUIDE.md for design patterns
+### Running Examples
 
-**Ongoing:**
-- Update ARCHITECTURE_DECISIONS.md when making significant choices
-- Reference acceptance criteria in PRODUCT_REQUIREMENTS.md
-- Keep CLAUDE.md updated with new patterns discovered
+#### Bach Invention No. 4
 
-### Document Reading Order by Role
+The primary acceptance test - Bach's Invention No. 4 in D Minor (BWV 775):
 
-**Product Manager / Stakeholder:**
-1. PRODUCT_REQUIREMENTS.md (complete)
-2. ARCHITECTURE_GUIDE.md (skim for context)
-3. Success metrics in PRD
+```bash
+cd examples/bach-invention-4
+pnpm install
 
-**Technical Lead / Architect:**
-1. CLAUDE.md (workflow understanding)
-2. ARCHITECTURE_GUIDE.md (complete)
-3. TECHNICAL_SPEC.md (complete)
-4. ARCHITECTURE_DECISIONS.md (review all ADRs)
+# Export to MIDI file (works in Node.js)
+pnpm run export
 
-**Developer (New to Project):**
-1. CLAUDE.md (sections: Vision, Principles, Workflow)
-2. PRODUCT_REQUIREMENTS.md (User Stories section)
-3. QUICK_START.md (complete, hands-on)
-4. TECHNICAL_SPEC.md (reference as needed)
+# Run tests
+pnpm test
 
-**AI Assistant (Claude Code):**
-1. CLAUDE.md (complete - your operating manual)
-2. All documents available for reference
-3. Maintain context from multiple docs simultaneously
+# For audio playback, use the browser-based dev server instead:
+cd ../../packages/dev
+pnpm dev
+# Then open http://localhost:5173
+```
 
-## 🎯 Quick Reference
+#### Plugin Examples
 
-### What Makes Contour Different?
-- **Functional composition** inspired by TidalCycles/Strudel
-- **Music theory exploration** (microtonal, polyrhythms, algorithmic)
-- **Type-safe musical concepts** (branded types prevent unit mixing)
-- **Hot-reload without audio glitches** (instant feedback)
-- **Multiple notation systems** (traditional, chords, programmatic)
+Export examples demonstrating the plugin architecture:
 
-### Core Technologies
-- **Tone.js 14.8+** - Audio engine (don't reinvent this!)
-- **Vite** - Build tooling with <100ms HMR
-- **Tonal.js** - Music theory utilities
-- **TypeScript 5.3+** - Full type safety
+```bash
+node examples/export-plugins.ts
+```
 
-### Architecture Pattern
-Four-layer system:
-1. Tone.js primitives (unchanged)
-2. Musical wrappers (thin adapters)
-3. Composition abstractions (Voice, Track, Pattern)
-4. DSL syntax (user-facing API)
+## Project Structure
 
-### Acceptance Criteria
-**Primary:** Bach Invention No. 4 in D Minor (BWV 775)
-- Two-voice counterpoint
-- Recognizable as Bach
-- Golden file test passes (>99.9% similarity)
+```
+contour/
+├── packages/
+│   ├── core/           # Musical primitives, patterns, composition system
+│   ├── tone-adapter/   # Tone.js integration layer
+│   ├── plugins/        # Renderer plugins (audio, MIDI)
+│   └── dev/            # Vite dev server with HMR
+├── examples/
+│   ├── bach-invention-4/  # Bach Invention No. 4 example
+│   └── export-plugins.ts  # Plugin demonstration
+└── docs/               # Complete documentation
+```
 
-**Secondary:**
-- Scott Joplin "The Entertainer" (Section A)
-- Simple algorithmic piece (demonstrates computer-only music)
-
-### Testing Strategy
-- **Unit tests**: Pure functions, music theory
-- **Property-based**: Algebraic laws (fast-check)
-- **Snapshot**: Event structure
-- **Golden file**: Audio similarity
-- **Integration**: Tone.js behavior
-
-### Common Pitfalls (Avoid!)
-❌ Never use `setTimeout` for audio scheduling  
-❌ Don't create AudioNodes without disposal  
-❌ Don't mix units without type safety  
-❌ Don't stop audio abruptly (causes clicks)  
-❌ Don't mutate patterns (immutability required)
-
-## 📖 Key Concepts
+## Core Concepts
 
 ### Branded Types
-```typescript
-type Hz = number & { readonly __brand: 'Hz' };
-type BPM = number & { readonly __brand: 'BPM' };
 
-const freq = Hz(440);
-const tempo = BPM(120);
-// freq + tempo // ✗ Type error!
+Type-safe units prevent common mistakes:
+
+```typescript
+const freq = Hz(440);      // Type: Hz
+const tempo = BPM(120);    // Type: BPM
+// freq + tempo            // ✗ Type error!
 ```
 
 ### Immutable Patterns
+
+All transformations return new instances:
+
 ```typescript
-const pattern = new Pattern(events);
-const transposed = pattern.transpose(5); // Returns NEW pattern
+const pattern = new Pattern([note('C4'), note('E4'), note('G4')]);
+const transposed = pattern.transpose(5);  // New pattern
 // pattern is unchanged
 ```
 
 ### Pattern Algebra
+
+Compose patterns functionally:
+
 ```typescript
-pattern
-  .fast(2)           // Double speed
-  .every(4, p => p.rev())  // Reverse every 4th cycle
-  .transpose(5);     // Up 5 semitones
+const melody = pattern(['C4', 'E4', 'G4'])
+  .fast(2)                    // Double speed
+  .every(4, p => p.rev())     // Reverse every 4th cycle
+  .transpose(5);              // Up 5 semitones
 ```
 
-### Four Layers
+### Four-Layer Architecture
+
+1. **Tone.js primitives** - Direct access to Tone.js when needed
+2. **Musical wrappers** - Thin adapters with musical terminology
+3. **Composition abstractions** - Pattern, Voice, Track, Composition
+4. **DSL syntax** - User-facing fluent API
+
+## Documentation
+
+Complete documentation is available in the `docs/` folder:
+
+- **[CLAUDE.md](CLAUDE.md)** - Development guide and workflow (project root)
+- **[PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md)** - Vision, goals, user stories
+- **[ARCHITECTURE_GUIDE.md](docs/ARCHITECTURE_GUIDE.md)** - Research and lessons learned
+- **[TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md)** - API contracts and implementation details
+- **[QUICK_START.md](docs/QUICK_START.md)** - Step-by-step implementation guide
+- **[ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md)** - Record of major decisions
+- **[PHASE_5_SUMMARY.md](docs/PHASE_5_SUMMARY.md)** - Plugin architecture summary
+
+### Getting Started with Development
+
+1. Read [CLAUDE.md](CLAUDE.md) for workflow and coding standards
+2. Review [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) for project vision
+3. Follow [docs/QUICK_START.md](docs/QUICK_START.md) for implementation steps
+4. Reference [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) for API details
+
+## Examples
+
+### Simple Melody
+
 ```typescript
-// Layer 4: DSL
-const melody = pattern(['C4', 'E4', 'G4']).transpose(2);
+import { Pattern, Voice, Composition, BPM } from '@contour/core';
 
-// Layer 3: Abstractions
-const voice = new Voice(melody, 'synth');
+// Create a pattern
+const melody = new Pattern([
+  { pitch: 60, duration: 0.5, time: 0 },    // C4
+  { pitch: 64, duration: 0.5, time: 0.5 },  // E4
+  { pitch: 67, duration: 0.5, time: 1.0 },  // G4
+]);
 
-// Layer 2: Musical wrappers
-const synth = new MusicalSynth(new Tone.Synth());
+// Create a composition
+const song = new Composition([
+  new Voice(melody, 'synth')
+], BPM(120));
 
-// Layer 1: Tone.js (direct access when needed)
-const rawSynth = new Tone.Synth();
+// Play it
+await song.play();
 ```
 
-## 🔧 Development Phases
+### Pattern Transformations
 
-### Phase 1: Foundation (Week 1)
-- Project structure and monorepo
-- Branded types and type system
-- Note class with tests
-- **Goal:** 30+ tests passing
+```typescript
+// Create and transform patterns
+const base = pattern(['C4', 'E4', 'G4']);
 
-### Phase 2: Patterns (Week 2)
-- Pattern and PatternBuilder
-- Transformations (transpose, retrograde, fast, slow)
-- Property-based tests
-- **Goal:** 50+ additional tests
+const transformed = base
+  .transpose(5)           // Up 5 semitones
+  .retrograde()           // Reverse
+  .fast(2);               // Double speed
 
-### Phase 3: Tone.js Integration (Week 3)
-- Scheduling layer
-- Custom Vite HMR plugin
-- Audio playback in browser
-- **Goal:** Simple melody playing
-
-### Phase 4: Composition (Week 4)
-- Voice, Track, Composition
-- Tempo and time signatures
-- Bach Invention No. 4 implementation
-- **Goal:** Acceptance test passes
-
-### Phase 5: Plugins (Weeks 5-6)
-- Plugin architecture
-- Audio renderer (MP3/WAV)
-- MIDI renderer
-- **Goal:** Multiple output formats
-
-## 📝 Documentation Maintenance
-
-### When to Update Documents
-
-**TECHNICAL_SPEC.md**
-- Adding new public APIs
-- Changing interface signatures
-- New classes or types
-
-**ARCHITECTURE_DECISIONS.md**
-- Making significant technical choices
-- Changing architectural patterns
-- Learning important lessons
-
-**QUICK_START.md**
-- Discovering better workflows
-- Adding helpful troubleshooting
-- Phase completion criteria changes
-
-**PRODUCT_REQUIREMENTS.md**
-- New user stories
-- Changed success criteria
-- Shifted priorities
-
-### Document Ownership
-
-| Document | Primary Maintainer | Update Frequency |
-|----------|-------------------|------------------|
-| CLAUDE.md | Tech Lead | Per major pattern |
-| PRODUCT_REQUIREMENTS.md | Product Manager | Per sprint |
-| ARCHITECTURE_GUIDE.md | Architect | Rarely (foundational) |
-| TECHNICAL_SPEC.md | Tech Lead | Per API change |
-| QUICK_START.md | Developer Onboarding | Per phase |
-| ARCHITECTURE_DECISIONS.md | Tech Lead | Per major decision |
-
-## 🎵 Musical Context
-
-### Why This Matters
-Music composition software typically forces you into either:
-1. **DAWs** (Ableton, Logic) - Great for production, poor for algorithmic work
-2. **Notation software** (Sibelius, Finale) - Great for sheet music, limited programming
-3. **Max/MSP, Pure Data** - Powerful but visual patching, not code
-4. **SuperCollider, Chuck** - Powerful but steep learning curve, custom syntax
-
-**Contour's niche:** TypeScript developers who want functional composition patterns, music theorists who want algorithmic exploration, and live coders who need instant feedback.
-
-### What "Computer-Only Music" Means
-- **Microtonal**: 31 notes per octave instead of 12
-- **Polyrhythms**: 7 notes against 5 against 3 simultaneously
-- **Algorithmic**: L-systems, fractals, cellular automata generating melodies
-- **Speed**: Note sequences faster than human capability
-- **Precision**: Perfect synchronization of hundreds of voices
-
-### The TidalCycles Inspiration
-TidalCycles pioneered pattern algebra for live coding:
-```haskell
-d1 $ sound "bd sn bd sn"
-  # fast 2
-  # every 4 rev
+// Conditional transformations
+const conditional = base.every(4, p => p.rev());  // Reverse every 4th cycle
 ```
 
-Contour brings this to TypeScript with full type safety and Tone.js power.
+### Exporting
 
-## 🚦 Status Indicators
+```typescript
+import { MidiRenderer } from '@contour/plugins/midi';
 
-### Document Maturity
+// Export to MIDI
+const renderer = new MidiRenderer();
+await renderer.initialize({});
+const result = await renderer.render(composition);
 
-| Document | Status | Completeness |
-|----------|--------|--------------|
-| CLAUDE.md | ✅ Complete | 100% |
-| PRODUCT_REQUIREMENTS.md | ✅ Complete | 100% |
-| ARCHITECTURE_GUIDE.md | ✅ Complete | 100% |
-| TECHNICAL_SPEC.md | ✅ Complete | 100% |
-| QUICK_START.md | ✅ Complete | 100% |
-| ARCHITECTURE_DECISIONS.md | 🔄 Living | Initial ADRs |
+// Write to file
+fs.writeFileSync('output.mid', result.data);
+```
 
-### Implementation Status
-- ⬜ **Phase 1**: Not Started
-- ⬜ **Phase 2**: Not Started
-- ⬜ **Phase 3**: Not Started
-- ⬜ **Phase 4**: Not Started
-- ⬜ **Phase 5**: Not Started
+## Testing
 
-*Update these as development progresses*
+Run the test suite:
 
-## 💡 Tips for Success
+```bash
+# All tests
+pnpm test
 
-### For AI-Assisted Development
-- Keep CLAUDE.md open in context at all times
-- Reference TECHNICAL_SPEC.md for exact API signatures
-- Use ARCHITECTURE_DECISIONS.md to understand "why"
-- Follow test-driven development strictly
-- Verify immutability in all transformations
+# Specific package
+cd packages/core
+pnpm test
 
-### For Human Developers
-- Don't skip the type system - it catches bugs
-- Write tests before implementation (TDD)
-- Keep layers independent (don't skip layers)
-- Consult ADRs when tempted to do it differently
-- Use Bach Invention as continuous integration test
+# Type checking
+pnpm type-check
+```
 
-### For Product/Management
-- Trust the architecture - it's research-backed
-- Focus on user stories in PRD, not implementation
-- Success = Bach Invention renders correctly
-- Expect phases to take full time (don't compress)
-- Quality over speed (immutability, tests, type safety)
+Test coverage includes:
+- Unit tests for musical primitives
+- Property-based tests for algebraic laws
+- Integration tests with Tone.js
+- Golden file tests for audio rendering
 
-## 🔗 External Resources
+## Technology Stack
 
-- **Tone.js Documentation**: https://tonejs.github.io/
-- **Tonal.js Documentation**: https://github.com/tonaljs/tonal
-- **Vite Documentation**: https://vitejs.dev/
-- **TidalCycles**: https://tidalcycles.org/ (pattern inspiration)
-- **Strudel**: https://strudel.cc/ (TypeScript TidalCycles)
-- **IMSLP**: https://imslp.org/ (public domain sheet music)
+- **[Tone.js](https://tonejs.github.io/)** - Web Audio synthesis and scheduling
+- **[Tonal.js](https://github.com/tonaljs/tonal)** - Music theory utilities
+- **[Vite](https://vitejs.dev/)** - Build tooling with instant HMR
+- **[TypeScript](https://www.typescriptlang.org/)** - Type safety and developer experience
+- **[Vitest](https://vitest.dev/)** - Testing framework
 
-## 📬 Questions?
+## Contributing
 
-This documentation package is complete and self-contained. If you encounter ambiguity:
+This project is currently in active development. See [CLAUDE.md](CLAUDE.md) for development workflow and coding standards.
 
-1. **Check CLAUDE.md first** - answers most workflow questions
-2. **Consult TECHNICAL_SPEC.md** - for API contract questions
-3. **Review ADRs** - for understanding past decisions
-4. **Reference ARCHITECTURE_GUIDE.md** - for pattern examples
+## Development Status
 
-Remember: **The goal is a tool for music theory exploration, not just another MIDI export tool.** Keep the vision of computer-only music capabilities central to all decisions.
+- ✅ **Phase 1**: Foundation (type system, project structure)
+- ✅ **Phase 2**: Pattern system (transformations, immutability)
+- ✅ **Phase 3**: Tone.js integration (scheduling, HMR)
+- ✅ **Phase 4**: Composition system (Voice, Track, Composition)
+- ✅ **Phase 5**: Plugin architecture (audio, MIDI renderers)
 
----
+### Acceptance Criteria
 
-**Ready to begin?** Start with `CLAUDE.md` and follow the development phases in `QUICK_START.md`. The path is clear, the pitfalls are documented, and the architecture is proven. Build methodically, test continuously, and ship iteratively.
+- ✅ Bach Invention No. 4 implementation (examples/bach-invention-4/)
+- ✅ MIDI export functionality
+- ✅ Audio playback with hot-reload
+- ✅ Type-safe musical primitives
+- ✅ Pattern transformations and algebra
 
-🎵 **Make TypeScript sing!** 🎵
+## License
+
+MIT
+
+## Inspiration
+
+Contour draws inspiration from:
+- **[TidalCycles](https://tidalcycles.org/)** - Pattern algebra for live coding
+- **[Strudel](https://strudel.cc/)** - TypeScript TidalCycles implementation
+- **[Sonic Pi](https://sonic-pi.net/)** - Live coding music synthesis
+- **[Overtone](https://overtone.github.io/)** - Collaborative programmable music
+
+## What Makes Contour Different?
+
+Unlike traditional DAWs or notation software, Contour enables:
+
+- **Computer-only music** - Microtonal scales, polyrhythms beyond human capability
+- **Algorithmic composition** - L-systems, fractals, cellular automata
+- **Type-safe abstractions** - Catch musical mistakes at compile time
+- **Functional patterns** - Compose with immutability and transformations
+- **Developer experience** - Hot-reload, TypeScript tooling, familiar patterns
+
+Make TypeScript sing!

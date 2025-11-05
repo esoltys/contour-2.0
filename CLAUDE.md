@@ -16,15 +16,15 @@ Read documents in this order for full context:
 
 ### 1. Foundation Documents (Read First)
 1. **CLAUDE.md** (this file) - Meta-guide and workflow
-2. **PRODUCT_REQUIREMENTS.md** - Vision, goals, user stories, success criteria
-3. **ARCHITECTURE_GUIDE.md** - The comprehensive research document with lessons learned and patterns
+2. **docs/PRODUCT_REQUIREMENTS.md** - Vision, goals, user stories, success criteria
+3. **docs/ARCHITECTURE_GUIDE.md** - The comprehensive research document with lessons learned and patterns
 
 ### 2. Technical Specifications (Implementation Reference)
-4. **TECHNICAL_SPEC.md** - API contracts, type system, architecture layers
-5. **QUICK_START.md** - First implementation steps and priorities
+4. **docs/TECHNICAL_SPEC.md** - API contracts, type system, architecture layers
+5. **docs/QUICK_START.md** - First implementation steps and priorities
 
 ### 3. Living Documents (Update as Code Evolves)
-- **ARCHITECTURE_DECISIONS.md** - Record major decisions with rationale
+- **docs/ARCHITECTURE_DECISIONS.md** - Record major decisions with rationale
 - **API_CHANGELOG.md** - Track API changes and breaking updates
 
 ## Core Principles
@@ -400,12 +400,12 @@ class PluginRegistry {
 
 ### When to Update Documents
 
-#### TECHNICAL_SPEC.md
+#### docs/TECHNICAL_SPEC.md
 - **When**: Adding new public APIs, changing interfaces
 - **What**: Update API signatures, add examples
 - **Verify**: TypeScript interfaces match spec exactly
 
-#### ARCHITECTURE_DECISIONS.md
+#### docs/ARCHITECTURE_DECISIONS.md
 - **When**: Making significant architectural choices
 - **What**: Document decision, alternatives considered, rationale
 - **Format**: Use ADR (Architecture Decision Record) template
@@ -416,7 +416,7 @@ class PluginRegistry {
 - **Format**: Keep-a-Changelog format
 
 ### Document Synchronization Checklist
-- [ ] TypeScript interfaces match TECHNICAL_SPEC.md
+- [ ] TypeScript interfaces match docs/TECHNICAL_SPEC.md
 - [ ] Examples in docs are executable and tested
 - [ ] Breaking changes documented in CHANGELOG
 - [ ] Architecture decisions recorded with rationale
@@ -466,10 +466,10 @@ Success = composition renders to audio that is recognizable as Bach Invention No
 
 ## Next Steps for Claude Code
 
-1. **Read PRODUCT_REQUIREMENTS.md** - Understand the vision and user stories
-2. **Read ARCHITECTURE_GUIDE.md** - Comprehensive research and lessons learned
-3. **Read TECHNICAL_SPEC.md** - API contracts and type system details
-4. **Read QUICK_START.md** - Begin Phase 1 implementation
+1. **Read docs/PRODUCT_REQUIREMENTS.md** - Understand the vision and user stories
+2. **Read docs/ARCHITECTURE_GUIDE.md** - Comprehensive research and lessons learned
+3. **Read docs/TECHNICAL_SPEC.md** - API contracts and type system details
+4. **Read docs/QUICK_START.md** - Begin Phase 1 implementation
 5. **Create initial project structure** following the file layout above
 6. **Implement branded types** as the foundation
 7. **Build Note class** with tests demonstrating TDD approach
@@ -478,8 +478,8 @@ Success = composition renders to audio that is recognizable as Bach Invention No
 ## Questions or Uncertainties?
 
 When encountering ambiguity:
-1. **Check TECHNICAL_SPEC.md** first for API contracts
-2. **Reference ARCHITECTURE_GUIDE.md** for patterns and lessons learned
+1. **Check docs/TECHNICAL_SPEC.md** first for API contracts
+2. **Reference docs/ARCHITECTURE_GUIDE.md** for patterns and lessons learned
 3. **Follow the test-driven approach** - write tests that express the desired behavior
 4. **Maintain immutability** - when in doubt, return new instances
 5. **Keep layers independent** - don't let Layer 4 directly call Tone.js (Layer 1)
