@@ -1,7 +1,8 @@
 // packages/core/src/patterns/Pattern.ts
 
 import type { Event, NoteEvent, ChordEvent } from '../primitives/Event.js';
-import { Seconds, MIDINote, Duration } from '../types/brands.js';
+import { Seconds, MIDINote, Duration, Velocity } from '../types/brands.js';
+import { Note } from '../primitives/Note.js';
 
 /**
  * Immutable pattern of musical events.
@@ -127,6 +128,91 @@ export class Pattern {
   }
 
   /**
+   * Stack patterns simultaneously (layer them).
+   * All patterns start at time 0.
+   */
+  stack(other: Pattern): Pattern {
+    return new Pattern([...this.events, ...other.events]);
+  }
+
+  /**
+   * Append pattern sequentially (one after another).
+   * The other pattern starts after this pattern ends.
+   */
+  append(other: Pattern): Pattern {
+    const thisEnd = this.duration;
+    const shiftedEvents = other.events.map(event => ({
+      ...event,
+      time: Seconds(event.time + thisEnd),
+    }));
+    return new Pattern([...this.events, ...shiftedEvents]);
+  }
+
+  /**
+   * Create a palindrome: pattern followed by its retrograde.
+   */
+  palindrome(): Pattern {
+    return this.append(this.retrograde());
+  }
+
+  /**
+   * Generate Euclidean rhythm pattern.
+   * Distributes pulses as evenly as possible across steps.
+   *
+   * @param steps - Total number of steps
+   * @param pulses - Number of pulses to distribute
+   * @param rotation - Optional rotation offset
+   * @returns Pattern with Euclidean rhythm
+   */
+  static euclidean(
+    steps: number,
+    pulses: number,
+    rotation: number = 0
+  ): Pattern {
+    if (steps <= 0 || pulses < 0 || pulses > steps) {
+      throw new RangeError(
+        `Invalid Euclidean parameters: steps=${steps}, pulses=${pulses}`
+      );
+    }
+
+    // Bjorklund's algorithm for Euclidean rhythms
+    const pattern = euclideanRhythm(steps, pulses);
+
+    // Apply rotation
+    if (rotation !== 0) {
+      const rot = ((rotation % steps) + steps) % steps; // Handle negative rotation
+      pattern.push(...pattern.splice(0, rot));
+    }
+
+    // Convert to events (use rests for non-pulse positions)
+    const stepDuration = Duration(1 / steps);
+    const events: Event[] = pattern.map((isPulse, i) => {
+      const time = Seconds(i * stepDuration);
+      if (isPulse) {
+        // Create a simple note event (user can override by mapping)
+        const note = Note.fromMIDI(MIDINote(60)); // Middle C
+        return {
+          type: 'note',
+          time,
+          duration: stepDuration,
+          velocity: Velocity(80),
+          pitch: MIDINote(60),
+          note,
+        } as Event;
+      } else {
+        return {
+          type: 'rest',
+          time,
+          duration: stepDuration,
+          velocity: Velocity(0),
+        } as Event;
+      }
+    });
+
+    return new Pattern(events);
+  }
+
+  /**
    * Calculate the total duration of the pattern.
    */
   private calculateDuration(): Duration {
@@ -143,4 +229,58 @@ export class Pattern {
 
     return Duration(maxEndTime);
   }
+}
+
+/**
+ * Bjorklund's algorithm for generating Euclidean rhythms.
+ * Returns an array of booleans where true represents a pulse.
+ */
+function euclideanRhythm(steps: number, pulses: number): boolean[] {
+  if (pulses === 0) {
+    return Array(steps).fill(false);
+  }
+  if (pulses === steps) {
+    return Array(steps).fill(true);
+  }
+
+  // Build initial groups
+  const groups: boolean[][] = [];
+  const remainder = steps - pulses;
+
+  // Initial groups: pulses are [true], rests are [false]
+  for (let i = 0; i < pulses; i++) {
+    groups.push([true]);
+  }
+  for (let i = 0; i < remainder; i++) {
+    groups.push([false]);
+  }
+
+  // Apply Bjorklund's algorithm
+  let left = pulses;
+  let right = remainder;
+
+  while (right > 1) {
+    const minCount = Math.min(left, right);
+
+    // Combine groups
+    for (let i = 0; i < minCount; i++) {
+      groups[i] = [...groups[i], ...groups[left + i]];
+    }
+
+    // Remove combined groups
+    groups.splice(left, minCount);
+
+    // Update counts
+    if (left > right) {
+      left -= right;
+    } else {
+      right -= left;
+      // Swap left and right to continue combining the smaller group into the larger.
+      // This maintains the correct structure for the next iteration of the algorithm.
+      [left, right] = [right, left];
+    }
+  }
+
+  // Flatten groups
+  return groups.flat();
 }
