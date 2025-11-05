@@ -577,6 +577,111 @@ describe('PatternBuilder', () => {
     });
   });
 
+  describe('fromNotation()', () => {
+    it('parses simple note sequence', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4 E4 G4')
+        .build();
+
+      expect(builtPattern.events.length).toBe(3);
+      expect((builtPattern.events[0] as NoteEvent).note.name).toBe('C4');
+      expect((builtPattern.events[1] as NoteEvent).note.name).toBe('E4');
+      expect((builtPattern.events[2] as NoteEvent).note.name).toBe('G4');
+    });
+
+    it('respects default duration', () => {
+      const builtPattern = new PatternBuilder()
+        .withDuration(Durations.eighth)
+        .fromNotation('C4 E4')
+        .build();
+
+      expect(builtPattern.events[0].duration).toBe(Durations.eighth);
+      expect(builtPattern.events[1].duration).toBe(Durations.eighth);
+    });
+
+    it('respects default velocity', () => {
+      const builtPattern = new PatternBuilder()
+        .withVelocity(Velocity(100))
+        .fromNotation('C4')
+        .build();
+
+      expect(builtPattern.events[0].velocity).toBe(100);
+    });
+
+    it('advances time correctly', () => {
+      const builtPattern = new PatternBuilder()
+        .note('C4', Durations.quarter)
+        .fromNotation('E4 G4')
+        .build();
+
+      expect(builtPattern.events[0].time).toBe(0);
+      expect(builtPattern.events[1].time).toBe(Durations.quarter);
+      expect(builtPattern.events[2].time).toBe(Durations.quarter * 2);
+    });
+
+    it('parses repetition syntax', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4*4')
+        .build();
+
+      expect(builtPattern.events.length).toBe(4);
+      expect(builtPattern.events.every(e => (e as NoteEvent).note?.name === 'C4')).toBe(true);
+    });
+
+    it('parses rest syntax', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4 ~ E4')
+        .build();
+
+      expect(builtPattern.events.length).toBe(3);
+      expect(builtPattern.events[1].type).toBe('rest');
+    });
+
+    it('parses grouping syntax', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('[C4 E4 G4]')
+        .build();
+
+      expect(builtPattern.events.length).toBe(3);
+    });
+
+    it('parses chord symbols', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('Cmaj7')
+        .build();
+
+      expect(builtPattern.events.length).toBe(1);
+      expect(builtPattern.events[0].type).toBe('chord');
+    });
+
+    it('combines with other builder methods', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4 E4')
+        .note('G4')
+        .fromNotation('C5 G4')
+        .build();
+
+      expect(builtPattern.events.length).toBe(5);
+    });
+
+    it('supports method chaining', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4 E4')
+        .fromNotation('G4 C5')
+        .build();
+
+      expect(builtPattern.events.length).toBe(4);
+    });
+
+    it('parses complex TidalCycles-style patterns', () => {
+      const builtPattern = new PatternBuilder()
+        .fromNotation('C4*2 [E4 G4] ~ Cmaj7')
+        .build();
+
+      expect(builtPattern.events.length).toBeGreaterThan(4);
+    });
+  });
+
   describe('complex patterns', () => {
     it('creates C major scale', () => {
       const builtPattern = new PatternBuilder()

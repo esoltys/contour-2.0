@@ -6,6 +6,7 @@ import { Note } from '../primitives/Note.js';
 import type { NoteName } from '../types/music.js';
 import { Seconds, Velocity, Duration } from '../types/brands.js';
 import { Durations } from '../types/music.js';
+import { parseMiniNotationWithDefaults } from './MiniNotation.js';
 
 /**
  * Fluent builder for constructing patterns.
@@ -199,6 +200,45 @@ export class PatternBuilder {
       }
       return event;
     });
+
+    return this;
+  }
+
+  /**
+   * Parse mini-notation string and add events.
+   *
+   * Syntax:
+   * - Space-separated events: "C4 E4 G4"
+   * - Repetition: "C4*4" (repeat C4 4 times)
+   * - Grouping: "[C4 E4]" (subdivision)
+   * - Rests: "~" or "_"
+   * - Hold/extend: "C4@2" (C4 twice as long)
+   * - Duration: "C4/8" (eighth note)
+   * - Octave persistence: "C4 D E F" (all octave 4)
+   * - Chord symbols: "Cmaj7 Dm7 G7"
+   *
+   * @param notation - Mini-notation string
+   * @returns this for chaining
+   */
+  fromNotation(notation: string): this {
+    const events = parseMiniNotationWithDefaults(notation, {
+      defaultDuration: this.defaultDuration,
+      defaultVelocity: this.defaultVelocity,
+    });
+
+    // Adjust event times based on current time
+    const adjustedEvents = events.map(event => ({
+      ...event,
+      time: Seconds(event.time + this.currentTime),
+    }));
+
+    this.events.push(...adjustedEvents);
+
+    // Update current time to end of notation
+    if (adjustedEvents.length > 0) {
+      const lastEvent = adjustedEvents[adjustedEvents.length - 1];
+      this.currentTime = Seconds(lastEvent.time + lastEvent.duration);
+    }
 
     return this;
   }
