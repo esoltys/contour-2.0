@@ -54,6 +54,10 @@ export class PatternPlayground {
     }
   }
 
+  public isVisible(): boolean {
+    return this.modal?.classList.contains('active') ?? false;
+  }
+
   private async createModal(): Promise<void> {
     // Create modal container
     this.modal = document.createElement('div');
@@ -225,7 +229,10 @@ export class PatternPlayground {
     if (!resultsContainer) return;
 
     try {
-      // Compile pattern
+      // Compile pattern using Function constructor
+      // SECURITY NOTE: This is intentionally using new Function() for a development-only
+      // pattern playground. This allows dynamic code execution which is acceptable in a
+      // local dev environment. Do NOT expose this to untrusted user input in production.
       const patternFunc = new Function('pattern', `return ${code}`);
       const builder = patternFunc(pattern);
 

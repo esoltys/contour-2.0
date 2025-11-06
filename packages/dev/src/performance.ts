@@ -226,7 +226,7 @@ async function togglePad(padId: string) {
 
     // Register pattern with debug panel
     if (state.debugPanel) {
-      const patternInspector = (state.debugPanel as any).patternInspector;
+      const patternInspector = state.debugPanel.getPatternInspector();
       if (patternInspector) {
         patternInspector.registerPattern(padId, pad.preset.name, pad.pattern);
       }
@@ -242,7 +242,7 @@ async function togglePad(padId: string) {
   } else {
     // Unregister pattern from debug panel
     if (state.debugPanel) {
-      const patternInspector = (state.debugPanel as any).patternInspector;
+      const patternInspector = state.debugPanel.getPatternInspector();
       if (patternInspector) {
         patternInspector.unregisterPattern(padId);
       }
@@ -299,7 +299,7 @@ function updatePatternCode(padId: string, code: string) {
 
     // Update pattern in debug panel
     if (state.debugPanel && pad.isActive) {
-      const patternInspector = (state.debugPanel as any).patternInspector;
+      const patternInspector = state.debugPanel.getPatternInspector();
       if (patternInspector) {
         patternInspector.updatePattern(padId, newPattern);
       }
@@ -668,9 +668,9 @@ function initEventListeners() {
     if (e.key === 'Escape') {
       if (elements.editorModal.classList.contains('active')) {
         closeEditor();
-      } else if (state.keyboardShortcuts) {
+      } else if (state.keyboardShortcuts?.isVisible()) {
         state.keyboardShortcuts.hide();
-      } else if (state.patternPlayground) {
+      } else if (state.patternPlayground?.isVisible()) {
         state.patternPlayground.hide();
       } else {
         stopAll();

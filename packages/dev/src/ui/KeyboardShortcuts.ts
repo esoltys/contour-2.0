@@ -59,11 +59,15 @@ export class KeyboardShortcuts {
   }
 
   public toggle(): void {
-    if (this.modal?.classList.contains('active')) {
+    if (this.isVisible()) {
       this.hide();
     } else {
       this.show();
     }
+  }
+
+  public isVisible(): boolean {
+    return this.modal?.classList.contains('active') ?? false;
   }
 
   private createModal(): void {

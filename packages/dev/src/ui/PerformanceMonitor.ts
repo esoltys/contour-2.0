@@ -240,8 +240,7 @@ export class PerformanceMonitor {
   private gatherMetrics(): PerformanceMetrics {
     const fps = this.calculateFPS();
 
-    // Count audio nodes (estimate)
-    const context = Tone.getContext();
+    // Count audio nodes
     const audioNodes = this.countAudioNodes();
 
     // Active voices (estimate based on Transport state)
@@ -250,8 +249,8 @@ export class PerformanceMonitor {
     // CPU usage estimate (based on audio context latency)
     const cpuUsage = this.estimateCPUUsage();
 
-    // Memory (if available)
-    const memory = (performance as any).memory?.usedJSHeapSize || null;
+    // Memory (if available) - Chrome-specific non-standard API
+    const memory = (performance as Performance & { memory?: { usedJSHeapSize: number } }).memory?.usedJSHeapSize || null;
 
     return {
       fps,

@@ -26,9 +26,9 @@ export class DebugPanel {
   private header: HTMLDivElement;
   private tabsContainer: HTMLDivElement;
   private contentContainer: HTMLDivElement;
-  private currentTab: DebugPanelTab = 'transport';
-  private isVisible = false;
-  private position: 'bottom' | 'right' = 'bottom';
+  private currentTab: DebugPanelTab;
+  private isVisible: boolean;
+  private position: 'bottom' | 'right';
 
   // Tab components
   private transportInspector: TransportInspector;
@@ -258,6 +258,13 @@ export class DebugPanel {
         console.error('[DebugPanel] Failed to load settings:', e);
       }
     }
+  }
+
+  /**
+   * Get the PatternInspector component for registering/updating patterns.
+   */
+  public getPatternInspector(): PatternInspector {
+    return this.patternInspector;
   }
 
   public dispose(): void {

@@ -121,6 +121,7 @@ export class ConsoleLog {
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
+    const originalDebug = console.debug;
 
     console.log = (...args: any[]) => {
       this.addLog('info', args);
@@ -137,11 +138,11 @@ export class ConsoleLog {
       originalError.apply(console, args);
     };
 
-    // Add debug method if it doesn't exist
-    if (!(console as any).debug) {
-      (console as any).debug = (...args: any[]) => {
+    // Intercept debug if it exists (it should in modern browsers)
+    if (originalDebug) {
+      console.debug = (...args: any[]) => {
         this.addLog('debug', args);
-        originalLog.apply(console, args);
+        originalDebug.apply(console, args);
       };
     }
   }
