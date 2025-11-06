@@ -23,3 +23,9 @@ export * from './composition/Composition';
 
 // Plugins (Phase 5)
 export * from './plugins/RendererPlugin';
+
+// Debugging & Diagnostics (Phase 8A)
+export * from './debug/Logger';
+export * from './debug/PatternInspector';
+export * from './debug/Validator';
+export * from './errors/MusicalError';
