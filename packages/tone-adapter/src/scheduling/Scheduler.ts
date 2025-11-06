@@ -18,7 +18,7 @@ export class PatternScheduler {
   }
 
   /**
-   * Schedule a pattern to play.
+   * Schedule a pattern to play on repeat.
    *
    * @param pattern - The pattern to schedule
    * @param startTime - When to start playing (in seconds from now)
@@ -28,25 +28,38 @@ export class PatternScheduler {
       throw new Error('Scheduler has been disposed');
     }
 
+    // Calculate pattern length (find the last event time + its duration)
+    let patternLength = 0;
     pattern.events.forEach(event => {
-      const eventTime = startTime + event.time;
+      const eventEnd = event.time + event.duration;
+      if (eventEnd > patternLength) {
+        patternLength = eventEnd;
+      }
+    });
 
+    // If pattern is empty or zero length, default to 1 measure (4 beats at 120 BPM = 2 seconds)
+    if (patternLength === 0) {
+      patternLength = 2;
+    }
+
+    // Schedule pattern to loop indefinitely
+    pattern.events.forEach(event => {
       if (event.type === 'note') {
-        this.scheduleNoteEvent(event, eventTime);
+        this.scheduleNoteEventLooping(event, startTime, patternLength);
       } else if (event.type === 'chord') {
-        this.scheduleChordEvent(event, eventTime);
+        this.scheduleChordEventLooping(event, startTime, patternLength);
       }
       // Rests don't need scheduling - they're just gaps in time
     });
   }
 
   /**
-   * Schedule a single note event.
+   * Schedule a single note event to loop.
    */
-  private scheduleNoteEvent(event: NoteEvent, time: number): void {
+  private scheduleNoteEventLooping(event: NoteEvent, startTime: number, loopLength: number): void {
     if (!this.synth) return;
 
-    const id = Tone.Transport.schedule((audioTime) => {
+    const id = Tone.Transport.scheduleRepeat((audioTime) => {
       if (!this.synth) return;
 
       // Convert note to Tone.js format and trigger
@@ -55,18 +68,18 @@ export class PatternScheduler {
       const velocity = event.velocity / 127; // Normalize to 0-1
 
       this.synth.triggerAttackRelease(noteName, duration, audioTime, velocity);
-    }, time);
+    }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
   }
 
   /**
-   * Schedule a chord event (multiple simultaneous notes).
+   * Schedule a chord event to loop.
    */
-  private scheduleChordEvent(event: ChordEvent, time: number): void {
+  private scheduleChordEventLooping(event: ChordEvent, startTime: number, loopLength: number): void {
     if (!this.synth) return;
 
-    const id = Tone.Transport.schedule((audioTime) => {
+    const id = Tone.Transport.scheduleRepeat((audioTime) => {
       if (!this.synth) return;
 
       // Trigger all notes in the chord simultaneously
@@ -75,7 +88,7 @@ export class PatternScheduler {
       const velocity = event.velocity / 127; // Normalize to 0-1
 
       this.synth.triggerAttackRelease(noteNames, duration, audioTime, velocity);
-    }, time);
+    }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
   }
