@@ -3,6 +3,10 @@ import { PatternScheduler, Tone } from '@contour/tone-adapter';
 import { PATTERN_PRESETS, type PatternPreset } from './patterns/presets.js';
 import loader from '@monaco-editor/loader';
 import type * as Monaco from 'monaco-editor';
+import { DebugPanel } from './ui/DebugPanel.js';
+import { PatternPlayground } from './ui/PatternPlayground.js';
+import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+import './ui/debug-panel.css';
 
 // ============================================================================
 // State Management
@@ -29,6 +33,11 @@ class PerformanceState {
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;
   currentEditingPad: string | null = null;
+
+  // Debug UI components
+  debugPanel: DebugPanel | null = null;
+  patternPlayground: PatternPlayground | null = null;
+  keyboardShortcuts: KeyboardShortcuts | null = null;
 
   constructor() {
     // Initialize pads with presets
@@ -604,10 +613,41 @@ function initEventListeners() {
 
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    // Question mark: show keyboard shortcuts help
+    if (e.key === '?' && !e.shiftKey) {
+      e.preventDefault();
+      if (state.keyboardShortcuts) {
+        state.keyboardShortcuts.toggle();
+      }
+      return;
+    }
+
+    // Cmd/Ctrl + D: toggle debug panel
+    if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+      e.preventDefault();
+      if (state.debugPanel) {
+        state.debugPanel.toggle();
+      }
+      return;
+    }
+
+    // Cmd/Ctrl + K: open pattern playground
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      if (state.patternPlayground) {
+        state.patternPlayground.show();
+      }
+      return;
+    }
+
     // Escape: close modal or stop
     if (e.key === 'Escape') {
       if (elements.editorModal.classList.contains('active')) {
         closeEditor();
+      } else if (state.keyboardShortcuts) {
+        state.keyboardShortcuts.hide();
+      } else if (state.patternPlayground) {
+        state.patternPlayground.hide();
       } else {
         stopAll();
       }
@@ -665,6 +705,29 @@ function init() {
   initGrid();
   initEventListeners();
 
+  // Initialize debug UI components
+  state.debugPanel = new DebugPanel({
+    initialTab: 'transport',
+    position: 'bottom',
+    visible: false
+  });
+
+  state.patternPlayground = new PatternPlayground({
+    onAddToGrid: (code: string, patternInstance: Pattern) => {
+      console.log('[Contour] Adding pattern from playground to grid');
+      // TODO: Add functionality to create a new pad with this pattern
+      alert('Pattern added! (Grid integration coming soon)');
+    },
+    onClose: () => {
+      console.log('[Contour] Playground closed');
+    }
+  });
+
+  state.keyboardShortcuts = new KeyboardShortcuts();
+
+  console.log('[Contour] Debug UI initialized');
+  console.log('[Contour] Press ? for keyboard shortcuts, Cmd+D for debug panel, Cmd+K for playground');
+
   console.log(`
 ╔════════════════════════════════════════╗
 ║                                        ║
@@ -672,6 +735,10 @@ function init() {
 ║                                        ║
 ║  Click pads or "Start Demo Jam"!       ║
 ║  Audio will initialize automatically.  ║
+║                                        ║
+║  Press ? for keyboard shortcuts        ║
+║  Press Cmd+D for debug panel           ║
+║  Press Cmd+K for pattern playground    ║
 ║                                        ║
 ╚════════════════════════════════════════╝
   `);
