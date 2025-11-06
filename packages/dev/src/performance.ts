@@ -52,7 +52,6 @@ const state = new PerformanceState();
 
 const elements = {
   // Transport controls
-  startAudioBtn: document.getElementById('startAudioBtn') as HTMLButtonElement,
   playBtn: document.getElementById('playBtn') as HTMLButtonElement,
   stopBtn: document.getElementById('stopBtn') as HTMLButtonElement,
   bpmSlider: document.getElementById('bpmSlider') as HTMLInputElement,
@@ -114,14 +113,12 @@ async function initAudio() {
 }
 
 function enableControls() {
-  elements.startAudioBtn.disabled = true;
   elements.playBtn.disabled = false;
   elements.stopBtn.disabled = false;
   elements.bpmSlider.disabled = false;
   elements.volumeSlider.disabled = false;
   elements.metronomeCheck.disabled = false;
   elements.clearAllBtn.disabled = false;
-  elements.demoBtn.disabled = false;
 }
 
 function setTempo(bpm: number) {
@@ -190,7 +187,12 @@ function clearAll() {
 // Pattern Management
 // ============================================================================
 
-function togglePad(padId: string) {
+async function togglePad(padId: string) {
+  // Initialize audio if not started
+  if (!state.isAudioStarted) {
+    await initAudio();
+  }
+
   const pad = state.pads.get(padId);
   if (!pad || !state.scheduler) return;
 
@@ -472,7 +474,10 @@ function startVisualization() {
 // ============================================================================
 
 async function playDemoJam() {
-  if (!state.isAudioStarted) return;
+  // Initialize audio if not started
+  if (!state.isAudioStarted) {
+    await initAudio();
+  }
 
   console.log('[Contour] Starting demo jam...');
 
@@ -537,8 +542,6 @@ async function playDemoJam() {
 
 function initEventListeners() {
   // Transport controls
-  elements.startAudioBtn.addEventListener('click', initAudio);
-
   elements.playBtn.addEventListener('click', () => {
     if (state.isPlaying) {
       stopAll();
@@ -619,7 +622,7 @@ function initEventListeners() {
     };
 
     const padIndex = codeMap[e.code];
-    if (padIndex !== undefined && state.isAudioStarted) {
+    if (padIndex !== undefined) {
       const padId = `pad-${padIndex}`;
 
       // Shift + key: edit pattern
@@ -648,8 +651,8 @@ function init() {
 ║                                        ║
 ║   🎵 Contour Live Performance 🎵      ║
 ║                                        ║
-║  Click "Start Audio" to begin!         ║
-║  Then click pads to trigger patterns.  ║
+║  Click pads or "Start Demo Jam"!       ║
+║  Audio will initialize automatically.  ║
 ║                                        ║
 ╚════════════════════════════════════════╝
   `);
