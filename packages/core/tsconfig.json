@@ -2,7 +2,8 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
+    // Note: DOM lib is required for Logger which uses localStorage for browser-based DEBUG env variable
+    "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
     "strict": true,
     "declaration": true,
