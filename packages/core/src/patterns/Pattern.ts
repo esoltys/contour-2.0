@@ -3,6 +3,7 @@
 import type { Event, NoteEvent, ChordEvent } from '../primitives/Event.js';
 import { Seconds, MIDINote, Duration, Velocity } from '../types/brands.js';
 import { Note } from '../primitives/Note.js';
+import { PatternInspector, type PatternInspection } from '../debug/PatternInspector.js';
 
 /**
  * Immutable pattern of musical events.
@@ -228,6 +229,70 @@ export class Pattern {
     }
 
     return Duration(maxEndTime);
+  }
+
+  /**
+   * Inspect pattern and return detailed metrics.
+   *
+   * @returns PatternInspection object with duration, event counts, note range, timing, and velocity analysis
+   *
+   * @example
+   * ```typescript
+   * const pattern = new PatternBuilder()
+   *   .notes(['C4', 'E4', 'G4', 'C5'])
+   *   .durations([0.25, 0.25, 0.25, 0.25])
+   *   .build();
+   *
+   * const inspection = pattern.inspect();
+   * console.log(inspection.duration); // 1.0
+   * console.log(inspection.eventCount.notes); // 4
+   * console.log(inspection.noteRange); // { lowest: 60, highest: 72, span: 12 }
+   * ```
+   */
+  inspect(): PatternInspection {
+    return PatternInspector.inspect(this);
+  }
+
+  /**
+   * Generate ASCII visualization of the pattern.
+   *
+   * Shows notes on a timeline with time on the horizontal axis.
+   * Useful for debugging and understanding pattern structure.
+   *
+   * @param options - Visualization options
+   * @returns ASCII string representation
+   *
+   * @example
+   * ```typescript
+   * const pattern = new PatternBuilder()
+   *   .notes(['C5', 'G4', 'E4', 'C4'])
+   *   .durations([0.25, 0.25, 0.25, 0.25])
+   *   .build();
+   *
+   * console.log(pattern.toASCII());
+   * // Output:
+   * // Time:  0.0   0.25  0.5   0.75
+   * // C5:    █     .     .     .
+   * // G4:    .     █     .     .
+   * // E4:    .     .     █     .
+   * // C4:    .     .     .     █
+   * ```
+   */
+  toASCII(options?: {
+    width?: number;
+    showVelocity?: boolean;
+    showRests?: boolean;
+  }): string {
+    return PatternInspector.toASCII(this, options);
+  }
+
+  /**
+   * Print pattern visualization to console.
+   *
+   * @param options - Visualization options
+   */
+  toConsole(options?: { showVelocity?: boolean }): void {
+    PatternInspector.toConsole(this, options);
   }
 }
 
