@@ -11,7 +11,7 @@
  * - Color-coded thresholds (green/yellow/red)
  */
 
-import { Tone } from '@contour/tone-adapter';
+import { Tone, getTransportDebugger } from '@contour/tone-adapter';
 
 interface PerformanceMetrics {
   fps: number;
@@ -263,21 +263,22 @@ export class PerformanceMonitor {
   }
 
   private countAudioNodes(): number {
-    // NOTE: This is an estimate as there's no direct API to count AudioNodes
-    // In a real implementation with Phase 8A, we would track this properly
-    try {
-      const context = Tone.getContext() as any;
-      // Try to access internal state (not reliable, but best we can do)
-      return context._worklets?.length || 0;
-    } catch {
-      return 0;
-    }
+    const transportDebugger = getTransportDebugger();
+    return transportDebugger.getActiveNodeCount();
   }
 
   private estimateActiveVoices(): number {
-    // Count currently playing synths/samplers
-    // This would be tracked properly in Phase 8A
-    return Tone.getTransport().state === 'started' ? 1 : 0;
+    // Estimate based on Transport state and event count
+    const transportDebugger = getTransportDebugger();
+    const pendingEvents = transportDebugger.getPendingEvents();
+
+    if (Tone.getTransport().state !== 'started') {
+      return 0;
+    }
+
+    // Rough estimate: count unique callbacks as voices
+    const uniqueCallbacks = new Set(pendingEvents.map(e => e.callback));
+    return uniqueCallbacks.size;
   }
 
   private estimateCPUUsage(): number {

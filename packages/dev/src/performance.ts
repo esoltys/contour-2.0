@@ -224,6 +224,14 @@ async function togglePad(padId: string) {
       }
     }
 
+    // Register pattern with debug panel
+    if (state.debugPanel) {
+      const patternInspector = (state.debugPanel as any).patternInspector;
+      if (patternInspector) {
+        patternInspector.registerPattern(padId, pad.preset.name, pad.pattern);
+      }
+    }
+
     // Auto-start playback if not already playing
     if (!state.isPlaying) {
       playAll();
@@ -232,6 +240,14 @@ async function togglePad(padId: string) {
       state.scheduler.schedule(pad.pattern);
     }
   } else {
+    // Unregister pattern from debug panel
+    if (state.debugPanel) {
+      const patternInspector = (state.debugPanel as any).patternInspector;
+      if (patternInspector) {
+        patternInspector.unregisterPattern(padId);
+      }
+    }
+
     // If playing, we need to restart to remove this pattern
     if (state.isPlaying) {
       rescheduleActivePads();
@@ -280,6 +296,14 @@ function updatePatternCode(padId: string, code: string) {
     // Update pad state
     pad.code = code;
     pad.pattern = newPattern;
+
+    // Update pattern in debug panel
+    if (state.debugPanel && pad.isActive) {
+      const patternInspector = (state.debugPanel as any).patternInspector;
+      if (patternInspector) {
+        patternInspector.updatePattern(padId, newPattern);
+      }
+    }
 
     // If pad is active and playing, reschedule
     if (pad.isActive && state.isPlaying) {

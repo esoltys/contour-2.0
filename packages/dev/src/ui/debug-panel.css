@@ -255,6 +255,16 @@
   padding: 1rem;
 }
 
+.events-table tr.next-event {
+  background: rgba(74, 222, 128, 0.1);
+  border-left: 3px solid #4ade80;
+}
+
+.events-table tr.next-event td {
+  color: #4ade80;
+  font-weight: 600;
+}
+
 .inspector-actions {
   display: flex;
   gap: 0.5rem;

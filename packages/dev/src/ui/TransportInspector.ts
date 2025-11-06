@@ -9,7 +9,7 @@
  * - Next 5 events to fire (highlighted)
  */
 
-import { Tone } from '@contour/tone-adapter';
+import { Tone, getTransportDebugger, type ScheduledEventInfo } from '@contour/tone-adapter';
 
 interface ScheduledEvent {
   id: string;
@@ -197,39 +197,67 @@ export class TransportInspector {
   }
 
   private updateEvents(): void {
-    // NOTE: This is a placeholder implementation
-    // In the future, this will use the diagnostics from Phase 8A to show actual scheduled events
-    // For now, we'll show a message that this feature requires Phase 8A
-
     const tbody = document.getElementById('transport-events-body');
     const eventCountEl = document.getElementById('transport-event-count');
 
     if (!tbody) return;
 
-    // Try to access Transport's internal state (if available)
-    // This is a workaround until Phase 8A diagnostics are available
-    const transport = Tone.getTransport() as any;
-    const events = transport._scheduledEvents || transport._timeline || [];
+    // Get events from TransportDebugger
+    const transportDebugger = getTransportDebugger();
+    const events = transportDebugger.getScheduledEvents();
+    const pendingEvents = transportDebugger.getPendingEvents();
 
     if (eventCountEl) {
-      eventCountEl.textContent = `${events.length || 0} events`;
+      eventCountEl.textContent = `${pendingEvents.length} pending / ${events.length} total`;
     }
 
-    if (events.length === 0) {
+    if (pendingEvents.length === 0) {
       tbody.innerHTML = `
         <tr class="no-events">
-          <td colspan="3">No events scheduled</td>
+          <td colspan="3">No pending events</td>
         </tr>
       `;
-    } else {
-      tbody.innerHTML = `
-        <tr class="info-message">
-          <td colspan="3">
-            ℹ️ Detailed event inspection requires Phase 8A diagnostics
-          </td>
-        </tr>
-      `;
+      return;
     }
+
+    // Sort by time and show pending events
+    const sortedEvents = [...pendingEvents].sort((a, b) => {
+      const timeA = this.eventTimeToNumber(a.time);
+      const timeB = this.eventTimeToNumber(b.time);
+      return timeA - timeB;
+    });
+
+    // Highlight next 5 events
+    const nextEvents = sortedEvents.slice(0, 5);
+    const nextEventIds = new Set(nextEvents.map(e => e.id));
+
+    tbody.innerHTML = sortedEvents.map(event => {
+      const isNext = nextEventIds.has(event.id);
+      const rowClass = isNext ? 'next-event' : '';
+      const timeStr = this.formatEventTime(event.time);
+
+      return `
+        <tr class="${rowClass}">
+          <td>${timeStr}</td>
+          <td>${event.state}</td>
+          <td>${event.callback}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  private eventTimeToNumber(time: string | number): number {
+    if (typeof time === 'number') return time;
+    try {
+      return Tone.Time(time).toSeconds();
+    } catch {
+      return 0;
+    }
+  }
+
+  private formatEventTime(time: string | number): string {
+    if (typeof time === 'string') return time;
+    return time.toFixed(3) + 's';
   }
 
   private clearAllEvents(): void {

@@ -147,19 +147,38 @@ export class ConsoleLog {
   }
 
   private addLog(level: LogLevel, args: any[]): void {
-    // Extract category from Contour logs (format: "[Category] message")
     const message = args.map(arg =>
       typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
     ).join(' ');
 
-    const categoryMatch = message.match(/^\[([^\]]+)\]/);
-    const category = categoryMatch ? categoryMatch[1] : 'General';
+    // Try to parse structured logs from Logger (format: "[timestamp] [contour:category] [LEVEL] message")
+    const structuredMatch = message.match(/^\[([^\]]+)\] \[contour:([^\]]+)\] \[([^\]]+)\] (.+)$/);
+
+    let category: string;
+    let parsedLevel: LogLevel;
+    let parsedMessage: string;
+    let timestamp: number;
+
+    if (structuredMatch) {
+      // This is a structured log from the Logger system
+      timestamp = new Date(structuredMatch[1]).getTime();
+      category = structuredMatch[2];
+      parsedLevel = structuredMatch[3].toLowerCase() as LogLevel;
+      parsedMessage = structuredMatch[4];
+    } else {
+      // Regular console log - try to extract category from [Category] format
+      timestamp = Date.now();
+      const categoryMatch = message.match(/^\[([^\]]+)\]/);
+      category = categoryMatch ? categoryMatch[1] : 'General';
+      parsedLevel = level;
+      parsedMessage = message;
+    }
 
     const entry: LogEntry = {
-      timestamp: Date.now(),
-      level,
+      timestamp,
+      level: parsedLevel,
       category,
-      message
+      message: parsedMessage
     };
 
     this.logs.push(entry);

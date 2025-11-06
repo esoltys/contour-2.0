@@ -10,7 +10,7 @@
  * - Export ASCII visualization
  */
 
-import type { Pattern } from '@contour/core';
+import type { Pattern, PatternInspection } from '@contour/core';
 
 export interface InspectablePattern {
   id: string;
@@ -205,41 +205,47 @@ export class PatternInspector {
       return;
     }
 
-    // NOTE: This requires Pattern.inspect() method from Phase 8A
-    // For now, we'll show a basic representation
     try {
-      const pattern = inspectable.pattern as any;
+      const pattern = inspectable.pattern;
+      const inspection = pattern.inspect();
 
-      // Try to access internal state
-      const events = pattern._events || pattern.events || [];
-      const duration = pattern.duration || 0;
+      let output = `Pattern: ${inspectable.name}\n\n`;
+      output += `Duration: ${inspection.duration.toFixed(3)}s\n\n`;
 
-      let output = `Pattern: ${inspectable.name}\n`;
-      output += `Events: ${events.length}\n`;
-      output += `Duration: ${duration}s\n\n`;
+      output += `Event Counts:\n`;
+      output += `  Notes:  ${inspection.eventCount.notes}\n`;
+      output += `  Rests:  ${inspection.eventCount.rests}\n`;
+      output += `  Chords: ${inspection.eventCount.chords}\n`;
+      output += `  Total:  ${inspection.eventCount.total}\n\n`;
 
-      if (events.length > 0) {
-        output += 'Events:\n';
-        events.forEach((event: any, index: number) => {
-          const time = event.time || event.startTime || 0;
-          const note = event.note || event.pitch || '?';
-          const velocity = event.velocity || 0;
-          output += `  ${index + 1}. ${time.toFixed(3)}s - ${note} (vel: ${velocity})\n`;
-        });
+      if (inspection.noteRange.lowest !== null) {
+        output += `Note Range:\n`;
+        output += `  Lowest:  ${this.midiToNote(inspection.noteRange.lowest)}\n`;
+        output += `  Highest: ${this.midiToNote(inspection.noteRange.highest!)}\n`;
+        output += `  Span:    ${inspection.noteRange.span} semitones\n\n`;
       }
+
+      output += `Timing:\n`;
+      output += `  Gaps:        ${inspection.timing.gaps}\n`;
+      output += `  Overlaps:    ${inspection.timing.overlaps}\n`;
+      output += `  Avg spacing: ${inspection.timing.avgSpacing.toFixed(3)}s\n\n`;
+
+      output += `Velocity:\n`;
+      output += `  Min: ${inspection.velocity.min}\n`;
+      output += `  Max: ${inspection.velocity.max}\n`;
+      output += `  Avg: ${inspection.velocity.avg.toFixed(1)}\n`;
 
       detailsEl.textContent = output;
 
       // Update visualization
-      this.visualizePattern(inspectable.pattern);
+      this.visualizePattern(inspectable.pattern, inspection);
     } catch (error) {
-      detailsEl.textContent = 'ℹ️ Full pattern inspection requires Phase 8A diagnostics\n\n' +
-        'Pattern.inspect() method is not yet available.';
+      detailsEl.textContent = `Error inspecting pattern:\n${error instanceof Error ? error.message : 'Unknown error'}`;
       this.clearVisualization();
     }
   }
 
-  private visualizePattern(pattern: Pattern): void {
+  private visualizePattern(pattern: Pattern, inspection: PatternInspection): void {
     const canvas = document.getElementById('pattern-timeline-canvas') as HTMLCanvasElement;
     if (!canvas) return;
 
@@ -251,8 +257,7 @@ export class PatternInspector {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     try {
-      const patternData = pattern as any;
-      const events = patternData._events || patternData.events || [];
+      const events = pattern.events;
 
       if (events.length === 0) {
         ctx.fillStyle = '#666';
@@ -262,60 +267,72 @@ export class PatternInspector {
         return;
       }
 
-      // Find note range
-      const notes = events
-        .filter((e: any) => e.note || e.pitch)
-        .map((e: any) => this.noteToMidi(e.note || e.pitch || 'C4'));
-
-      const minNote = Math.min(...notes, 60);
-      const maxNote = Math.max(...notes, 72);
+      const minNote = inspection.noteRange.lowest || 60;
+      const maxNote = inspection.noteRange.highest || 72;
       const noteRange = maxNote - minNote || 12;
-
-      // Find time range
-      const times = events.map((e: any) => e.time || e.startTime || 0);
-      const maxTime = Math.max(...times, 1);
+      const maxTime = inspection.duration;
 
       // Draw events
-      events.forEach((event: any) => {
-        const time = event.time || event.startTime || 0;
-        const note = this.noteToMidi(event.note || event.pitch || 'C4');
-        const velocity = event.velocity || 64;
+      events.forEach((event) => {
+        if (event.type === 'rest') return; // Skip rests
 
-        const x = (time / maxTime) * (canvas.width - 40) + 20;
-        const y = ((maxNote - note) / noteRange) * (canvas.height - 40) + 20;
+        const time = event.time;
+        const velocity = event.velocity;
 
-        // Draw note as circle
-        const radius = (velocity / 127) * 8 + 2;
-        ctx.fillStyle = `hsl(${(note % 12) * 30}, 70%, 60%)`;
-        ctx.beginPath();
-        ctx.arc(x, y, radius, 0, Math.PI * 2);
-        ctx.fill();
+        if (event.type === 'note') {
+          const x = (time / maxTime) * (canvas.width - 40) + 20;
+          const y = ((maxNote - event.pitch) / noteRange) * (canvas.height - 40) + 20;
+
+          // Draw note as circle
+          const radius = (velocity / 127) * 8 + 2;
+          ctx.fillStyle = `hsl(${(event.pitch % 12) * 30}, 70%, 60%)`;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (event.type === 'chord') {
+          // Draw chord notes
+          event.notes.forEach((note) => {
+            const x = (time / maxTime) * (canvas.width - 40) + 20;
+            const y = ((maxNote - note.pitch) / noteRange) * (canvas.height - 40) + 20;
+
+            const radius = (velocity / 127) * 8 + 2;
+            ctx.fillStyle = `hsl(${(note.pitch % 12) * 30}, 70%, 60%)`;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+          });
+        }
       });
 
       // Update stats
-      this.updateStats(events, maxTime, minNote, maxNote);
+      this.updateStats(inspection);
     } catch (error) {
       console.error('[PatternInspector] Visualization error:', error);
       this.clearVisualization();
     }
   }
 
-  private updateStats(events: any[], duration: number, minNote: number, maxNote: number): void {
+  private updateStats(inspection: PatternInspection): void {
     const eventsEl = document.getElementById('stat-events');
     const durationEl = document.getElementById('stat-duration');
     const rangeEl = document.getElementById('stat-range');
     const velocityEl = document.getElementById('stat-velocity');
 
-    if (eventsEl) eventsEl.textContent = events.length.toString();
-    if (durationEl) durationEl.textContent = `${duration.toFixed(2)}s`;
+    if (eventsEl) eventsEl.textContent = inspection.eventCount.total.toString();
+    if (durationEl) durationEl.textContent = `${inspection.duration.toFixed(2)}s`;
+
     if (rangeEl) {
-      rangeEl.textContent = `${this.midiToNote(minNote)} - ${this.midiToNote(maxNote)}`;
+      if (inspection.noteRange.lowest !== null) {
+        const low = this.midiToNote(inspection.noteRange.lowest);
+        const high = this.midiToNote(inspection.noteRange.highest!);
+        rangeEl.textContent = `${low} - ${high}`;
+      } else {
+        rangeEl.textContent = '-';
+      }
     }
 
     if (velocityEl) {
-      const velocities = events.map((e: any) => e.velocity || 64);
-      const avgVelocity = velocities.reduce((a, b) => a + b, 0) / velocities.length;
-      velocityEl.textContent = avgVelocity.toFixed(0);
+      velocityEl.textContent = inspection.velocity.avg.toFixed(0);
     }
   }
 

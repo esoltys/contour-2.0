@@ -136,15 +136,30 @@ state.patternPlayground = new PatternPlayground({
 state.keyboardShortcuts = new KeyboardShortcuts();
 ```
 
-### Phase 8A Integration (Future)
+### Phase 8A Integration (Complete)
 
-Currently, the debug UI shows placeholder messages where Phase 8A diagnostics would be used:
+Phase 8A has been integrated with the debug UI:
 
-- **Transport Inspector**: Will show actual scheduled events from Transport diagnostics
-- **Pattern Inspector**: Will use `Pattern.inspect()` method for detailed analysis
-- **Console Log**: Will integrate with structured logging system
+- **Transport Inspector**: Now shows actual scheduled events from `TransportDebugger.getScheduledEvents()`
+  - Displays pending and total event counts
+  - Highlights next 5 events to fire
+  - Shows event time, state, and callback name
 
-Once Phase 8A is implemented, these components will automatically display the rich diagnostic data.
+- **Pattern Inspector**: Uses `Pattern.inspect()` method for detailed analysis
+  - Shows event counts (notes, rests, chords, total)
+  - Displays note range with lowest/highest notes
+  - Analyzes timing (gaps, overlaps, average spacing)
+  - Shows velocity statistics (min, max, average)
+  - Visual timeline with color-coded notes
+
+- **Performance Monitor**: Uses `TransportDebugger` for accurate metrics
+  - Audio node count from `getActiveNodeCount()`
+  - Active voices estimated from pending events
+
+- **Console Log**: Parses structured logs from the `Logger` system
+  - Detects format: `[timestamp] [contour:category] [LEVEL] message`
+  - Preserves category and level from structured logs
+  - Falls back to extracting category from regular logs
 
 ## Usage Examples
 
