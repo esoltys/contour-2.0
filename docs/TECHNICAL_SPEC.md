@@ -967,6 +967,325 @@ export class HMRHandler {
 }
 ```
 
+## Debugging and Development Tools
+
+Contour provides comprehensive debugging and monitoring tools for development and troubleshooting.
+
+### TransportDebugger
+
+A singleton class for tracking audio scheduling, detecting conflicts, and monitoring memory.
+
+```typescript
+// packages/tone-adapter/src/debug/TransportDebugger.ts
+
+/**
+ * Information about a scheduled event.
+ */
+export interface ScheduledEventInfo {
+  id: number;
+  time: string | number;
+  callback: string; // Function name or description
+  state: 'scheduled' | 'executed' | 'cancelled';
+}
+
+/**
+ * Detected scheduling conflict.
+ */
+export interface ScheduleConflict {
+  time: number;
+  events: ScheduledEventInfo[];
+  severity: 'warning' | 'error';
+  message: string;
+}
+
+/**
+ * Audio node tracking information.
+ */
+export interface AudioNodeInfo {
+  type: string;
+  created: number; // Timestamp
+  disposed: boolean;
+  id: number;
+}
+
+/**
+ * Transport state snapshot.
+ */
+export interface TransportSnapshot {
+  state: 'started' | 'stopped' | 'paused';
+  bpm: number;
+  timeSignature: number[];
+  position: string;
+  seconds: number;
+  progress: number;
+  loop: boolean;
+  loopStart: number;
+  loopEnd: number;
+}
+
+/**
+ * Transport Debugger for monitoring Tone.Transport.
+ *
+ * Singleton class that provides utilities for debugging audio scheduling,
+ * detecting conflicts, and tracking AudioNode creation.
+ */
+export class TransportDebugger {
+  private static instance: TransportDebugger | null = null;
+
+  /**
+   * Get singleton instance.
+   */
+  static getInstance(): TransportDebugger;
+
+  /**
+   * Reset the debugger (useful for testing).
+   */
+  static reset(): void;
+
+  /**
+   * Get current transport state snapshot.
+   */
+  getTransportSnapshot(): TransportSnapshot;
+
+  /**
+   * Track a scheduled event.
+   *
+   * @returns Event ID for tracking
+   */
+  trackScheduledEvent(time: string | number, callback?: Function): number;
+
+  /**
+   * Mark an event as executed.
+   */
+  markEventExecuted(id: number): void;
+
+  /**
+   * Mark an event as cancelled.
+   */
+  markEventCancelled(id: number): void;
+
+  /**
+   * Get all scheduled events.
+   */
+  getScheduledEvents(): ScheduledEventInfo[];
+
+  /**
+   * Get pending (not yet executed) events.
+   */
+  getPendingEvents(): ScheduledEventInfo[];
+
+  /**
+   * Clear event tracking.
+   */
+  clearEvents(): void;
+
+  /**
+   * Detect scheduling conflicts.
+   *
+   * Looks for multiple events scheduled at very similar times
+   * which might indicate unintended overlap.
+   *
+   * @param threshold - Time threshold in seconds (default: 0.001)
+   */
+  detectConflicts(threshold?: number): ScheduleConflict[];
+
+  /**
+   * Track an AudioNode creation.
+   *
+   * @returns Node ID for tracking
+   */
+  trackAudioNode(type: string): number;
+
+  /**
+   * Mark an AudioNode as disposed.
+   */
+  markNodeDisposed(id: number): void;
+
+  /**
+   * Get total count of created AudioNodes.
+   */
+  getAudioNodeCount(): number;
+
+  /**
+   * Get count of active (not disposed) AudioNodes.
+   */
+  getActiveNodeCount(): number;
+
+  /**
+   * Check for potential memory leaks.
+   *
+   * Returns AudioNodes that were created but never disposed
+   * and are older than the threshold.
+   *
+   * @param ageThresholdMs - Age threshold in milliseconds (default: 60000)
+   */
+  checkForLeaks(ageThresholdMs?: number): AudioNodeInfo[];
+
+  /**
+   * Get all AudioNode information.
+   */
+  getAllNodes(): AudioNodeInfo[];
+
+  /**
+   * Clear all AudioNode tracking.
+   */
+  clearNodes(): void;
+
+  /**
+   * Generate a debug report as a formatted string.
+   */
+  generateReport(): string;
+
+  /**
+   * Print report to console.
+   */
+  printReport(): void;
+}
+
+/**
+ * Convenience function to get debugger instance.
+ */
+export function getTransportDebugger(): TransportDebugger;
+```
+
+**Usage Example:**
+
+```typescript
+import { getTransportDebugger } from '@contour/tone-adapter';
+
+const debugger = getTransportDebugger();
+
+// Track scheduled events
+const eventId = debugger.trackScheduledEvent('0:0:0', myCallback);
+
+// Detect scheduling conflicts
+const conflicts = debugger.detectConflicts();
+conflicts.forEach(c => console.warn(c.message));
+
+// Check for memory leaks
+const leaks = debugger.checkForLeaks();
+if (leaks.length > 0) {
+  console.error(`Found ${leaks.length} potential AudioNode leaks`);
+}
+
+// Generate full diagnostic report
+debugger.printReport();
+```
+
+### Debug Panel UI
+
+The development server includes an interactive debug panel with four tabs.
+
+```typescript
+// packages/dev/src/ui/DebugPanel.ts
+
+export type DebugPanelTab = 'transport' | 'patterns' | 'performance' | 'console';
+
+export interface DebugPanelConfig {
+  initialTab?: DebugPanelTab;
+  position?: 'bottom' | 'right';
+  visible?: boolean;
+}
+
+/**
+ * Main container for development debugging tools.
+ *
+ * Provides tabs for:
+ * - Transport Inspector
+ * - Pattern Inspector
+ * - Performance Monitor
+ * - Console Log
+ */
+export class DebugPanel {
+  constructor(config?: DebugPanelConfig);
+
+  /**
+   * Show the debug panel.
+   */
+  show(): void;
+
+  /**
+   * Hide the debug panel.
+   */
+  hide(): void;
+
+  /**
+   * Toggle panel visibility.
+   */
+  toggle(): void;
+
+  /**
+   * Get the PatternInspector component for registering/updating patterns.
+   */
+  getPatternInspector(): PatternInspector;
+
+  /**
+   * Clean up and remove panel.
+   */
+  dispose(): void;
+}
+```
+
+**Keyboard Shortcut Integration:**
+
+```typescript
+// packages/dev/src/ui/KeyboardShortcuts.ts
+
+export interface ShortcutDefinition {
+  key: string;
+  description: string;
+  category: string;
+}
+
+/**
+ * Keyboard Shortcuts Overlay - Help modal showing all keyboard commands.
+ *
+ * Press '?' to show shortcuts.
+ */
+export class KeyboardShortcuts {
+  constructor();
+
+  /**
+   * Show the shortcuts modal.
+   */
+  show(): void;
+
+  /**
+   * Hide the shortcuts modal.
+   */
+  hide(): void;
+
+  /**
+   * Toggle modal visibility.
+   */
+  toggle(): void;
+
+  /**
+   * Check if modal is currently visible.
+   */
+  isVisible(): boolean;
+
+  /**
+   * Clean up and remove modal.
+   */
+  dispose(): void;
+}
+```
+
+**Default Keyboard Shortcuts:**
+
+| Key | Description | Category |
+|-----|-------------|----------|
+| `Space` | Play/Pause transport | Transport |
+| `Esc` | Stop all playback | Transport |
+| `Cmd/Ctrl + D` | Toggle debug panel | Debug Tools |
+| `Cmd/Ctrl + K` | Open pattern playground | Debug Tools |
+| `Cmd/Ctrl + Shift + I` | Inspect selected pattern | Debug Tools |
+| `?` | Show keyboard shortcuts | Debug Tools |
+| `1-4, Q-R, A-F, Z-V` | Trigger pattern pads | Pattern Grid |
+| `Shift + Pad Key` | Edit pattern | Pattern Grid |
+| `Cmd/Ctrl + Enter` | Run/Apply code | Editor |
+
 ## Testing Utilities
 
 ### Musical Matchers
