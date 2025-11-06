@@ -21,6 +21,7 @@ class PerformanceState {
   pads: Map<string, PadState> = new Map();
   isAudioStarted = false;
   isPlaying = false;
+  isDemoRunning = false;
   bpm = 120;
   volume = -6;
   metronomeEnabled = false;
@@ -474,6 +475,12 @@ function startVisualization() {
 // ============================================================================
 
 async function playDemoJam() {
+  // Prevent running demo multiple times
+  if (state.isDemoRunning) return;
+
+  state.isDemoRunning = true;
+  elements.demoBtn.disabled = true;
+
   // Initialize audio if not started
   if (!state.isAudioStarted) {
     await initAudio();
@@ -534,6 +541,12 @@ async function playDemoJam() {
       }
     }, delay);
   }
+
+  // Re-enable button after demo completes
+  setTimeout(() => {
+    state.isDemoRunning = false;
+    elements.demoBtn.disabled = false;
+  }, demoSequence[demoSequence.length - 1].delay + 1000);
 }
 
 // ============================================================================

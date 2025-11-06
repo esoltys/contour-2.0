@@ -42,6 +42,8 @@ export class PatternScheduler {
       patternLength = 2;
     }
 
+    console.log(`[Scheduler] Scheduling pattern with ${pattern.events.length} events, loop length: ${patternLength}s`);
+
     // Schedule pattern to loop indefinitely
     pattern.events.forEach(event => {
       if (event.type === 'note') {
