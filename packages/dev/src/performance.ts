@@ -147,7 +147,11 @@ function playAll() {
   state.pads.forEach(pad => {
     if (pad.isActive && pad.pattern) {
       console.log('[Contour] Scheduling pattern for', pad.id, 'with', pad.pattern.events.length, 'events');
+      console.log('[Contour] Scheduler object:', state.scheduler);
+      console.log('[Contour] Scheduler methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(state.scheduler!)));
+      console.log('[Contour] Calling schedule() with pattern...');
       state.scheduler!.schedule(pad.pattern);
+      console.log('[Contour] schedule() call completed');
       scheduledCount++;
     }
   });

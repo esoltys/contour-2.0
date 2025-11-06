@@ -13,8 +13,10 @@ export class PatternScheduler {
   private synth: Tone.PolySynth | null = null;
 
   constructor() {
+    console.log('[Scheduler] Constructor called - creating PatternScheduler');
     // Create a polyphonic synth for playing multiple notes
     this.synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    console.log('[Scheduler] PatternScheduler created successfully');
   }
 
   /**
