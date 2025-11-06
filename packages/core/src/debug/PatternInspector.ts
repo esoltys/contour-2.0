@@ -206,6 +206,9 @@ export class PatternInspector {
     }
 
     const duration = pattern.duration;
+    if (duration === 0) {
+      return '(pattern has zero duration)';
+    }
     const timeStep = duration / width;
 
     // Build the grid
@@ -235,15 +238,27 @@ export class PatternInspector {
    * Build time header showing timestamps.
    */
   private static buildTimeHeader(duration: number, width: number): string {
-    const parts: string[] = [];
-    const step = duration / 4; // Show 5 time markers
+    // Show 5 time markers (0, 1/4, 1/2, 3/4, 1)
+    const numMarkers = 5;
+    const step = duration / (numMarkers - 1);
 
-    for (let i = 0; i <= 4; i++) {
-      const time = (i * step).toFixed(1);
-      parts.push(time.padEnd(width / 4));
+    // Calculate positions for each marker
+    const positions: number[] = [];
+    for (let i = 0; i < numMarkers; i++) {
+      positions.push(Math.round(i * (width - 1) / (numMarkers - 1)));
     }
 
-    return parts.join('').substring(0, width);
+    // Build header string
+    const header = Array(width).fill(' ');
+    for (let i = 0; i < numMarkers; i++) {
+      const time = (i * step).toFixed(1);
+      // Place the time string at the calculated position
+      for (let j = 0; j < time.length && positions[i] + j < width; j++) {
+        header[positions[i] + j] = time[j];
+      }
+    }
+
+    return header.join('');
   }
 
   /**
@@ -334,7 +349,8 @@ export class PatternInspector {
   }
 
   /**
-   * Pretty-print pattern to console with colors (browser/Node.js).
+   * Pretty-print pattern to console (browser/Node.js).
+   * Adds decorative formatting for better readability.
    */
   static toConsole(pattern: Pattern, options?: { showVelocity?: boolean }): void {
     const ascii = this.toASCII(pattern, options);

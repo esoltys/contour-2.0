@@ -1,6 +1,6 @@
 // packages/core/tests/debug/Validator.test.ts
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Validator } from '../../src/debug/Validator';
 import { Composition } from '../../src/composition/Composition';
 import { Track } from '../../src/composition/Track';
@@ -11,15 +11,14 @@ import { BPM, Seconds, Duration, Velocity, MIDINote } from '../../src/types/bran
 import { Note } from '../../src/primitives/Note';
 import type { NoteEvent } from '../../src/primitives/Event';
 
+// Mock logger to avoid console output during tests
+vi.mock('../../src/debug/Logger', () => ({
+  validatorLogger: {
+    debug: vi.fn(),
+  },
+}));
+
 describe('Validator', () => {
-  beforeEach(() => {
-    // Mock logger to avoid console output during tests
-    vi.mock('../../src/debug/Logger', () => ({
-      validatorLogger: {
-        debug: vi.fn(),
-      },
-    }));
-  });
 
   describe('validate - empty composition', () => {
     it('should detect empty composition', () => {

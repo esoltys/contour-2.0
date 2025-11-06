@@ -74,14 +74,14 @@ describe('TransportDebugger', () => {
 
     it('should capture callback name', () => {
       function myCallback() {}
-      const id = dbg.trackScheduledEvent('0:0:0', myCallback);
+      dbg.trackScheduledEvent('0:0:0', myCallback);
 
       const events = dbg.getScheduledEvents();
       expect(events[0].callback).toBe('myCallback');
     });
 
     it('should handle anonymous functions', () => {
-      const id = dbg.trackScheduledEvent('0:0:0', () => {});
+      dbg.trackScheduledEvent('0:0:0', () => {});
 
       const events = dbg.getScheduledEvents();
       expect(events[0].callback).toBe('anonymous');
@@ -208,7 +208,7 @@ describe('TransportDebugger', () => {
     });
 
     it('should track node type', () => {
-      const id = dbg.trackAudioNode('Synth');
+      dbg.trackAudioNode('Synth');
       const nodes = dbg.getAllNodes();
 
       expect(nodes[0].type).toBe('Synth');
@@ -229,7 +229,7 @@ describe('TransportDebugger', () => {
     it('should return count of active nodes', () => {
       const id1 = dbg.trackAudioNode('Synth');
       const id2 = dbg.trackAudioNode('Filter');
-      const id3 = dbg.trackAudioNode('Reverb');
+      dbg.trackAudioNode('Reverb');
 
       expect(dbg.getActiveNodeCount()).toBe(3);
 

@@ -187,6 +187,7 @@ export class TransportDebugger {
    */
   clearEvents(): void {
     this.scheduledEvents.clear();
+    this.nextEventId = 0;
   }
 
   /**
@@ -206,8 +207,9 @@ export class TransportDebugger {
       const time = this.eventTimeToSeconds(event.time);
       if (time === null) continue;
 
-      // Round to threshold precision
-      const roundedTime = Math.round(time / threshold) * threshold;
+      // Round to threshold precision using fixed decimal places to avoid floating-point errors
+      const decimalPlaces = Math.max(0, -Math.floor(Math.log10(threshold)));
+      const roundedTime = Number(time.toFixed(decimalPlaces));
 
       if (!timeGroups.has(roundedTime)) {
         timeGroups.set(roundedTime, []);
@@ -324,6 +326,7 @@ export class TransportDebugger {
    */
   clearNodes(): void {
     this.audioNodes.clear();
+    this.nextNodeId = 0;
   }
 
   /**
