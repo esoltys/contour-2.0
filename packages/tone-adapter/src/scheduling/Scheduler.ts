@@ -13,14 +13,12 @@ export class PatternScheduler {
   private synth: Tone.PolySynth | null = null;
 
   constructor() {
-    console.log('[Scheduler] Constructor called - creating PatternScheduler');
     // Create a polyphonic synth with better bass response
     // AMSynth has richer harmonics and better low-end than basic Synth
     this.synth = new Tone.PolySynth(Tone.AMSynth, {
       oscillator: { type: 'sine' },
       envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 }
     }).toDestination();
-    console.log('[Scheduler] PatternScheduler created successfully');
   }
 
   /**
@@ -30,12 +28,6 @@ export class PatternScheduler {
    * @param startTime - When to start playing (in seconds from now)
    */
   schedule(pattern: Pattern, startTime: Seconds = Seconds(0)): void {
-    console.log('[Scheduler] schedule() called with pattern:', {
-      eventCount: pattern.events.length,
-      startTime,
-      synthExists: !!this.synth
-    });
-
     if (!this.synth) {
       throw new Error('Scheduler has been disposed');
     }
@@ -54,28 +46,15 @@ export class PatternScheduler {
       patternLength = 2;
     }
 
-    console.log(`[Scheduler] Scheduling pattern with ${pattern.events.length} events, loop length: ${patternLength}s`);
-    console.log('[Scheduler] Event details:', pattern.events.map(e => ({
-      type: e.type,
-      time: e.time,
-      duration: e.duration,
-      note: e.type === 'note' ? e.note.name : undefined
-    })));
-
     // Schedule pattern to loop indefinitely
-    let scheduledCount = 0;
     pattern.events.forEach(event => {
       if (event.type === 'note') {
         this.scheduleNoteEventLooping(event, startTime, patternLength);
-        scheduledCount++;
       } else if (event.type === 'chord') {
         this.scheduleChordEventLooping(event, startTime, patternLength);
-        scheduledCount++;
       }
       // Rests don't need scheduling - they're just gaps in time
     });
-
-    console.log(`[Scheduler] Successfully scheduled ${scheduledCount} events to loop every ${patternLength}s`);
   }
 
   /**
@@ -83,8 +62,6 @@ export class PatternScheduler {
    */
   private scheduleNoteEventLooping(event: NoteEvent, startTime: number, loopLength: number): void {
     if (!this.synth) return;
-
-    console.log(`[Scheduler] Scheduling note ${event.note.name} to loop every ${loopLength}s, starting at ${startTime + event.time}s`);
 
     const id = Tone.Transport.scheduleRepeat((audioTime) => {
       if (!this.synth) return;
@@ -94,12 +71,10 @@ export class PatternScheduler {
       const duration = event.duration;
       const velocity = event.velocity / 127; // Normalize to 0-1
 
-      console.log(`[Scheduler] Triggering ${noteName} at ${audioTime}`);
       this.synth.triggerAttackRelease(noteName, duration, audioTime, velocity);
     }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
-    console.log(`[Scheduler] Scheduled event ID: ${id}`);
   }
 
   /**

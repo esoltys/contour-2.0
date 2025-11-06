@@ -146,19 +146,11 @@ function playAll() {
   state.isPlaying = true;
 
   // Schedule all active patterns
-  let scheduledCount = 0;
   state.pads.forEach(pad => {
     if (pad.isActive && pad.pattern) {
-      console.log('[Contour] Scheduling pattern for', pad.id, 'with', pad.pattern.events.length, 'events');
-      console.log('[Contour] Scheduler object:', state.scheduler);
-      console.log('[Contour] Scheduler methods:', Object.getOwnPropertyNames(Object.getPrototypeOf(state.scheduler!)));
-      console.log('[Contour] Calling schedule() with pattern...');
       state.scheduler!.schedule(pad.pattern);
-      console.log('[Contour] schedule() call completed');
-      scheduledCount++;
     }
   });
-  console.log('[Contour] Scheduled', scheduledCount, 'patterns');
 
   // Start transport
   state.scheduler.start();
@@ -519,12 +511,6 @@ async function playDemoJam() {
     if (!firstPad.pattern) {
       try {
         firstPad.pattern = compilePattern(firstPad.code);
-        console.log('[Contour] Compiled first pattern:', firstPad.pattern.events.length, 'events');
-        console.log('[Contour] First few events:', firstPad.pattern.events.slice(0, 3).map(e => ({
-          type: e.type,
-          time: e.time,
-          duration: e.duration
-        })));
       } catch (error) {
         console.error('[Contour] Failed to compile demo pattern:', error);
         return;
@@ -657,7 +643,6 @@ function initEventListeners() {
     const padIndex = codeMap[e.code];
     if (padIndex !== undefined) {
       const padId = `pad-${padIndex}`;
-      console.log('[Contour] Key pressed:', e.code, '→ pad', padIndex);
 
       // Shift + key: edit pattern
       if (e.shiftKey) {
@@ -666,8 +651,6 @@ function initEventListeners() {
       } else {
         togglePad(padId);
       }
-    } else if (e.code.startsWith('Key') || e.code.startsWith('Digit')) {
-      console.log('[Contour] Unmapped key:', e.code);
     }
   });
 }
