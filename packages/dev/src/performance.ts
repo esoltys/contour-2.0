@@ -513,6 +513,11 @@ async function playDemoJam() {
       try {
         firstPad.pattern = compilePattern(firstPad.code);
         console.log('[Contour] Compiled first pattern:', firstPad.pattern.events.length, 'events');
+        console.log('[Contour] First few events:', firstPad.pattern.events.slice(0, 3).map(e => ({
+          type: e.type,
+          time: e.time,
+          duration: e.duration
+        })));
       } catch (error) {
         console.error('[Contour] Failed to compile demo pattern:', error);
         return;
