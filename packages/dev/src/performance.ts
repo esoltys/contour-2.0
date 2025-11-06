@@ -657,6 +657,7 @@ function initEventListeners() {
     const padIndex = codeMap[e.code];
     if (padIndex !== undefined) {
       const padId = `pad-${padIndex}`;
+      console.log('[Contour] Key pressed:', e.code, '→ pad', padIndex);
 
       // Shift + key: edit pattern
       if (e.shiftKey) {
@@ -665,6 +666,8 @@ function initEventListeners() {
       } else {
         togglePad(padId);
       }
+    } else if (e.code.startsWith('Key') || e.code.startsWith('Digit')) {
+      console.log('[Contour] Unmapped key:', e.code);
     }
   });
 }
