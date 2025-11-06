@@ -508,7 +508,7 @@ async function playDemoJam() {
   // Activate first pad and start playback immediately
   const firstPad = state.pads.get('pad-0');
   if (firstPad) {
-    firstPad.isActive = true;
+    // Compile pattern if needed
     if (!firstPad.pattern) {
       try {
         firstPad.pattern = compilePattern(firstPad.code);
@@ -523,6 +523,9 @@ async function playDemoJam() {
         return;
       }
     }
+
+    // Set active AFTER stopAll() cleared it
+    firstPad.isActive = true;
     updatePadVisual('pad-0');
     playAll();
   }
