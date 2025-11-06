@@ -23,7 +23,7 @@ class PerformanceState {
   isPlaying = false;
   isDemoRunning = false;
   bpm = 120;
-  volume = -6;
+  volume = 0;
   metronomeEnabled = false;
   waveformAnalyzer: Tone.Analyser | null = null;
   monaco: typeof Monaco | null = null;
@@ -92,6 +92,9 @@ async function initAudio() {
     // Create scheduler
     state.scheduler = new PatternScheduler();
     state.scheduler.setTempo(state.bpm);
+
+    // Set initial volume
+    Tone.getDestination().volume.value = state.volume;
 
     // Create waveform analyzer
     state.waveformAnalyzer = new Tone.Analyser('waveform', 512);
