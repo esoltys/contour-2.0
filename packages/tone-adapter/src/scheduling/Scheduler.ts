@@ -14,8 +14,12 @@ export class PatternScheduler {
 
   constructor() {
     console.log('[Scheduler] Constructor called - creating PatternScheduler');
-    // Create a polyphonic synth for playing multiple notes
-    this.synth = new Tone.PolySynth(Tone.Synth).toDestination();
+    // Create a polyphonic synth with better bass response
+    // AMSynth has richer harmonics and better low-end than basic Synth
+    this.synth = new Tone.PolySynth(Tone.AMSynth, {
+      oscillator: { type: 'sine' },
+      envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 }
+    }).toDestination();
     console.log('[Scheduler] PatternScheduler created successfully');
   }
 
