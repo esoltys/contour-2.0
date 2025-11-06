@@ -13,6 +13,7 @@ Contour enables developers to compose music using functional patterns, explore a
 - **Music Theory Exploration** - Create microtonal music, complex polyrhythms, and algorithmic compositions
 - **Type Safety** - Branded types prevent unit mixing (Hz vs BPM) at compile time
 - **Hot Module Reload** - Instant feedback with graceful audio transitions
+- **Interactive Debug Tools** - Real-time transport inspector, pattern analyzer, and performance monitor
 - **Multiple Export Formats** - Render to audio playback, MP3/WAV files, or MIDI
 - **Plugin Architecture** - Extensible renderer system
 
@@ -97,6 +98,74 @@ Export examples demonstrating the plugin architecture:
 
 ```bash
 node examples/export-plugins.ts
+```
+
+### Development and Debugging Tools
+
+Contour includes a comprehensive suite of development tools for debugging and monitoring your compositions in real-time:
+
+#### Debug Panel
+
+Press `Cmd/Ctrl + D` to toggle the interactive debug panel, which includes four powerful tabs:
+
+**Transport Inspector**
+- Real-time transport state (playing/stopped/paused)
+- Current BPM, position, and timing
+- Scheduled event monitoring
+- Conflict detection for overlapping events
+
+**Pattern Inspector**
+- Analyze pattern structure and transformations
+- View note sequences and timing
+- Inspect pattern algebra operations
+- Track pattern lifecycles
+
+**Performance Monitor**
+- CPU and memory usage tracking
+- AudioNode allocation monitoring
+- Memory leak detection
+- Frame rate and latency metrics
+
+**Console Log**
+- Filtered console output
+- Debug message categorization
+- Real-time logging updates
+
+#### Keyboard Shortcuts
+
+Press `?` to view all keyboard shortcuts, including:
+
+- **Space** - Play/Pause transport
+- **Esc** - Stop all playback
+- **Cmd/Ctrl + D** - Toggle debug panel
+- **Cmd/Ctrl + K** - Open pattern playground
+- **1-4, Q-R, A-F, Z-V** - Trigger pattern pads (in performance grid)
+- **Shift + Pad Key** - Edit pattern
+
+#### TransportDebugger API
+
+For programmatic debugging, use the `TransportDebugger` class:
+
+```typescript
+import { getTransportDebugger } from '@contour/tone-adapter';
+
+const debugger = getTransportDebugger();
+
+// Track scheduled events
+const eventId = debugger.trackScheduledEvent('0:0:0', myCallback);
+
+// Detect scheduling conflicts
+const conflicts = debugger.detectConflicts();
+conflicts.forEach(c => console.warn(c.message));
+
+// Check for memory leaks
+const leaks = debugger.checkForLeaks();
+if (leaks.length > 0) {
+  console.error(`Found ${leaks.length} potential AudioNode leaks`);
+}
+
+// Generate full diagnostic report
+debugger.printReport();
 ```
 
 ## Project Structure

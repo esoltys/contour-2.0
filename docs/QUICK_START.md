@@ -646,6 +646,176 @@ Test Files  3 passed (3)
 
 Once these criteria are met, you're ready to proceed with Pattern system implementation!
 
+## Development and Debugging Tools
+
+Contour includes comprehensive debugging and monitoring tools to help you develop and troubleshoot your compositions effectively.
+
+### Debug Panel
+
+The debug panel provides real-time insight into your composition's execution:
+
+```typescript
+// The debug panel is automatically available in the dev server
+// Press Cmd/Ctrl + D to toggle the panel
+```
+
+**Four Tabs for Different Debugging Needs:**
+
+1. **Transport Inspector**
+   - Real-time transport state (playing/stopped/paused)
+   - Current BPM, position, and time signature
+   - Scheduled event list with timing
+   - Conflict detection for overlapping events
+
+2. **Pattern Inspector**
+   - Pattern structure visualization
+   - Note sequences and timing analysis
+   - Transformation tracking
+   - Pattern lifecycle monitoring
+
+3. **Performance Monitor**
+   - CPU and memory usage tracking
+   - AudioNode allocation monitoring
+   - Memory leak detection
+   - Frame rate and latency metrics
+
+4. **Console Log**
+   - Filtered console output
+   - Debug message categorization
+   - Real-time log updates
+
+### TransportDebugger API
+
+For programmatic debugging and automated testing:
+
+```typescript
+import { getTransportDebugger } from '@contour/tone-adapter';
+
+const debugger = getTransportDebugger();
+
+// Track scheduled events
+const eventId = debugger.trackScheduledEvent('0:0:0', myCallback);
+
+// Detect scheduling conflicts (events at same time)
+const conflicts = debugger.detectConflicts();
+conflicts.forEach(conflict => {
+  console.warn(`[${conflict.severity}] ${conflict.message}`);
+});
+
+// Monitor AudioNode creation/disposal
+console.log(`Active nodes: ${debugger.getActiveNodeCount()}`);
+console.log(`Total created: ${debugger.getAudioNodeCount()}`);
+
+// Check for memory leaks (nodes not disposed after 1 minute)
+const leaks = debugger.checkForLeaks(60000);
+if (leaks.length > 0) {
+  console.error(`Found ${leaks.length} potential AudioNode leaks`);
+  leaks.forEach(leak => {
+    console.error(`  ${leak.type} (age: ${Date.now() - leak.created}ms)`);
+  });
+}
+
+// Generate full diagnostic report
+debugger.printReport();
+```
+
+**Example Report Output:**
+```
+=== Transport Debugger Report ===
+
+Transport State:
+  State: started
+  BPM: 120
+  Position: 0:4:2
+  Seconds: 8.500
+  Loop: true
+
+Scheduled Events:
+  Total: 48
+  Pending: 12
+  Conflicts: 0
+
+AudioNodes:
+  Total created: 5
+  Active: 3
+  Disposed: 2
+```
+
+### Keyboard Shortcuts
+
+The dev server includes comprehensive keyboard shortcuts. Press `?` to see all shortcuts, including:
+
+- **Space** - Play/Pause transport
+- **Esc** - Stop all playback
+- **Cmd/Ctrl + D** - Toggle debug panel
+- **Cmd/Ctrl + K** - Open pattern playground
+- **Cmd/Ctrl + Shift + I** - Inspect selected pattern
+
+### Using Debugging Tools in Development
+
+**During Pattern Development:**
+```typescript
+import { Pattern } from '@contour/core';
+import { getTransportDebugger } from '@contour/tone-adapter';
+
+const pattern = Pattern.euclidean(16, 5)
+  .transpose(60)
+  .fast(2);
+
+// Track pattern scheduling
+const debugger = getTransportDebugger();
+const eventId = debugger.trackScheduledEvent(/* ... */);
+
+// Open debug panel (Cmd+D) to see:
+// - Pattern structure in Pattern Inspector
+// - Scheduled events in Transport Inspector
+// - Memory usage in Performance Monitor
+```
+
+**Testing for Memory Leaks:**
+```typescript
+import { describe, it, expect } from 'vitest';
+import { getTransportDebugger } from '@contour/tone-adapter';
+
+describe('Memory leak tests', () => {
+  it('disposes AudioNodes correctly', async () => {
+    const debugger = getTransportDebugger();
+    debugger.clearNodes();
+
+    // Create and play composition
+    const composition = /* ... */;
+    await composition.play();
+    await composition.stop();
+    composition.dispose();
+
+    // Check for leaks
+    const leaks = debugger.checkForLeaks(1000); // 1 second threshold
+    expect(leaks).toHaveLength(0);
+  });
+});
+```
+
+**Debugging Scheduling Issues:**
+```typescript
+// If notes aren't playing at the right time:
+const debugger = getTransportDebugger();
+
+// 1. Check current transport state
+const snapshot = debugger.getTransportSnapshot();
+console.log('Transport:', snapshot);
+
+// 2. Look for conflicts
+const conflicts = debugger.detectConflicts(0.001); // 1ms threshold
+if (conflicts.length > 0) {
+  console.warn('Scheduling conflicts detected!');
+  conflicts.forEach(c => console.warn(c.message));
+}
+
+// 3. View all pending events
+const pending = debugger.getPendingEvents();
+console.log('Pending events:', pending);
+```
+
 ## Additional Resources
 
 - **TECHNICAL_SPEC.md** - Full API reference
