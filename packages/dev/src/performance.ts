@@ -143,11 +143,15 @@ function playAll() {
   state.isPlaying = true;
 
   // Schedule all active patterns
+  let scheduledCount = 0;
   state.pads.forEach(pad => {
     if (pad.isActive && pad.pattern) {
+      console.log('[Contour] Scheduling pattern for', pad.id, 'with', pad.pattern.events.length, 'events');
       state.scheduler!.schedule(pad.pattern);
+      scheduledCount++;
     }
   });
+  console.log('[Contour] Scheduled', scheduledCount, 'patterns');
 
   // Start transport
   state.scheduler.start();
@@ -508,6 +512,7 @@ async function playDemoJam() {
     if (!firstPad.pattern) {
       try {
         firstPad.pattern = compilePattern(firstPad.code);
+        console.log('[Contour] Compiled first pattern:', firstPad.pattern.events.length, 'events');
       } catch (error) {
         console.error('[Contour] Failed to compile demo pattern:', error);
         return;
