@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Contour - A TypeScript-first music composition framework for algorithmic and generative music. Build music using functional patterns, explore music theory, and create compositions impossible on physical instruments.">
+  <title>Contour - Music Composition as Code</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #667eea;
+      --primary-dark: #764ba2;
+      --secondary: #f093fb;
+      --accent: #4facfe;
+      --dark: #1a1a2e;
+      --darker: #0f0f1e;
+      --light: #f8f9fa;
+      --text: #e0e0e0;
+      --text-muted: #a0a0b0;
+      --code-bg: rgba(0, 0, 0, 0.4);
+      --card-bg: rgba(255, 255, 255, 0.05);
+      --border: rgba(255, 255, 255, 0.1);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #0f0f1e 0%, #1a1a2e 50%, #0f0f1e 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 0;
+      z-index: 1000;
+    }
+
+    nav .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav .logo {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    nav .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+    }
+
+    nav a {
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.3s ease;
+    }
+
+    nav a:hover {
+      color: var(--primary);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 10rem 2rem 6rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+      animation: pulse 8s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
+      50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+    }
+
+    .hero .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero h1 {
+      font-size: 4rem;
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 0%, var(--primary) 50%, var(--secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+    }
+
+    .hero .subtitle {
+      font-size: 1.5rem;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px rgba(102, 126, 234, 0.5);
+    }
+
+    .btn-secondary {
+      background: var(--card-bg);
+      color: white;
+      border: 2px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
+
+    /* Features Section */
+    .features {
+      padding: 6rem 2rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .features .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      margin-bottom: 4rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.2);
+    }
+
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: white;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* Code Example Section */
+    .code-example {
+      padding: 6rem 2rem;
+    }
+
+    .code-example .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .code-demo {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .code-block {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.75rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--primary);
+    }
+
+    .code-content {
+      padding: 1.5rem;
+      overflow-x: auto;
+    }
+
+    pre {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    code {
+      color: #e0e0e0;
+    }
+
+    .code-comment {
+      color: #7c7c8c;
+    }
+
+    .code-keyword {
+      color: #c792ea;
+    }
+
+    .code-function {
+      color: #82aaff;
+    }
+
+    .code-string {
+      color: #c3e88d;
+    }
+
+    .code-number {
+      color: #f78c6c;
+    }
+
+    /* Technology Stack */
+    .tech-stack {
+      padding: 6rem 2rem;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tech-stack .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .tech-grid {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+
+    .tech-item {
+      text-align: center;
+      padding: 2rem;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      min-width: 150px;
+      transition: all 0.3s ease;
+    }
+
+    .tech-item:hover {
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+
+    .tech-item .tech-name {
+      font-weight: 600;
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .tech-item .tech-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .cta-section .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      backdrop-filter: blur(10px);
+    }
+
+    .cta-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .cta-section p {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+    }
+
+    /* Footer */
+    footer {
+      padding: 3rem 2rem;
+      background: var(--darker);
+      border-top: 1px solid var(--border);
+    }
+
+    footer .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    footer .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+
+    footer a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    footer a:hover {
+      color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero .subtitle {
+        font-size: 1.2rem;
+      }
+
+      .code-demo {
+        grid-template-columns: 1fr;
+      }
+
+      nav .nav-links {
+        gap: 1rem;
+      }
+
+      .tech-grid {
+        gap: 1.5rem;
+      }
+
+      .cta-section .container {
+        padding: 3rem 2rem;
+      }
+
+      footer .container {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav>
+    <div class="container">
+      <div class="logo">🎵 Contour</div>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#examples">Examples</a>
+        <a href="https://github.com/esoltys/contour-2.0" target="_blank">GitHub</a>
+        <a href="#docs">Docs</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Music Composition as Code</h1>
+      <p class="subtitle">
+        A TypeScript-first framework for algorithmic and generative music.
+        Build compositions using functional patterns, explore music theory,
+        and create music impossible on physical instruments.
+      </p>
+      <div class="cta-buttons">
+        <a href="https://github.com/esoltys/contour-2.0" class="btn btn-primary" target="_blank">
+          View on GitHub →
+        </a>
+        <a href="packages/dev/index.html" class="btn btn-secondary">
+          Try Live Demo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Why Contour?</h2>
+      <p class="section-subtitle">
+        A powerful framework designed for developers who want to explore music through code
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <span class="feature-icon">⚡</span>
+          <h3>Functional Composition</h3>
+          <p>
+            Build music using composable, immutable patterns inspired by TidalCycles.
+            Transform patterns with fast(), slow(), retrograde(), and more.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🎼</span>
+          <h3>Mini-Notation</h3>
+          <p>
+            Express complex rhythms and melodies with concise syntax.
+            Support for repetition, rests, subdivisions, and Euclidean rhythms.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🔥</span>
+          <h3>Live Coding</h3>
+          <p>
+            Perfect for performances with instant hot-reload and graceful audio transitions.
+            Edit patterns in real-time without clicks or pops.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🔒</span>
+          <h3>Type Safety</h3>
+          <p>
+            Branded types prevent unit mixing (Hz vs BPM) at compile time.
+            Catch musical mistakes before runtime with TypeScript.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🎛️</span>
+          <h3>Debug Tools</h3>
+          <p>
+            Interactive debug panel with transport inspector, pattern analyzer,
+            and performance monitor for real-time insights.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">🔌</span>
+          <h3>Plugin Architecture</h3>
+          <p>
+            Extensible renderer system for audio playback, MP3/WAV export,
+            MIDI files, and custom visualizations.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code Examples Section -->
+  <section id="examples" class="code-example">
+    <div class="container">
+      <h2 class="section-title">See It In Action</h2>
+      <p class="section-subtitle">
+        Write music with the expressiveness of code
+      </p>
+
+      <div class="code-demo">
+        <div class="code-block">
+          <div class="code-header">Simple Melody</div>
+          <div class="code-content">
+<pre><code><span class="code-comment">// Create a pattern with mini-notation</span>
+<span class="code-keyword">const</span> melody = pattern()
+  .fromNotation(<span class="code-string">'C4 E4 G4 C5'</span>)
+  .build();
+
+<span class="code-comment">// Transform it functionally</span>
+<span class="code-keyword">const</span> transformed = melody
+  .transpose(<span class="code-number">5</span>)      <span class="code-comment">// Up 5 semitones</span>
+  .retrograde()     <span class="code-comment">// Reverse</span>
+  .fast(<span class="code-number">2</span>);          <span class="code-comment">// Double speed</span>
+
+<span class="code-comment">// Play it</span>
+<span class="code-keyword">await</span> <span class="code-function">play</span>(transformed);
+</code></pre>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">Euclidean Rhythms</div>
+          <div class="code-content">
+<pre><code><span class="code-comment">// Generate algorithmic rhythms</span>
+<span class="code-keyword">const</span> kick = Pattern
+  .<span class="code-function">euclidean</span>(<span class="code-number">16</span>, <span class="code-number">4</span>)     <span class="code-comment">// 4 hits in 16 steps</span>
+  .transpose(<span class="code-number">36</span>);           <span class="code-comment">// MIDI C2</span>
+
+<span class="code-keyword">const</span> snare = Pattern
+  .<span class="code-function">euclidean</span>(<span class="code-number">16</span>, <span class="code-number">5</span>, <span class="code-number">3</span>)   <span class="code-comment">// Rotated</span>
+  .transpose(<span class="code-number">38</span>);
+
+<span class="code-comment">// Combine patterns</span>
+<span class="code-keyword">const</span> drums = kick.<span class="code-function">stack</span>(snare);
+</code></pre>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">Pattern Algebra</div>
+          <div class="code-content">
+<pre><code><span class="code-comment">// Conditional transformations</span>
+<span class="code-keyword">const</span> evolving = pattern()
+  .fromNotation(<span class="code-string">'C4 E4 G4'</span>)
+  .<span class="code-function">every</span>(<span class="code-number">4</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">rev</span>())
+  .<span class="code-function">every</span>(<span class="code-number">8</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">transpose</span>(<span class="code-number">7</span>))
+  .build();
+
+<span class="code-comment">// Stack patterns vertically</span>
+<span class="code-keyword">const</span> harmony = melody
+  .<span class="code-function">stack</span>(melody.<span class="code-function">transpose</span>(<span class="code-number">4</span>))
+  .<span class="code-function">stack</span>(melody.<span class="code-function">transpose</span>(<span class="code-number">7</span>));
+</code></pre>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header">Export to Files</div>
+          <div class="code-content">
+<pre><code><span class="code-keyword">import</span> { MidiRenderer } <span class="code-keyword">from</span> <span class="code-string">'@contour/plugins/midi'</span>;
+
+<span class="code-comment">// Render to MIDI file</span>
+<span class="code-keyword">const</span> renderer = <span class="code-keyword">new</span> <span class="code-function">MidiRenderer</span>();
+<span class="code-keyword">await</span> renderer.<span class="code-function">initialize</span>({});
+
+<span class="code-keyword">const</span> result = <span class="code-keyword">await</span> renderer
+  .<span class="code-function">render</span>(composition);
+
+fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'song.mid'</span>, result.data);
+</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technology Stack -->
+  <section class="tech-stack">
+    <div class="container">
+      <h2 class="section-title">Built With</h2>
+      <p class="section-subtitle">
+        Modern tools for the best developer experience
+      </p>
+
+      <div class="tech-grid">
+        <div class="tech-item">
+          <div class="tech-name">TypeScript</div>
+          <div class="tech-desc">Full type safety</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-name">Tone.js</div>
+          <div class="tech-desc">Web Audio engine</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-name">Vite</div>
+          <div class="tech-desc">Instant HMR</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-name">Vitest</div>
+          <div class="tech-desc">Testing framework</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Compose?</h2>
+      <p>
+        Start building algorithmic compositions and explore music theory through code.
+      </p>
+      <div class="cta-buttons">
+        <a href="https://github.com/esoltys/contour-2.0" class="btn btn-primary" target="_blank">
+          Get Started on GitHub
+        </a>
+        <a href="README.md" class="btn btn-secondary">
+          Read Documentation
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="docs">
+    <div class="container">
+      <div>
+        <p>&copy; 2024 Contour. Licensed under MIT.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/esoltys/contour-2.0" target="_blank">GitHub</a>
+        <a href="README.md">Documentation</a>
+        <a href="CLAUDE.md">Development Guide</a>
+        <a href="docs/PRODUCT_REQUIREMENTS.md">Product Requirements</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
