@@ -217,14 +217,25 @@ export class PatternBuilder {
    * - Duration: "C4/8" (eighth note)
    * - Octave persistence: "C4 D E F" (all octave 4)
    * - Chord symbols: "Cmaj7 Dm7 G7"
+   * - Scale degrees: "$1 $3 $5" (requires withScale to be called first)
    *
    * @param notation - Mini-notation string
    * @returns this for chaining
+   *
+   * @example
+   * ```typescript
+   * const cMajor = new Scale('C4', 'major');
+   * const pattern = new PatternBuilder()
+   *   .withScale(cMajor)
+   *   .fromNotation('$1 $3 $5 $8') // C4, E4, G4, C5
+   *   .build();
+   * ```
    */
   fromNotation(notation: string): this {
     const events = parseMiniNotationWithDefaults(notation, {
       defaultDuration: this.defaultDuration,
       defaultVelocity: this.defaultVelocity,
+      scale: this.activeScale,
     });
 
     // Adjust event times based on current time
