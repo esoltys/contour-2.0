@@ -377,7 +377,18 @@ Test coverage includes:
 
 ## Contributing
 
-This project is currently in active development. See [CLAUDE.md](CLAUDE.md) for development workflow and coding standards.
+This project is currently in active development.
+
+### For Human Developers
+See [CLAUDE.md](CLAUDE.md) for comprehensive development workflow, coding standards, and architectural patterns.
+
+### For AI Assistants (GitHub Copilot, etc.)
+See [.github/copilot-instructions.md](.github/copilot-instructions.md) for quick reference guidelines. This file references [CLAUDE.md](CLAUDE.md) as the primary source of truth for development conventions.
+
+**Key resources for AI pair programming**:
+1. **[.github/copilot-instructions.md](.github/copilot-instructions.md)** - Quick reference for AI assistants
+2. **[CLAUDE.md](CLAUDE.md)** - Complete development guide with architecture and patterns
+3. **[docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md)** - API contracts and type system
 
 ## License
 
