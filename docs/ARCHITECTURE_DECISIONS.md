@@ -321,7 +321,7 @@ Implement type-safe plugin system with `RendererPlugin<TConfig>` interface. Plug
 - Potential for dependency conflicts
 
 **Plugin Types:**
-- Audio renderers (WAV, MP3, OGG)
+- Audio renderers (WAV implemented; MP3, OGG planned)
 - MIDI renderer (Standard MIDI File)
 - Visualizers (Canvas, WebGL, video)
 - Analysis tools (harmony analysis, etc.)

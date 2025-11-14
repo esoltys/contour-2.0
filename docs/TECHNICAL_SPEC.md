@@ -827,8 +827,8 @@ export class PluginRegistry {
 export interface AudioRendererConfig {
   sampleRate: number;
   bitDepth: 16 | 24 | 32;
-  format: 'wav' | 'mp3' | 'ogg';
-  mp3Bitrate?: number; // kbps for MP3
+  format: 'wav';
+  // Future: mp3Bitrate?: number; // kbps for MP3 (not yet implemented)
 }
 
 export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {

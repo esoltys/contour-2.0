@@ -14,7 +14,7 @@ Contour enables developers to compose music using functional patterns, explore a
 - **Type Safety** - Branded types prevent unit mixing (Hz vs BPM) at compile time
 - **Hot Module Reload** - Instant feedback with graceful audio transitions
 - **Interactive Debug Tools** - Real-time transport inspector, pattern analyzer, and performance monitor
-- **Multiple Export Formats** - Render to audio playback, MP3/WAV files, or MIDI
+- **Multiple Export Formats** - Render to audio playback, WAV files, or MIDI
 - **Plugin Architecture** - Extensible renderer system
 
 ## Quick Start

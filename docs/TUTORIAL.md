@@ -825,7 +825,7 @@ console.log(`Track count: ${result.metadata.trackCount}`);
 await renderer.shutdown();
 ```
 
-### Audio Export (WAV/MP3)
+### Audio Export (WAV)
 
 Export to audio format:
 
