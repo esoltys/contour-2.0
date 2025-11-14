@@ -90,7 +90,7 @@ This demo showcases:
 - 16 preset patterns (drums, bass, melody, effects)
 - Global transport controls (play/pause, tempo, volume)
 - Pattern algebra and mini-notation in action
-- Keyboard shortcuts for hands-free performance
+- Keyboard shortcuts for quick triggering and editing
 
 #### Plugin Examples
 
