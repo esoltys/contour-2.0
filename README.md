@@ -173,15 +173,16 @@ debugger.printReport();
 ```
 contour/
 ├── packages/
-│   ├── core/           # Musical primitives, patterns, composition system
-│   ├── tone-adapter/   # Tone.js integration layer
-│   ├── plugins/        # Renderer plugins (audio, MIDI)
-│   └── playground/     # Interactive playground with debug tools
+│   ├── core/              # Musical primitives, patterns, composition system
+│   ├── tone-adapter/      # Tone.js integration layer
+│   ├── plugins/
+│   │   ├── audio/         # WAV export renderer
+│   │   └── midi/          # MIDI export renderer
+│   └── playground/        # Interactive playground with debug tools
 ├── examples/
-│   ├── bach-invention-4/  # Bach Invention No. 4 example
-│   ├── live-coding-demo/  # Console-based pattern demo
-│   └── export-plugins.ts  # Plugin demonstration
-└── docs/               # Complete documentation
+│   ├── bach-invention-4/  # Bach Invention No. 4 (primary acceptance test)
+│   └── live-coding-demo/  # Console-based pattern demo
+└── docs/                  # Complete documentation
 ```
 
 ## Core Concepts
