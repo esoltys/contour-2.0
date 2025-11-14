@@ -24,8 +24,8 @@ describe('PatternScheduler', () => {
         .note('E4', Durations.quarter, Velocity(80))
         .build();
 
-      // Spy on Tone.Transport.schedule
-      const scheduleSpy = vi.spyOn(Tone.Transport, 'schedule');
+      // Spy on Tone.Transport.scheduleRepeat (implementation uses scheduleRepeat, not schedule)
+      const scheduleSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
 
       scheduler.schedule(pattern);
 
@@ -38,7 +38,7 @@ describe('PatternScheduler', () => {
         .chord(['C4', 'E4', 'G4'], Durations.half, Velocity(80))
         .build();
 
-      const scheduleSpy = vi.spyOn(Tone.Transport, 'schedule');
+      const scheduleSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
 
       scheduler.schedule(pattern);
 
@@ -51,15 +51,15 @@ describe('PatternScheduler', () => {
         .note('C4', Durations.quarter, Velocity(80))
         .build();
 
-      const scheduleSpy = vi.spyOn(Tone.Transport, 'schedule');
+      const scheduleSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
       const startTime = Seconds(2);
 
       scheduler.schedule(pattern, startTime);
 
       // Check that the scheduled time includes the offset
       expect(scheduleSpy).toHaveBeenCalled();
-      const [, time] = scheduleSpy.mock.calls[0];
-      expect(time).toBeGreaterThanOrEqual(startTime);
+      const [, , scheduleStartTime] = scheduleSpy.mock.calls[0];
+      expect(scheduleStartTime).toBeGreaterThanOrEqual(startTime);
     });
 
     it('does not schedule rest events', () => {
@@ -69,7 +69,7 @@ describe('PatternScheduler', () => {
         .note('E4', Durations.quarter, Velocity(80))
         .build();
 
-      const scheduleSpy = vi.spyOn(Tone.Transport, 'schedule');
+      const scheduleSpy = vi.spyOn(Tone.Transport, 'scheduleRepeat');
 
       scheduler.schedule(pattern);
 

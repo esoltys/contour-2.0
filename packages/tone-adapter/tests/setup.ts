@@ -1,18 +1,14 @@
-import { beforeAll, vi } from 'vitest';
+import { vi, afterEach } from 'vitest';
 
-// Mock the Web Audio API before Tone.js loads
-beforeAll(() => {
-  // Import and setup web-audio-test-api
-  const { AudioContext, OfflineAudioContext } = require('web-audio-test-api');
+// Mock the 'tone' module at the top level (before any imports)
+// This MUST be at the top level for Vitest to properly hoist it
+vi.mock('tone', async () => {
+  const { Tone } = await import('./mocks/tone.mock');
+  return Tone;
+});
 
-  // Assign to global scope
-  global.AudioContext = AudioContext;
-  global.OfflineAudioContext = OfflineAudioContext;
-
-  // Also assign to window for jsdom
-  if (typeof window !== 'undefined') {
-    (window as any).AudioContext = AudioContext;
-    (window as any).OfflineAudioContext = OfflineAudioContext;
-    (window as any).webkitAudioContext = AudioContext;
-  }
+// Reset Tone mocks after each test to ensure test isolation
+afterEach(async () => {
+  const { resetToneMocks } = await import('./mocks/tone.mock');
+  resetToneMocks();
 });
