@@ -213,7 +213,10 @@ function createPiano() {
   notes.forEach(note => {
     const key = document.createElement('div');
     key.className = 'key';
-    key.textContent = note;
+
+    const span = document.createElement('span');
+    span.textContent = note;
+    key.appendChild(span);
 
     key.addEventListener('click', () => {
       if (currentInstrument) {
