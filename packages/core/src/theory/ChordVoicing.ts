@@ -9,6 +9,8 @@ import type { NoteName } from '../types/music.js';
 import type { ChordQuality } from '../types/theory.js';
 import { Note } from '../primitives/Note.js';
 import { parseChord } from '../patterns/chordParser.js';
+import { PatternBuilder } from '../patterns/PatternBuilder.js';
+import { Duration as DurationConstructor } from '../types/brands.js';
 
 /**
  * Chord with specific pitch instances (not just intervals).
@@ -122,5 +124,35 @@ export class ChordVoicing {
    */
   get length(): number {
     return this.notes.length;
+  }
+
+  /**
+   * Convert chord to Pattern (block chord or arpeggio).
+   *
+   * @param duration - Duration for the chord/notes
+   * @param style - 'block' for simultaneous notes, 'arpeggio' for sequential
+   * @returns Pattern instance
+   *
+   * @example
+   * ```typescript
+   * const chord = ChordVoicing.fromQuality('C4', 'maj7');
+   * const block = chord.toPattern(Duration(1.0), 'block');
+   * const arpeggio = chord.toPattern(Duration(1.0), 'arpeggio');
+   * ```
+   */
+  toPattern(duration?: any, style: 'block' | 'arpeggio' = 'block'): any {
+    const dur = duration ?? DurationConstructor(0.25);
+    const builder = new PatternBuilder();
+
+    if (style === 'block') {
+      return builder.chord([...this.notes], dur).build();
+    } else {
+      // Arpeggio: divide duration among notes
+      const noteDuration = DurationConstructor(dur / this.notes.length);
+      this.notes.forEach((note) => {
+        builder.note(note, noteDuration);
+      });
+      return builder.build();
+    }
   }
 }

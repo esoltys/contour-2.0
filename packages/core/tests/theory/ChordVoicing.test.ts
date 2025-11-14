@@ -4,6 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { ChordVoicing } from '../../src/theory/ChordVoicing';
+import { Duration } from '../../src/types/brands';
 
 describe('ChordVoicing', () => {
   describe('fromQuality', () => {
@@ -253,6 +254,51 @@ describe('ChordVoicing', () => {
         // @ts-expect-error - Testing immutability at runtime
         chord.notes.push(null);
       }).toThrow();
+    });
+  });
+
+  describe('toPattern', () => {
+    it('converts chord to block pattern', () => {
+      const chord = ChordVoicing.fromQuality('C4', 'maj');
+      const pattern = chord.toPattern(Duration(1.0), 'block');
+
+      expect(pattern.events).toHaveLength(1);
+      expect(pattern.events[0].type).toBe('chord');
+      expect(pattern.events[0].duration).toBe(1.0);
+    });
+
+    it('converts chord to arpeggio pattern', () => {
+      const chord = ChordVoicing.fromQuality('C4', 'maj');
+      const pattern = chord.toPattern(Duration(1.0), 'arpeggio');
+
+      expect(pattern.events).toHaveLength(3); // Major triad has 3 notes
+      expect(pattern.events.every(e => e.type === 'note')).toBe(true);
+
+      // Each note should get 1/3 of the total duration
+      expect(pattern.events[0].duration).toBeCloseTo(1.0 / 3, 5);
+    });
+
+    it('defaults to block style', () => {
+      const chord = ChordVoicing.fromQuality('C4', 'maj7');
+      const pattern = chord.toPattern(Duration(2.0));
+
+      expect(pattern.events).toHaveLength(1);
+      expect(pattern.events[0].type).toBe('chord');
+    });
+
+    it('uses default duration if not provided', () => {
+      const chord = ChordVoicing.fromQuality('C4', 'maj');
+      const pattern = chord.toPattern();
+
+      expect(pattern.events).toHaveLength(1);
+      expect(pattern.events[0].duration).toBe(0.25);
+    });
+
+    it('works with seventh chords', () => {
+      const chord = ChordVoicing.fromQuality('G4', '7');
+      const pattern = chord.toPattern(Duration(1.0), 'arpeggio');
+
+      expect(pattern.events).toHaveLength(4); // Dominant 7th has 4 notes
     });
   });
 });

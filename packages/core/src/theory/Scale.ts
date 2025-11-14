@@ -10,6 +10,7 @@ import type { Interval, Duration } from '../types/brands.js';
 import type { ScaleName, ChordQuality } from '../types/theory.js';
 import { Interval as IntervalConstructor } from '../types/brands.js';
 import { Note } from '../primitives/Note.js';
+import { PatternBuilder } from '../patterns/PatternBuilder.js';
 
 /**
  * Immutable scale representation.
@@ -89,6 +90,28 @@ export class Scale {
    */
   get length(): number {
     return this.intervals.length;
+  }
+
+  /**
+   * Create a pattern from scale degrees.
+   *
+   * @param degrees - Array of scale degrees (1-indexed)
+   * @param durations - Optional array of durations (one per degree, or single duration for all)
+   * @returns Pattern instance
+   *
+   * @example
+   * ```typescript
+   * const cMajor = new Scale('C4', 'major');
+   * const arpeggio = cMajor.pattern([1, 3, 5, 8]); // C4, E4, G4, C5
+   * const withDurations = cMajor.pattern(
+   *   [1, 3, 5],
+   *   [Durations.quarter, Durations.eighth, Durations.half]
+   * );
+   * ```
+   */
+  pattern(degrees: number[], durations?: Duration | Duration[]): any {
+    const builder = new PatternBuilder().withScale(this);
+    return builder.degrees(degrees, durations).build();
   }
 }
 

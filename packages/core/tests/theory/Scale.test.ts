@@ -5,6 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { Scale } from '../../src/theory/Scale';
 import type { NoteName } from '../../src/types/music';
+import { Duration } from '../../src/types/brands';
 
 describe('Scale', () => {
   describe('constructor', () => {
@@ -256,6 +257,49 @@ describe('Scale', () => {
         // @ts-expect-error - Testing immutability at runtime
         scale.intervals.push(0);
       }).toThrow();
+    });
+  });
+
+  describe('pattern', () => {
+    it('creates pattern from scale degrees', () => {
+      const scale = new Scale('C4', 'major');
+      const pattern = scale.pattern([1, 3, 5, 8]);
+
+      expect(pattern.events).toHaveLength(4);
+      expect(pattern.events[0].type).toBe('note');
+      expect(pattern.events[0].note.name).toBe('C4');
+      expect(pattern.events[1].note.name).toBe('E4');
+      expect(pattern.events[2].note.name).toBe('G4');
+      expect(pattern.events[3].note.name).toBe('C5');
+    });
+
+    it('creates pattern with custom durations', () => {
+      const scale = new Scale('D4', 'Dorian');
+      const pattern = scale.pattern(
+        [1, 2, 3],
+        [Duration(0.5), Duration(0.25), Duration(0.125)]
+      );
+
+      expect(pattern.events).toHaveLength(3);
+      expect(pattern.events[0].duration).toBe(0.5);
+      expect(pattern.events[1].duration).toBe(0.25);
+      expect(pattern.events[2].duration).toBe(0.125);
+    });
+
+    it('creates pattern with single duration for all notes', () => {
+      const scale = new Scale('E4', 'minorPentatonic');
+      const pattern = scale.pattern([1, 2, 3, 4, 5], Duration(0.125));
+
+      expect(pattern.events).toHaveLength(5);
+      expect(pattern.events.every(e => e.duration === 0.125)).toBe(true);
+    });
+
+    it('works with different scales', () => {
+      const phrygian = new Scale('E4', 'Phrygian');
+      const pattern = phrygian.pattern([1, 2, 3]);
+
+      // Phrygian has b2 (F instead of F#)
+      expect(pattern.events[1].note.name).toBe('F4');
     });
   });
 });

@@ -11,6 +11,7 @@ import { Seconds as SecondsConstructor, Duration as DurationConstructor, Velocit
 import { ChordVoicing } from './ChordVoicing.js';
 import { Scale } from './Scale.js';
 import type { Event, NoteEvent, ChordEvent } from '../primitives/Event.js';
+import { Pattern } from '../patterns/Pattern.js';
 
 /**
  * A timed chord change in a progression.
@@ -127,6 +128,58 @@ export class ChordProgression {
     );
 
     return DurationConstructor(maxEndTime);
+  }
+
+  /**
+   * Convert progression to playable Pattern.
+   *
+   * @param style - 'block' for block chords, 'arpeggio' for arpeggiated chords
+   * @returns Pattern instance
+   *
+   * @example
+   * ```typescript
+   * const prog = ChordProgression.fromDegrees(
+   *   new Scale('C4', 'major'),
+   *   ['I', 'IV', 'V'],
+   *   Duration(2.0)
+   * );
+   *
+   * const blockChords = prog.toPattern('block');
+   * const arpeggios = prog.toPattern('arpeggio');
+   * ```
+   */
+  toPattern(style: 'block' | 'arpeggio' = 'block'): any {
+    if (style === 'block') {
+      // Stack all chords at their times (simultaneous notes)
+      const events = this.changes.flatMap((c) => {
+        // Create chord events for each chord change
+        return c.chord.notes.map((note, i) => ({
+          type: 'note' as const,
+          time: SecondsConstructor(c.time),
+          duration: c.duration,
+          velocity: VelocityConstructor(80),
+          pitch: note.pitch,
+          note: note,
+        }));
+      });
+      return new Pattern(events);
+    } else {
+      // Arpeggio each chord
+      const events = this.changes.flatMap((c) => {
+        const noteCount = c.chord.notes.length;
+        const noteDuration = DurationConstructor(c.duration / noteCount);
+
+        return c.chord.notes.map((note, i) => ({
+          type: 'note' as const,
+          time: SecondsConstructor(c.time + i * noteDuration),
+          duration: noteDuration,
+          velocity: VelocityConstructor(80),
+          pitch: note.pitch,
+          note: note,
+        }));
+      });
+      return new Pattern(events);
+    }
   }
 
   /**

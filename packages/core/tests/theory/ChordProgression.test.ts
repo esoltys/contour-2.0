@@ -397,4 +397,66 @@ describe('ChordProgression', () => {
       }).toThrow();
     });
   });
+
+  describe('toPattern', () => {
+    it('converts to block chord pattern', () => {
+      const scale = new Scale('C4', 'major');
+      const prog = ChordProgression.fromDegrees(
+        scale,
+        ['I', 'V'],
+        Duration(2.0)
+      );
+
+      const pattern = prog.toPattern('block');
+
+      expect(pattern.events.length).toBeGreaterThan(0);
+      // Block chords: all notes start at the same time for each chord
+      const firstChordEvents = pattern.events.filter(e => e.time === 0);
+      expect(firstChordEvents.length).toBe(3); // I chord has 3 notes (C, E, G)
+    });
+
+    it('converts to arpeggio pattern', () => {
+      const scale = new Scale('C4', 'major');
+      const prog = ChordProgression.fromDegrees(
+        scale,
+        ['I'],
+        Duration(1.0)
+      );
+
+      const pattern = prog.toPattern('arpeggio');
+
+      expect(pattern.events.length).toBeGreaterThan(0);
+      // Arpeggio: notes are sequential, not simultaneous
+      const times = pattern.events.map(e => e.time);
+      const uniqueTimes = new Set(times);
+      expect(uniqueTimes.size).toBeGreaterThan(1);
+    });
+
+    it('defaults to block style', () => {
+      const scale = new Scale('C4', 'major');
+      const prog = ChordProgression.fromDegrees(
+        scale,
+        ['I'],
+        Duration(1.0)
+      );
+
+      const pattern = prog.toPattern();
+
+      expect(pattern.events).toBeDefined();
+    });
+
+    it('handles multiple chords in progression', () => {
+      const scale = new Scale('C4', 'major');
+      const prog = ChordProgression.fromDegrees(
+        scale,
+        ['I', 'IV', 'V'],
+        Duration(1.0)
+      );
+
+      const pattern = prog.toPattern('block');
+
+      // Should have events from all three chords
+      expect(pattern.events.length).toBeGreaterThan(6); // 3 chords × ~3 notes each
+    });
+  });
 });
