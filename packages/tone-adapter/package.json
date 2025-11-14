@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@contour/core": "workspace:*",
+    "soundfont-player": "^0.12.0",
     "tone": "^15.0.0"
   },
   "devDependencies": {

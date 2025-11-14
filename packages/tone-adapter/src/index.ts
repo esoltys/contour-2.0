@@ -17,5 +17,9 @@ export type {
   TransportSnapshot,
 } from './debug/TransportDebugger';
 
+// Sample Library Loading (PROTOTYPE - Phase 12)
+export { SampleLibraryManager } from './samples/index.js';
+export type { SampleLibraryConfig } from './samples/index.js';
+
 // Re-export Tone.js for convenience
 export * as Tone from 'tone';
