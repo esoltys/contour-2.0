@@ -74,9 +74,9 @@ pnpm dev
 # Then open http://localhost:3000
 ```
 
-#### Interactive Performance Grid
+#### Interactive Playground
 
-Explore live pattern performance with the interactive grid interface:
+Explore live pattern composition with the interactive playground:
 
 ```bash
 cd packages/playground
@@ -139,7 +139,7 @@ Press `?` to view all keyboard shortcuts, including:
 - **Esc** - Stop all playback
 - **Cmd/Ctrl + D** - Toggle debug panel
 - **Cmd/Ctrl + K** - Open pattern playground
-- **1-4, Q-R, A-F, Z-V** - Trigger pattern pads (in performance grid)
+- **1-4, Q-R, A-F, Z-V** - Trigger pattern pads (in playground)
 - **Shift + Pad Key** - Edit pattern
 
 #### TransportDebugger API
@@ -176,7 +176,7 @@ contour/
 │   ├── core/           # Musical primitives, patterns, composition system
 │   ├── tone-adapter/   # Tone.js integration layer
 │   ├── plugins/        # Renderer plugins (audio, MIDI)
-│   └── dev/            # Vite dev server with HMR and performance grid
+│   └── playground/     # Interactive playground with debug tools
 ├── examples/
 │   ├── bach-invention-4/  # Bach Invention No. 4 example
 │   ├── live-coding-demo/  # Console-based pattern demo
@@ -279,7 +279,7 @@ p1.palindrome();   // Forward then reverse
 **For Users (Learning to compose with Contour):**
 1. Read [docs/TUTORIAL.md](docs/TUTORIAL.md) - Start here!
 2. Try the examples in `examples/`
-3. Explore the performance grid (http://localhost:3000/performance.html)
+3. Explore the interactive playground (http://localhost:3000/performance.html)
 4. Reference [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) for API details
 
 **For Contributors (Developing Contour itself):**
