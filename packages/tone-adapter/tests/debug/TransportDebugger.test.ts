@@ -321,11 +321,19 @@ describe('TransportDebugger', () => {
       expect(report).toContain('Conflicts:');
     });
 
-    it('should include leaks in report', () => {
+    it('should include leaks in report', async () => {
+      // Use fake timers to advance time
+      vi.useFakeTimers();
+
       dbg.trackAudioNode('Synth');
+
+      // Advance time by 61 seconds to exceed the default 60 second threshold
+      vi.advanceTimersByTime(61000);
 
       const report = dbg.generateReport();
       expect(report).toContain('Potential leaks:');
+
+      vi.useRealTimers();
     });
   });
 

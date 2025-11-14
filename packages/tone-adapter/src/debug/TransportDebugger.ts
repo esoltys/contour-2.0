@@ -306,7 +306,7 @@ export class TransportDebugger {
     const leaks: AudioNodeInfo[] = [];
 
     for (const node of this.audioNodes.values()) {
-      if (!node.disposed && (now - node.created) > ageThresholdMs) {
+      if (!node.disposed && (now - node.created) >= ageThresholdMs) {
         leaks.push(node);
       }
     }
