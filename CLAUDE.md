@@ -68,7 +68,7 @@ Read documents in this order for full context:
 2. **Composition class** - Combine tracks with tempo, time signature
 3. **Basic renderer** - Audio playback via Tone.js
 
-### Phase 5: Plugin Architecture ✅ COMPLETE
+### Plugin Architecture: Plugin Architecture ✅ COMPLETE
 1. **RendererPlugin interface** - Type-safe plugin contracts with dependency validation
 2. **Audio renderer** - WAV export via Tone.Offline
 3. **MIDI renderer** - Standard MIDI File Format 1 export
@@ -78,14 +78,14 @@ Read documents in this order for full context:
 2. **Chord parser** - Support for 20+ chord types: `Cmaj7`, `Dm7`, `Bdim`, `Aaug`, `Dsus4`
 3. **Duration modifiers** - Dotted notes, tuplets, rests
 
-### Phase 8A: Core Diagnostics ✅ COMPLETE
+### Core Diagnostics: Core Diagnostics ✅ COMPLETE
 1. **Logger** - Musical event logging with filtering and formatting
 2. **PatternInspector** - Pattern analysis, metrics, ASCII timeline visualization
 3. **Validator** - Validation utilities for musical data
 4. **TransportDebugger** - Tone.Transport introspection and scheduled events tracking
 5. **MusicalError** - Enhanced error handling with codes, context, and suggestions
 
-### Phase 8B: Interactive Development UI ✅ COMPLETE
+### Interactive Development UI: Interactive Development UI ✅ COMPLETE
 1. **DebugPanel** - Multi-tab development panel (Cmd/Ctrl+D)
    - Transport Inspector - Real-time transport state, scheduled events
    - Pattern Inspector - Visual pattern timeline with note visualization
@@ -110,7 +110,7 @@ contour/
 │   │   │   ├── patterns/   # Pattern, PatternBuilder, MiniNotation, chordParser
 │   │   │   ├── composition/# Track, Voice, Composition
 │   │   │   ├── plugins/    # RendererPlugin interface, PluginRegistry
-│   │   │   ├── debug/      # Logger, PatternInspector, Validator (Phase 8A)
+│   │   │   ├── debug/      # Logger, PatternInspector, Validator (Core Diagnostics)
 │   │   │   ├── errors/     # MusicalError with error codes and context
 │   │   │   └── index.ts
 │   │   └── tests/          # 17 test files, 308+ passing tests
@@ -119,7 +119,7 @@ contour/
 │   │   │   ├── wrappers/   # MusicalSynth
 │   │   │   ├── scheduling/ # PatternScheduler, CompositionScheduler
 │   │   │   ├── hmr/        # HMRHandler (300ms graceful fadeout)
-│   │   │   └── debug/      # TransportDebugger (Phase 8A)
+│   │   │   └── debug/      # TransportDebugger (Core Diagnostics)
 │   │   └── tests/
 │   ├── plugins/            # Renderer plugins (separate packages)
 │   │   ├── audio/          # @contour/plugin-audio - WAV export
@@ -134,7 +134,7 @@ contour/
 │       │   ├── performance.ts  # 4×4 interactive pattern grid
 │       │   ├── patterns/
 │       │   │   └── presets.ts  # 16 musical presets
-│       │   └── ui/             # Interactive development UI (Phase 8B)
+│       │   └── ui/             # Interactive development UI (Interactive Dev UI)
 │       │       ├── DebugPanel.ts           # Multi-tab debug panel (Cmd/Ctrl+D)
 │       │       ├── PatternInspector.ts     # Visual pattern timeline
 │       │       ├── TransportInspector.ts   # Real-time transport state
@@ -154,7 +154,7 @@ contour/
     ├── TECHNICAL_SPEC.md
     ├── QUICK_START.md
     ├── ARCHITECTURE_DECISIONS.md
-    └── PHASE_5_SUMMARY.md
+    └── PLUGIN_ARCHITECTURE.md
 ```
 
 ### TypeScript Patterns
@@ -503,7 +503,7 @@ class PluginRegistry {
 - [x] Audio renders correctly without glitches
 - [x] Bach Invention acceptance tests pass (27 tests)
 
-### Phase 5 Complete ✅
+### Plugin Architecture Complete ✅
 - [x] Plugin system supports multiple renderers
 - [x] WAV export works via Tone.Offline
 - [x] MIDI export generates valid Standard MIDI Files (Format 1)
@@ -515,14 +515,14 @@ class PluginRegistry {
 - [x] Chord parser supports 20+ chord types (maj7, m7, dim, aug, sus2/4, etc.)
 - [x] Mini-notation integration with Pattern system
 
-### Phase 8A Complete ✅ (Core Diagnostics)
+### Core Diagnostics Complete ✅ (Core Diagnostics)
 - [x] Logger with musical event tracking
 - [x] PatternInspector with metrics and ASCII visualization
 - [x] Validator utilities for musical data
 - [x] TransportDebugger for Tone.Transport introspection
 - [x] MusicalError with error codes and contextual suggestions
 
-### Phase 8B Complete ✅ (Interactive Development UI)
+### Interactive Development UI Complete ✅ (Interactive Development UI)
 - [x] Multi-tab DebugPanel with Transport, Pattern, Performance, Console tabs
 - [x] Pattern Playground with Monaco TypeScript editor
 - [x] Keyboard shortcuts system with help overlay

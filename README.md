@@ -273,21 +273,7 @@ p1.palindrome();   // Forward then reverse
 - **[TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md)** - API contracts and implementation details
 - **[QUICK_START.md](docs/QUICK_START.md)** - Step-by-step implementation guide
 - **[ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md)** - Record of major decisions
-- **[PHASE_5_SUMMARY.md](docs/PHASE_5_SUMMARY.md)** - Plugin architecture summary
-
-### Getting Started Paths
-
-**For Users (Learning to compose with Contour):**
-1. Read [docs/TUTORIAL.md](docs/TUTORIAL.md) - Start here!
-2. Try the examples in `examples/`
-3. Explore the interactive playground (http://localhost:3000/performance.html)
-4. Reference [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) for API details
-
-**For Contributors (Developing Contour itself):**
-1. Read [CLAUDE.md](CLAUDE.md) for workflow and coding standards
-2. Review [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) for project vision
-3. Follow [docs/QUICK_START.md](docs/QUICK_START.md) for implementation steps
-4. Reference [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) for API details
+- **[PLUGIN_ARCHITECTURE.md](docs/PLUGIN_ARCHITECTURE.md)** - Plugin architecture summary
 
 ## Examples
 

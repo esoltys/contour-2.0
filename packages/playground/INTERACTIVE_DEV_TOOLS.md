@@ -1,10 +1,10 @@
-# Phase 8B: Interactive Development UI
+# Interactive Development Tools
 
-This document describes the interactive developer tools added in Phase 8B.
+This document describes the interactive developer tools available in the Contour Playground.
 
 ## Overview
 
-Phase 8B adds comprehensive debugging and development tools to the Contour Live Performance Interface. These tools help developers understand what's happening in their compositions, monitor performance, and debug issues.
+The Contour Playground includes comprehensive debugging and development tools that help developers understand what's happening in their compositions, monitor performance, and debug issues.
 
 ## Features
 
@@ -14,7 +14,7 @@ A collapsible panel with multiple tabs for inspecting different aspects of the s
 
 #### Transport Inspector Tab
 - **Real-time Transport State**: Shows current state (playing/stopped), BPM, position, and elapsed time
-- **Scheduled Events Table**: Lists all events scheduled in Tone.Transport (when Phase 8A diagnostics are available)
+- **Scheduled Events Table**: Lists all events scheduled in Tone.Transport (when Core Diagnostics diagnostics are available)
 - **Next Events Highlighting**: Highlights the next 5 events to fire
 - **Clear All Button**: Clears all scheduled events for debugging
 - **Auto-refresh**: Updates every 100ms when playing
@@ -136,9 +136,9 @@ state.patternPlayground = new PatternPlayground({
 state.keyboardShortcuts = new KeyboardShortcuts();
 ```
 
-### Phase 8A Integration (Complete)
+### Core Diagnostics Integration (Complete)
 
-Phase 8A has been integrated with the debug UI:
+Core Diagnostics has been integrated with the debug UI:
 
 - **Transport Inspector**: Now shows actual scheduled events from `TransportDebugger.getScheduledEvents()`
   - Displays pending and total event counts
@@ -229,7 +229,7 @@ When the debug panel is hidden, updates are paused to minimize overhead.
 - **Recording**: Capture and export debugging sessions
 - **Remote Debugging**: Debug sessions over network
 
-### Phase 8A Integration
+### Core Diagnostics Integration
 - **Structured Logging**: Categorized logs with stack traces
 - **Pattern Inspection API**: Deep pattern analysis
 - **Transport Diagnostics**: Detailed event scheduling info
@@ -265,7 +265,7 @@ When adding new debug features:
 2. **Add styles**: Update `debug-panel.css` with component styles
 3. **Integrate**: Wire component into `DebugPanel.ts` or standalone
 4. **Document**: Update this README with usage examples
-5. **Test**: Verify on desktop and mobile, with and without Phase 8A
+5. **Test**: Verify on desktop and mobile, with and without Core Diagnostics
 
 ## License
 
