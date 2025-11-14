@@ -1,9 +1,18 @@
 import { PatternBuilder, Durations, Velocity } from '@contour/core';
 import { PatternScheduler, Tone } from '@contour/tone-adapter';
+import { DebugPanel } from './ui/DebugPanel.js';
+import { PatternPlayground } from './ui/PatternPlayground.js';
+import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+import './ui/debug-panel.css';
 
 // Global scheduler instance
 let scheduler: PatternScheduler | null = null;
 let isPlaying = false;
+
+// Debug UI components
+let debugPanel: DebugPanel | null = null;
+let patternPlayground: PatternPlayground | null = null;
+let keyboardShortcuts: KeyboardShortcuts | null = null;
 
 // UI Elements
 const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
@@ -123,6 +132,83 @@ startBtn.addEventListener('click', initAudio);
 playBtn.addEventListener('click', playMelody);
 stopBtn.addEventListener('click', stopPlayback);
 
+// Initialize debug UI components
+function initDebugTools() {
+  debugPanel = new DebugPanel({
+    initialTab: 'transport',
+    position: 'bottom',
+    visible: false
+  });
+
+  patternPlayground = new PatternPlayground({
+    onAddToGrid: (code: string, patternInstance: any) => {
+      console.log('[Contour] Pattern from playground:', patternInstance);
+      alert('Pattern created! (Grid integration not available in simple demo)');
+    },
+    onClose: () => {
+      console.log('[Contour] Playground closed');
+    }
+  });
+
+  keyboardShortcuts = new KeyboardShortcuts();
+
+  console.log('[Contour] Debug tools initialized');
+  console.log('[Contour] Press ? for keyboard shortcuts, Cmd+D for debug panel, Cmd+K for playground');
+}
+
+// Keyboard shortcuts handler
+document.addEventListener('keydown', (e) => {
+  // Question mark: show keyboard shortcuts help
+  if (e.key === '?' && !e.shiftKey) {
+    e.preventDefault();
+    if (keyboardShortcuts) {
+      keyboardShortcuts.toggle();
+    }
+    return;
+  }
+
+  // Cmd/Ctrl + D: toggle debug panel
+  if ((e.metaKey || e.ctrlKey) && e.key === 'd') {
+    e.preventDefault();
+    if (debugPanel) {
+      debugPanel.toggle();
+    }
+    return;
+  }
+
+  // Cmd/Ctrl + K: open pattern playground
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    if (patternPlayground) {
+      patternPlayground.show();
+    }
+    return;
+  }
+
+  // Escape: close modals
+  if (e.key === 'Escape') {
+    if (keyboardShortcuts?.isVisible()) {
+      keyboardShortcuts.hide();
+    } else if (patternPlayground?.isVisible()) {
+      patternPlayground.hide();
+    }
+    return;
+  }
+
+  // Space: play/pause
+  if (e.key === ' ' || e.code === 'Space') {
+    if (document.activeElement === document.body) {
+      e.preventDefault();
+      if (isPlaying) {
+        stopPlayback();
+      } else {
+        playMelody();
+      }
+    }
+    return;
+  }
+});
+
 // Export init function for HMR
 export async function init() {
   console.log('[Contour] Reinitializing after HMR...');
@@ -147,5 +233,12 @@ console.log(`
 ║  Try editing this file while playing!  ║
 ║  Hot-reload will fade audio smoothly.  ║
 ║                                        ║
+║  Press ? for keyboard shortcuts        ║
+║  Press Cmd+D for debug panel           ║
+║  Press Cmd+K for pattern playground    ║
+║                                        ║
 ╚════════════════════════════════════════╝
 `);
+
+// Initialize debug tools
+initDebugTools();
