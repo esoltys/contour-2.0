@@ -329,7 +329,7 @@ function initGrid() {
 
     // Pad content
     padElement.innerHTML = `
-      <div class="pad-edit" title="Edit pattern">✏️</div>
+      <div class="pad-edit">Edit Pattern</div>
       <div class="pad-icon">${pad.preset.icon}</div>
       <div class="pad-name">${pad.preset.name}</div>
     `;
