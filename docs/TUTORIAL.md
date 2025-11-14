@@ -398,9 +398,6 @@ Not built-in, but since it's just code, use git, VS Code Live Share, etc.
 **"What about sample playback?"**
 Not yet implemented - synths only for now. Use MIDI export and load samples in your DAW.
 
-**"How do I learn music theory for this?"**
-Start with the tutorial examples! You'll learn by doing. Also check out [musictheory.net](https://musictheory.net) for basics.
-
 ---
 
 ## Hello World: Your First Sound
