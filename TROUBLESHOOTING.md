@@ -15,7 +15,7 @@ does not provide an export named 'getTransportDebugger'
 1. Stop the dev server (Ctrl+C)
 2. Clear Vite cache:
    ```bash
-   cd packages/dev
+   cd packages/playground
    rm -rf node_modules/.vite
    ```
 3. Rebuild packages:
@@ -77,7 +77,7 @@ lsof -ti:3000 | xargs kill
 ### Hot Module Reload Not Working
 
 1. Check that Vite dev server is running
-2. Make sure you're editing files in `/packages/dev/src/`
+2. Make sure you're editing files in `/packages/playground/src/`
 3. Try hard refresh (Cmd/Ctrl + Shift + R)
 4. Restart dev server
 

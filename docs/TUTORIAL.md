@@ -27,7 +27,7 @@ First, make sure you have the project running:
 ```bash
 cd contour-2.0
 pnpm install
-cd packages/dev
+cd packages/playground
 pnpm dev
 ```
 
@@ -35,7 +35,7 @@ Open http://localhost:3000 in your browser.
 
 ### Your First Note
 
-Create a new file `my-first-composition.ts` in the `packages/dev/src` directory:
+Create a new file `my-first-composition.ts` in the `packages/playground/src` directory:
 
 ```typescript
 import { Pattern, Voice, Composition, BPM } from '@contour/core';
@@ -910,7 +910,7 @@ Contour is designed for live coding - writing and modifying music in real-time. 
 
 1. Start the dev server:
    ```bash
-   cd packages/dev
+   cd packages/playground
    pnpm dev
    ```
 
@@ -983,7 +983,7 @@ export const pattern = Pattern.euclidean(16, 7, rotation)
 The performance grid lets you trigger patterns live:
 
 ```bash
-cd packages/dev
+cd packages/playground
 pnpm dev
 # Open http://localhost:3000/performance.html
 ```

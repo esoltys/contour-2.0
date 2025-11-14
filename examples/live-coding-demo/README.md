@@ -2,7 +2,7 @@
 
 This example showcases the powerful mini-notation system and pattern algebra. This is a **console-based demonstration** that visualizes patterns as text output.
 
-**Note:** This demo does not play audio. For audio playback, use the browser-based dev server at `packages/dev` or the `bach-invention-4` example which exports MIDI files.
+**Note:** This demo does not play audio. For audio playback, use the browser-based dev server at `packages/playground` or the `bach-invention-4` example which exports MIDI files.
 
 ## Features Demonstrated
 
@@ -93,7 +93,7 @@ This demo visualizes patterns as text. To hear audio playback:
 ### Option 1: Browser-Based Dev Server (Recommended for Live Coding)
 ```bash
 # From project root
-cd packages/dev
+cd packages/playground
 pnpm dev
 # Open http://localhost:5173
 ```

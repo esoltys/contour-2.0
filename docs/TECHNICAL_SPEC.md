@@ -1176,7 +1176,7 @@ debugger.printReport();
 The development server includes an interactive debug panel with four tabs.
 
 ```typescript
-// packages/dev/src/ui/DebugPanel.ts
+// packages/playground/src/ui/DebugPanel.ts
 
 export type DebugPanelTab = 'transport' | 'patterns' | 'performance' | 'console';
 
@@ -1228,7 +1228,7 @@ export class DebugPanel {
 **Keyboard Shortcut Integration:**
 
 ```typescript
-// packages/dev/src/ui/KeyboardShortcuts.ts
+// packages/playground/src/ui/KeyboardShortcuts.ts
 
 export interface ShortcutDefinition {
   key: string;
@@ -1336,7 +1336,7 @@ export const musicalMatchers = {
 ### Vite Configuration
 
 ```typescript
-// packages/dev/vite.config.ts
+// packages/playground/vite.config.ts
 
 import { defineConfig } from 'vite';
 import { musicHMRPlugin } from './plugins/musicHMR';

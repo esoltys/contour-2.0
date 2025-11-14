@@ -104,7 +104,7 @@ All debug panel settings are saved to localStorage:
 ### Component Structure
 
 ```
-packages/dev/src/ui/
+packages/playground/src/ui/
 ├── DebugPanel.ts          # Main container
 ├── TransportInspector.ts  # Transport tab
 ├── PatternInspector.ts    # Pattern visualization tab
@@ -261,7 +261,7 @@ When the debug panel is hidden, updates are paused to minimize overhead.
 
 When adding new debug features:
 
-1. **Create component**: Add new `.ts` file in `packages/dev/src/ui/`
+1. **Create component**: Add new `.ts` file in `packages/playground/src/ui/`
 2. **Add styles**: Update `debug-panel.css` with component styles
 3. **Integrate**: Wire component into `DebugPanel.ts` or standalone
 4. **Document**: Update this README with usage examples

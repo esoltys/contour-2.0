@@ -15,7 +15,7 @@ This repository contains Contour 2.0, a TypeScript-first music composition frame
 - **`packages/core/`** - Core musical primitives (ZERO dependencies)
 - **`packages/tone-adapter/`** - Tone.js integration layer
 - **`packages/plugins/`** - Audio and MIDI renderer plugins
-- **`packages/dev/`** - Interactive development environment with debug tools
+- **`packages/playground/`** - Interactive development environment with debug tools
 - **`examples/`** - Example compositions including Bach Invention No. 4
 - **`docs/`** - Comprehensive documentation
 
