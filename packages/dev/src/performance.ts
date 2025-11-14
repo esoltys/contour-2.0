@@ -63,7 +63,6 @@ const state = new PerformanceState();
 const elements = {
   // Transport controls
   playBtn: document.getElementById('playBtn') as HTMLButtonElement,
-  stopBtn: document.getElementById('stopBtn') as HTMLButtonElement,
   bpmSlider: document.getElementById('bpmSlider') as HTMLInputElement,
   bpmValue: document.getElementById('bpmValue') as HTMLSpanElement,
   volumeSlider: document.getElementById('volumeSlider') as HTMLInputElement,
@@ -127,7 +126,6 @@ async function initAudio() {
 
 function enableControls() {
   elements.playBtn.disabled = false;
-  elements.stopBtn.disabled = false;
   elements.bpmSlider.disabled = false;
   elements.volumeSlider.disabled = false;
   elements.metronomeCheck.disabled = false;
@@ -601,8 +599,6 @@ function initEventListeners() {
       playAll();
     }
   });
-
-  elements.stopBtn.addEventListener('click', stopAll);
 
   elements.bpmSlider.addEventListener('input', (e) => {
     const bpm = parseInt((e.target as HTMLInputElement).value);
