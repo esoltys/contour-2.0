@@ -254,7 +254,17 @@ p1.palindrome();   // Forward then reverse
 
 ## Documentation
 
-Complete documentation is available in the `docs/` folder:
+### Learning Contour
+
+**New to Contour?** Start here:
+
+- **[TUTORIAL.md](docs/TUTORIAL.md)** - Complete tutorial from "Hello World" to advanced topics
+  - Beginner-friendly walkthrough
+  - Progressive examples
+  - Guides for users coming from TidalCycles, Sonic Pi, Overtone, Max/MSP, and more
+  - Covers all features with practical examples
+
+### Complete Documentation
 
 - **[CLAUDE.md](CLAUDE.md)** - Development guide and workflow (project root)
 - **[PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md)** - Vision, goals, user stories
@@ -264,8 +274,15 @@ Complete documentation is available in the `docs/` folder:
 - **[ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md)** - Record of major decisions
 - **[PHASE_5_SUMMARY.md](docs/PHASE_5_SUMMARY.md)** - Plugin architecture summary
 
-### Getting Started with Development
+### Getting Started Paths
 
+**For Users (Learning to compose with Contour):**
+1. Read [docs/TUTORIAL.md](docs/TUTORIAL.md) - Start here!
+2. Try the examples in `examples/`
+3. Explore the performance grid (http://localhost:3000/performance.html)
+4. Reference [docs/TECHNICAL_SPEC.md](docs/TECHNICAL_SPEC.md) for API details
+
+**For Contributors (Developing Contour itself):**
 1. Read [CLAUDE.md](CLAUDE.md) for workflow and coding standards
 2. Review [docs/PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) for project vision
 3. Follow [docs/QUICK_START.md](docs/QUICK_START.md) for implementation steps
