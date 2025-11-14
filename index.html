@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Contour - A TypeScript-first music composition framework for algorithmic and generative music. Build music using functional patterns, explore music theory, and create compositions impossible on physical instruments.">
-  <title>Contour - Music Composition as Code</title>
+  <title>CONTOUR // Music Composition as Code</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -13,26 +16,94 @@
     }
 
     :root {
-      --primary: #7aa2f7;
-      --primary-dark: #5a82d7;
-      --secondary: #bb9af7;
-      --accent: #9ece6a;
-      --dark: #24283b;
-      --darker: #1a1b26;
-      --light: #c0caf5;
-      --text: #c0caf5;
-      --text-muted: #a9b1d6;
-      --code-bg: rgba(65, 72, 104, 0.3);
-      --card-bg: rgba(65, 72, 104, 0.2);
-      --border: rgba(122, 162, 247, 0.2);
+      --bg-void: #0a0a0b;
+      --bg-panel: #16161a;
+      --bg-surface: #1f1f24;
+      --bg-elevated: #28282e;
+      --neon-cyan: #00fff5;
+      --neon-magenta: #ff00ff;
+      --neon-yellow: #ffff00;
+      --neon-green: #00ff41;
+      --text-primary: #e7e7ea;
+      --text-secondary: #94949a;
+      --text-tertiary: #5a5a62;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px var(--neon-cyan),
+                    0 0 40px var(--neon-cyan);
+      }
+      50% {
+        box-shadow: 0 0 30px var(--neon-cyan),
+                    0 0 60px var(--neon-cyan);
+      }
+    }
+
+    @keyframes slide-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes grid-glow {
+      0%, 100% { opacity: 0.05; }
+      50% { opacity: 0.15; }
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #1a1b26 0%, #24283b 50%, #1a1b26 100%);
-      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      background: var(--bg-void);
+      color: var(--text-primary);
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        transparent 50%,
+        rgba(0, 255, 245, 0.02) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.3;
+    }
+
+    /* Animated scanline */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent,
+        var(--neon-cyan),
+        transparent
+      );
+      opacity: 0.3;
+      animation: scanline 8s linear infinite;
+      pointer-events: none;
+      z-index: 9998;
     }
 
     /* Navigation */
@@ -41,15 +112,31 @@
       top: 0;
       left: 0;
       right: 0;
-      background: rgba(26, 27, 38, 0.95);
+      background: rgba(10, 10, 11, 0.98);
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 2px solid var(--neon-cyan);
       padding: 1rem 0;
       z-index: 1000;
+      animation: slide-in-up 0.6s ease-out;
+    }
+
+    nav::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        var(--neon-magenta),
+        var(--neon-yellow)
+      );
+      opacity: 0.5;
     }
 
     nav .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       padding: 0 2rem;
       display: flex;
@@ -58,9 +145,14 @@
     }
 
     nav .logo {
+      font-family: 'Archivo Black', sans-serif;
       font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     nav .nav-links {
@@ -70,38 +162,55 @@
     }
 
     nav a {
-      color: var(--text);
+      color: var(--text-secondary);
       text-decoration: none;
       font-weight: 500;
-      transition: color 0.3s ease;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      position: relative;
     }
 
     nav a:hover {
-      color: var(--primary);
+      color: var(--neon-cyan);
+    }
+
+    nav a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--neon-cyan);
+      transform: scaleX(0);
+      transition: transform 0.2s;
+    }
+
+    nav a:hover::after {
+      transform: scaleX(1);
     }
 
     /* Hero Section */
     .hero {
-      padding: 10rem 2rem 6rem;
+      padding: 12rem 2rem 8rem;
       text-align: center;
       position: relative;
       overflow: hidden;
     }
 
+    /* Grid background */
     .hero::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(122, 162, 247, 0.15) 0%, transparent 70%);
-      animation: pulse 8s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.5; }
-      50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.1;
+      animation: grid-glow 4s ease-in-out infinite;
     }
 
     .hero .container {
@@ -111,21 +220,46 @@
       z-index: 1;
     }
 
+    .hero-badge {
+      display: inline-block;
+      background: var(--neon-cyan);
+      color: var(--bg-void);
+      padding: 0.5rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      animation: slide-in-up 0.8s ease-out 0.2s both;
+    }
+
     .hero h1 {
-      font-size: 4rem;
-      font-weight: 800;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 5rem;
+      font-weight: 900;
       margin-bottom: 1.5rem;
-      color: white;
-      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      animation: slide-in-up 0.8s ease-out 0.3s both;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .hero .subtitle {
-      font-size: 1.5rem;
-      color: var(--text-muted);
+      font-size: 1.25rem;
+      color: var(--text-secondary);
       margin-bottom: 3rem;
-      max-width: 700px;
+      max-width: 800px;
       margin-left: auto;
       margin-right: auto;
+      line-height: 1.8;
+      animation: slide-in-up 0.8s ease-out 0.4s both;
     }
 
     .cta-buttons {
@@ -133,143 +267,241 @@
       gap: 1.5rem;
       justify-content: center;
       flex-wrap: wrap;
+      animation: slide-in-up 0.8s ease-out 0.5s both;
     }
 
     .btn {
-      padding: 1rem 2.5rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 12px;
+      padding: 1.25rem 2.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+      border: 2px solid var(--border-strong);
       cursor: pointer;
       text-decoration: none;
       display: inline-block;
-      transition: all 0.3s ease;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
       position: relative;
       overflow: hidden;
     }
 
+    .btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--neon-cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white;
-      box-shadow: 0 8px 32px rgba(122, 162, 247, 0.3);
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      color: var(--bg-void);
     }
 
     .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 48px rgba(122, 162, 247, 0.5);
+      filter: brightness(1.2);
+      animation: pulse-glow 2s ease-in-out infinite;
     }
 
     .btn-secondary {
-      background: var(--card-bg);
-      color: white;
-      border: 2px solid var(--border);
-      backdrop-filter: blur(10px);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary::before {
+      opacity: 0;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.1);
-      border-color: var(--primary);
+      border-color: var(--neon-cyan);
+    }
+
+    .btn-secondary:hover::before {
+      opacity: 0.1;
     }
 
     /* Features Section */
     .features {
-      padding: 6rem 2rem;
-      background: rgba(255, 255, 255, 0.02);
+      padding: 8rem 2rem;
+      background: var(--bg-panel);
+      position: relative;
+    }
+
+    .features::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        transparent 50%,
+        var(--neon-magenta)
+      );
     }
 
     .features .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
     .section-title {
+      font-family: 'Archivo Black', sans-serif;
       text-align: center;
-      font-size: 2.5rem;
-      font-weight: 700;
+      font-size: 3rem;
+      font-weight: 900;
       margin-bottom: 1rem;
-      color: white;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      position: relative;
+      display: inline-block;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .section-title::before {
+      content: '//';
+      position: absolute;
+      left: -2.5rem;
+      color: var(--neon-cyan);
+      font-size: 2.5rem;
     }
 
     .section-subtitle {
       text-align: center;
-      color: var(--text-muted);
-      font-size: 1.2rem;
-      margin-bottom: 4rem;
-      max-width: 600px;
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      margin-bottom: 5rem;
+      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.875rem;
     }
 
     .feature-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
       gap: 2rem;
     }
 
     .feature-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      padding: 2.5rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    /* Corner brackets */
+    .feature-card::before,
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border-strong);
+      transition: border-color 0.2s;
+    }
+
+    .feature-card::before {
+      top: 1rem;
+      left: 1rem;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .feature-card::after {
+      bottom: 1rem;
+      right: 1rem;
+      border-left: none;
+      border-top: none;
     }
 
     .feature-card:hover {
       transform: translateY(-5px);
-      border-color: var(--primary);
-      box-shadow: 0 12px 32px rgba(122, 162, 247, 0.2);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 12px 32px rgba(0, 255, 245, 0.2);
+    }
+
+    .feature-card:hover::before,
+    .feature-card:hover::after {
+      border-color: var(--neon-cyan);
     }
 
     .feature-icon {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
       display: block;
+      filter: grayscale(0.3);
     }
 
     .feature-card h3 {
-      font-size: 1.5rem;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.25rem;
       margin-bottom: 1rem;
-      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .feature-card p {
-      color: var(--text-muted);
-      line-height: 1.7;
+      color: var(--text-secondary);
+      line-height: 1.8;
+      font-size: 0.938rem;
     }
 
     /* Code Example Section */
     .code-example {
-      padding: 6rem 2rem;
+      padding: 8rem 2rem;
     }
 
     .code-example .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
     .code-demo {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
       gap: 2rem;
-      margin-top: 3rem;
+      margin-top: 4rem;
     }
 
     .code-block {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-strong);
       overflow: hidden;
+      position: relative;
+    }
+
+    .code-block::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-magenta),
+        transparent
+      );
     }
 
     .code-header {
-      background: rgba(255, 255, 255, 0.05);
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--primary);
+      background: var(--bg-surface);
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border-strong);
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--neon-cyan);
     }
 
     .code-content {
@@ -279,81 +511,234 @@
 
     pre {
       margin: 0;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.875rem;
+      line-height: 1.7;
     }
 
     code {
-      color: #e0e0e0;
+      color: var(--text-primary);
     }
 
     .code-comment {
-      color: #7c7c8c;
+      color: var(--text-tertiary);
     }
 
     .code-keyword {
-      color: #c792ea;
+      color: var(--neon-magenta);
     }
 
     .code-function {
-      color: #82aaff;
+      color: var(--neon-cyan);
     }
 
     .code-string {
-      color: #c3e88d;
+      color: var(--neon-green);
     }
 
     .code-number {
-      color: #f78c6c;
+      color: var(--neon-yellow);
     }
 
     /* Technology Stack */
     .tech-stack {
-      padding: 4rem 2rem;
-      background: rgba(255, 255, 255, 0.02);
+      padding: 6rem 2rem;
+      background: var(--bg-panel);
+      position: relative;
+    }
+
+    .tech-stack::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        transparent 50%,
+        var(--neon-magenta)
+      );
     }
 
     .tech-stack .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
     .tech-grid {
       display: flex;
       justify-content: center;
-      gap: 3rem;
+      gap: 4rem;
       flex-wrap: wrap;
-      margin-top: 3rem;
+      margin-top: 4rem;
     }
 
     .tech-item {
       text-align: center;
-      padding: 1.5rem;
-      min-width: 150px;
+      padding: 2rem;
+      min-width: 180px;
+      background: var(--bg-surface);
+      border: 2px solid var(--border-strong);
+      transition: all 0.2s;
+    }
+
+    .tech-item:hover {
+      border-color: var(--neon-cyan);
+      transform: translateY(-5px);
     }
 
     .tech-item .tech-name {
-      font-weight: 500;
-      font-size: 1.1rem;
-      margin-bottom: 0.25rem;
-      color: var(--text);
+      font-family: 'Archivo Black', sans-serif;
+      font-weight: 700;
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .tech-item .tech-desc {
-      color: var(--text-muted);
-      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Screenshots Section */
+    .screenshots {
+      padding: 8rem 2rem;
+    }
+
+    .screenshots .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .screenshot-carousel {
+      position: relative;
+      margin-top: 4rem;
+      background: var(--bg-panel);
+      border: 2px solid var(--border-strong);
+      overflow: hidden;
+    }
+
+    .screenshot-carousel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        transparent
+      );
+      z-index: 1;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .carousel-slide {
+      min-width: 100%;
+      flex-shrink: 0;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      max-height: 600px;
+      object-fit: contain;
+      display: block;
+      background: var(--bg-void);
+    }
+
+    .carousel-controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .carousel-btn {
+      width: 48px;
+      height: 48px;
+      background: rgba(10, 10, 11, 0.9);
+      border: 2px solid var(--border-strong);
+      color: var(--text-primary);
+      cursor: pointer;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(10px);
+    }
+
+    .carousel-btn:hover {
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      color: var(--bg-void);
+      transform: scale(1.05);
+    }
+
+    .carousel-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    .carousel-indicator {
+      width: 40px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .carousel-indicator.active {
+      background: var(--neon-cyan);
+      box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    .carousel-indicator:hover:not(.active) {
+      background: rgba(0, 255, 245, 0.3);
     }
 
     /* Footer */
     footer {
-      padding: 3rem 2rem;
-      background: var(--darker);
-      border-top: 1px solid var(--border);
+      padding: 4rem 2rem;
+      background: var(--bg-void);
+      border-top: 2px solid var(--neon-cyan);
+      position: relative;
+    }
+
+    footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        var(--neon-magenta),
+        var(--neon-yellow)
+      );
+      opacity: 0.7;
     }
 
     footer .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
       display: flex;
       justify-content: space-between;
@@ -362,50 +747,84 @@
       gap: 2rem;
     }
 
+    footer .copyright {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
     footer .footer-links {
       display: flex;
       gap: 2rem;
     }
 
     footer a {
-      color: var(--text-muted);
+      color: var(--text-secondary);
       text-decoration: none;
-      transition: color 0.3s ease;
+      transition: color 0.2s;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     footer a:hover {
-      color: var(--primary);
+      color: var(--neon-cyan);
     }
 
     /* Responsive */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .hero h1 {
-        font-size: 2.5rem;
-      }
-
-      .hero .subtitle {
-        font-size: 1.2rem;
+        font-size: 3.5rem;
       }
 
       .code-demo {
         grid-template-columns: 1fr;
       }
 
+      .section-title::before {
+        content: '';
+      }
+    }
+
+    @media (max-width: 768px) {
       nav .nav-links {
         gap: 1rem;
       }
 
-      .tech-grid {
-        gap: 1.5rem;
+      .hero {
+        padding: 10rem 1.5rem 6rem;
       }
 
-      .cta-section .container {
-        padding: 3rem 2rem;
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+
+      .hero .subtitle {
+        font-size: 1rem;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tech-grid {
+        gap: 2rem;
       }
 
       footer .container {
         flex-direction: column;
         text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
       }
     }
   </style>
@@ -414,7 +833,7 @@
   <!-- Navigation -->
   <nav>
     <div class="container">
-      <div class="logo">🎵 Contour</div>
+      <div class="logo">CONTOUR</div>
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#examples">Examples</a>
@@ -427,9 +846,14 @@
   <!-- Hero Section -->
   <section class="hero">
     <div class="container">
-      <h1>Music Composition as Code</h1>
+      <div class="hero-badge">TYPESCRIPT-FIRST FRAMEWORK</div>
+      <h1>
+        <span class="gradient-text">MUSIC</span><br>
+        COMPOSITION<br>
+        AS CODE
+      </h1>
       <p class="subtitle">
-        A TypeScript-first framework for algorithmic and generative music.
+        A powerful framework for algorithmic and generative music.
         Build compositions using functional patterns, explore music theory,
         and create music impossible on physical instruments.
       </p>
@@ -449,7 +873,7 @@
     <div class="container">
       <h2 class="section-title">Why Contour?</h2>
       <p class="section-subtitle">
-        A powerful framework designed for developers who want to explore music through code
+        Built for developers who explore music through code
       </p>
 
       <div class="feature-grid">
@@ -523,7 +947,7 @@
           <div class="code-header">Simple Melody</div>
           <div class="code-content">
 <pre><code><span class="code-comment">// Create a pattern with mini-notation</span>
-<span class="code-keyword">const</span> melody = pattern()
+<span class="code-keyword">const</span> melody = <span class="code-function">pattern</span>()
   .fromNotation(<span class="code-string">'C4 E4 G4 C5'</span>)
   .build();
 
@@ -561,7 +985,7 @@
           <div class="code-header">Pattern Algebra</div>
           <div class="code-content">
 <pre><code><span class="code-comment">// Conditional transformations</span>
-<span class="code-keyword">const</span> evolving = pattern()
+<span class="code-keyword">const</span> evolving = <span class="code-function">pattern</span>()
   .fromNotation(<span class="code-string">'C4 E4 G4'</span>)
   .<span class="code-function">every</span>(<span class="code-number">4</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">rev</span>())
   .<span class="code-function">every</span>(<span class="code-number">8</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">transpose</span>(<span class="code-number">7</span>))
@@ -606,11 +1030,11 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
       <div class="tech-grid">
         <div class="tech-item">
           <div class="tech-name">TypeScript</div>
-          <div class="tech-desc">Full type safety</div>
+          <div class="tech-desc">Full Type Safety</div>
         </div>
         <div class="tech-item">
           <div class="tech-name">Tone.js</div>
-          <div class="tech-desc">Web Audio engine</div>
+          <div class="tech-desc">Web Audio Engine</div>
         </div>
         <div class="tech-item">
           <div class="tech-name">Vite</div>
@@ -618,8 +1042,45 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
         </div>
         <div class="tech-item">
           <div class="tech-name">Vitest</div>
-          <div class="tech-desc">Testing framework</div>
+          <div class="tech-desc">Testing Framework</div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Section -->
+  <section class="screenshots">
+    <div class="container">
+      <h2 class="section-title">Live Playground</h2>
+      <p class="section-subtitle">
+        Interactive pattern grid with real-time audio
+      </p>
+
+      <div class="screenshot-carousel">
+        <div class="carousel-container">
+          <div class="carousel-track" id="carouselTrack">
+            <div class="carousel-slide">
+              <img src="images/Screenshot From 2025-11-14 12-41-02.png" alt="Contour Live Playground - Interactive 4x4 pattern grid" loading="lazy">
+            </div>
+            <div class="carousel-slide">
+              <img src="images/Screenshot From 2025-11-14 12-38-13.png" alt="Contour Debug Panel - Transport inspector and pattern analysis" loading="lazy">
+            </div>
+            <div class="carousel-slide">
+              <img src="images/Screenshot From 2025-11-14 12-38-23.png" alt="Contour Pattern Editor - Live coding interface" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="carousel-indicators">
+        <button class="carousel-indicator active" data-slide="0" aria-label="View slide 1"></button>
+        <button class="carousel-indicator" data-slide="1" aria-label="View slide 2"></button>
+        <button class="carousel-indicator" data-slide="2" aria-label="View slide 3"></button>
+      </div>
+
+      <div class="carousel-controls">
+        <button class="carousel-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+        <button class="carousel-btn" id="nextBtn" aria-label="Next slide">›</button>
       </div>
     </div>
   </section>
@@ -627,15 +1088,121 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
   <!-- Footer -->
   <footer>
     <div class="container">
-      <div>
-        <p>&copy; 2025 Eric James Soltys. Licensed under MIT.</p>
+      <div class="copyright">
+        <p>&copy; 2025 ERIC JAMES SOLTYS. MIT LICENSE.</p>
       </div>
       <div class="footer-links">
         <a href="https://github.com/esoltys/contour-2.0" target="_blank">GitHub</a>
         <a href="https://github.com/esoltys/contour-2.0/blob/main/README.md" target="_blank">Documentation</a>
-        <a href="https://github.com/esoltys/contour-2.0/blob/main/CLAUDE.md" target="_blank">Development Guide</a>
+        <a href="https://github.com/esoltys/contour-2.0/blob/main/CLAUDE.md" target="_blank">Dev Guide</a>
       </div>
     </div>
   </footer>
+
+  <script>
+    // Carousel functionality
+    (function() {
+      const track = document.getElementById('carouselTrack');
+      const prevBtn = document.getElementById('prevBtn');
+      const nextBtn = document.getElementById('nextBtn');
+      const indicators = document.querySelectorAll('.carousel-indicator');
+
+      let currentSlide = 0;
+      const totalSlides = 3;
+      let autoPlayInterval;
+
+      function goToSlide(index) {
+        currentSlide = index;
+        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+        // Update indicators
+        indicators.forEach((indicator, i) => {
+          indicator.classList.toggle('active', i === currentSlide);
+        });
+      }
+
+      function nextSlide() {
+        goToSlide((currentSlide + 1) % totalSlides);
+      }
+
+      function prevSlide() {
+        goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
+      }
+
+      function startAutoPlay() {
+        autoPlayInterval = setInterval(nextSlide, 5000); // Auto-advance every 5 seconds
+      }
+
+      function stopAutoPlay() {
+        clearInterval(autoPlayInterval);
+      }
+
+      // Event listeners
+      nextBtn.addEventListener('click', () => {
+        stopAutoPlay();
+        nextSlide();
+        startAutoPlay();
+      });
+
+      prevBtn.addEventListener('click', () => {
+        stopAutoPlay();
+        prevSlide();
+        startAutoPlay();
+      });
+
+      indicators.forEach((indicator, index) => {
+        indicator.addEventListener('click', () => {
+          stopAutoPlay();
+          goToSlide(index);
+          startAutoPlay();
+        });
+      });
+
+      // Pause auto-play on hover
+      const carousel = document.querySelector('.screenshot-carousel');
+      carousel.addEventListener('mouseenter', stopAutoPlay);
+      carousel.addEventListener('mouseleave', startAutoPlay);
+
+      // Keyboard navigation
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+          stopAutoPlay();
+          prevSlide();
+          startAutoPlay();
+        } else if (e.key === 'ArrowRight') {
+          stopAutoPlay();
+          nextSlide();
+          startAutoPlay();
+        }
+      });
+
+      // Touch/swipe support
+      let touchStartX = 0;
+      let touchEndX = 0;
+
+      carousel.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        stopAutoPlay();
+      });
+
+      carousel.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+        startAutoPlay();
+      });
+
+      function handleSwipe() {
+        if (touchEndX < touchStartX - 50) {
+          nextSlide();
+        }
+        if (touchEndX > touchStartX + 50) {
+          prevSlide();
+        }
+      }
+
+      // Start auto-play on load
+      startAutoPlay();
+    })();
+  </script>
 </body>
 </html>

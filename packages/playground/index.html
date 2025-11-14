@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contour 2.0 - Dev Server</title>
+  <title>CONTOUR // MUSIC AS CODE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     * {
       margin: 0;
@@ -11,159 +14,409 @@
       box-sizing: border-box;
     }
 
+    :root {
+      --bg-void: #0a0a0b;
+      --bg-panel: #16161a;
+      --bg-surface: #1f1f24;
+      --bg-elevated: #28282e;
+      --neon-cyan: #00fff5;
+      --neon-magenta: #ff00ff;
+      --neon-yellow: #ffff00;
+      --neon-green: #00ff41;
+      --text-primary: #e7e7ea;
+      --text-secondary: #94949a;
+      --text-tertiary: #5a5a62;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+      }
+      50% {
+        box-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-cyan);
+      }
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #1a1b26 0%, #24283b 100%);
-      color: #c0caf5;
+      font-family: 'DM Mono', monospace;
+      background: var(--bg-void);
+      color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Scanline effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        transparent 50%,
+        rgba(0, 255, 245, 0.02) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.3;
+    }
+
+    /* Animated scanline */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        transparent,
+        var(--neon-cyan),
+        transparent
+      );
+      opacity: 0.3;
+      animation: scanline 8s linear infinite;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.1;
+      pointer-events: none;
     }
 
     .container {
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
-      background: rgba(36, 40, 59, 0.8);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 40px;
-      box-shadow: 0 8px 32px 0 rgba(122, 162, 247, 0.2);
-      border: 1px solid rgba(122, 162, 247, 0.2);
+      background: var(--bg-panel);
+      border: 2px solid var(--border-strong);
+      padding: 3rem;
+      position: relative;
+      z-index: 1;
+      animation: fade-in 0.8s ease-out;
+    }
+
+    /* Corner accents */
+    .container::before,
+    .container::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--neon-cyan);
+    }
+
+    .container::before {
+      top: -2px;
+      left: -2px;
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .container::after {
+      bottom: -2px;
+      right: -2px;
+      border-left: none;
+      border-top: none;
+    }
+
+    /* Top accent bar */
+    .accent-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg,
+        var(--neon-cyan),
+        var(--neon-magenta),
+        var(--neon-yellow)
+      );
     }
 
     h1 {
-      font-size: 2.5rem;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 3rem;
       margin-bottom: 0.5rem;
       text-align: center;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
       text-align: center;
-      opacity: 0.9;
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
+      color: var(--text-secondary);
+      margin-bottom: 3rem;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 400;
     }
 
     .info {
-      background: rgba(65, 72, 104, 0.3);
-      border-radius: 10px;
-      padding: 20px;
+      background: var(--bg-surface);
+      border-left: 3px solid var(--neon-cyan);
+      padding: 1.5rem;
       margin-bottom: 2rem;
-      border: 1px solid rgba(122, 162, 247, 0.1);
+      position: relative;
     }
 
     .info h2 {
-      font-size: 1.2rem;
-      margin-bottom: 0.5rem;
-      color: #7aa2f7;
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .info p {
-      opacity: 0.9;
-      line-height: 1.6;
-      margin-bottom: 0.5rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .info p:last-child {
+      margin-bottom: 0;
     }
 
     .controls {
       display: flex;
       flex-direction: column;
       gap: 1rem;
+      margin-bottom: 2rem;
     }
 
     button {
-      padding: 15px 30px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
+      padding: 1rem 2rem;
+      font-size: 0.813rem;
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+      border: 2px solid var(--border-strong);
       cursor: pointer;
-      transition: all 0.3s ease;
-      color: white;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--neon-cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    button:hover:not(:disabled)::before {
+      opacity: 0.15;
+    }
+
+    button:hover:not(:disabled) {
+      border-color: var(--neon-cyan);
+      transform: translateY(-2px);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0);
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
-      box-shadow: 0 4px 15px 0 rgba(122, 162, 247, 0.4);
+      background: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      color: var(--bg-void);
+      font-weight: 500;
     }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px 0 rgba(122, 162, 247, 0.6);
+    .btn-primary:hover:not(:disabled) {
+      filter: brightness(1.2);
+      animation: pulse 2s ease-in-out infinite;
     }
 
     .btn-secondary {
-      background: rgba(65, 72, 104, 0.6);
-      border: 1px solid rgba(122, 162, 247, 0.3);
+      background: var(--bg-elevated);
+      border-color: var(--border-strong);
+      color: var(--text-primary);
     }
 
-    .btn-secondary:hover {
-      background: rgba(65, 72, 104, 0.8);
-      border-color: rgba(122, 162, 247, 0.5);
+    .btn-secondary:hover:not(:disabled) {
+      border-color: var(--neon-cyan);
     }
 
     .btn-danger {
-      background: #f7768e;
+      background: var(--bg-elevated);
+      border-color: var(--neon-magenta);
+      color: var(--neon-magenta);
     }
 
-    .btn-danger:hover {
-      background: #e85c7a;
-      transform: translateY(-2px);
+    .btn-danger:hover:not(:disabled) {
+      background: var(--neon-magenta);
+      color: var(--bg-void);
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.3;
       cursor: not-allowed;
       transform: none !important;
     }
 
     .status {
       text-align: center;
-      padding: 15px;
-      border-radius: 10px;
-      background: rgba(65, 72, 104, 0.3);
-      margin-top: 1rem;
-      font-weight: 600;
-      border: 1px solid rgba(122, 162, 247, 0.2);
+      padding: 1rem;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      border-left: 3px solid var(--border-strong);
+      font-weight: 500;
+      font-size: 0.813rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.3s;
     }
 
     .status.playing {
-      background: rgba(158, 206, 106, 0.2);
-      border-color: rgba(158, 206, 106, 0.5);
-      color: #9ece6a;
+      background: rgba(0, 255, 245, 0.1);
+      border-left-color: var(--neon-cyan);
+      color: var(--neon-cyan);
     }
 
     .status.stopped {
-      background: rgba(247, 118, 142, 0.2);
-      border-color: rgba(247, 118, 142, 0.5);
-      color: #f7768e;
+      background: rgba(255, 0, 255, 0.1);
+      border-left-color: var(--neon-magenta);
+      color: var(--neon-magenta);
     }
 
     code {
-      background: rgba(65, 72, 104, 0.5);
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-family: 'Courier New', monospace;
-      color: #bb9af7;
+      background: var(--bg-elevated);
+      padding: 0.25rem 0.5rem;
+      border: 1px solid var(--border-strong);
+      font-family: 'DM Mono', monospace;
+      color: var(--neon-cyan);
+      font-size: 0.813rem;
+    }
+
+    .cta-link {
+      display: block;
+      text-align: center;
+      margin-top: 2rem;
+      padding: 1.25rem;
+      background: var(--bg-surface);
+      border: 2px solid var(--neon-cyan);
+      text-decoration: none;
+      color: var(--neon-cyan);
+      font-weight: 500;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-link::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--neon-cyan);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .cta-link:hover {
+      background: var(--neon-cyan);
+      color: var(--bg-void);
+      box-shadow: 0 0 30px var(--neon-cyan);
+    }
+
+    .cta-link span {
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        font-size: 0.75rem;
+      }
+
+      button {
+        padding: 0.875rem 1.5rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>🎵 Contour 2.0</h1>
+    <div class="accent-bar"></div>
+
+    <h1>CONTOUR</h1>
     <p class="subtitle">Music Composition as Code</p>
 
     <div class="info">
-      <h2>About This Demo</h2>
+      <h2>// System Overview</h2>
       <p>
-        This demo tests the Tone.js integration layer with hot-reload support.
-        Click <strong>"Start Audio"</strong> to initialize the Web Audio API
+        This demo validates the Tone.js integration layer with hot-reload support.
+        Click <strong>START AUDIO</strong> to initialize the Web Audio API
         (required by browsers before playing any audio).
       </p>
       <p>
-        Try editing <code>src/main.ts</code> while audio is playing - you'll hear
-        a smooth fade during hot-reload instead of clicks and pops!
+        Try editing <code>src/main.ts</code> while audio is playing - you'll experience
+        a smooth fade during hot-reload instead of audio artifacts.
       </p>
     </div>
 
@@ -173,11 +426,9 @@
       <button id="stopBtn" class="btn-danger" disabled>Stop</button>
     </div>
 
-    <div style="margin-top: 2rem; text-align: center;">
-      <a href="/performance.html" style="color: #c0caf5; text-decoration: none; background: rgba(65, 72, 104, 0.4); padding: 0.75rem 1.5rem; border-radius: 8px; display: inline-block; font-weight: 600; border: 1px solid rgba(122, 162, 247, 0.3); transition: all 0.3s ease;">
-        🎹 Open Playground →
-      </a>
-    </div>
+    <a href="/performance.html" class="cta-link">
+      <span>→ OPEN LIVE PLAYGROUND</span>
+    </a>
 
     <div id="status" class="status stopped">
       Audio System: Not Started

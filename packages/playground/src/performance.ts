@@ -474,12 +474,14 @@ function startVisualization() {
     const waveform = state.waveformAnalyzer.getValue() as Float32Array;
 
     // Clear canvas
-    ctx.fillStyle = '#1a1b26';
+    ctx.fillStyle = '#0a0a0b';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw waveform
-    ctx.strokeStyle = '#7aa2f7';
+    // Draw waveform with neon cyan
+    ctx.strokeStyle = '#00fff5';
     ctx.lineWidth = 2;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = '#00fff5';
     ctx.beginPath();
 
     const sliceWidth = canvas.width / waveform.length;
