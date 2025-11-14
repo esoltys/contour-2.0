@@ -683,6 +683,13 @@ When working on Contour, focus on:
 - **Phase 9**: Performance optimizations and caching
 - **Phase 10**: Additional plugins (visualizers, notation export)
 - **Phase 11**: Advanced live coding features (pattern morphing, probabilistic patterns)
+- **Phase 12**: External sample library loading (SoundFonts, sample packs)
+  - Load .sf2 SoundFont files from URLs or local paths
+  - Type-safe instrument names with GM instrument autocomplete
+  - Mix sampled and synthesized instruments in compositions
+  - Toggle between synth/samples in playground demo
+  - Zero impact on core package (extension in tone-adapter)
+  - See [docs/SAMPLE_LIBRARY_SPEC.md](docs/SAMPLE_LIBRARY_SPEC.md) for full specification
 
 ## Quick Start for AI Assistants
 

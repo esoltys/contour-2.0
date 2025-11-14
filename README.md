@@ -16,6 +16,7 @@ Contour enables developers to compose music using functional patterns, explore a
 - **Interactive Debug Tools** - Real-time transport inspector, pattern analyzer, and performance monitor
 - **Multiple Export Formats** - Render to audio playback, WAV files, or MIDI
 - **Plugin Architecture** - Extensible renderer system
+- **Sample Library Support** - Load and use SoundFonts (.sf2) and external sample libraries (PLANNED)
 
 ## Quick Start
 
@@ -274,6 +275,8 @@ p1.palindrome();   // Forward then reverse
 - **[QUICK_START.md](docs/QUICK_START.md)** - Step-by-step implementation guide
 - **[ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md)** - Record of major decisions
 - **[PLUGIN_ARCHITECTURE.md](docs/PLUGIN_ARCHITECTURE.md)** - Plugin architecture summary
+- **[SAMPLE_LIBRARY_SPEC.md](docs/SAMPLE_LIBRARY_SPEC.md)** - Sample library loading specification (PLANNED)
+- **[SAMPLE_LIBRARY_INTEGRATION_SUMMARY.md](docs/SAMPLE_LIBRARY_INTEGRATION_SUMMARY.md)** - Sample library integration summary (PLANNED)
 
 ## Examples
 
@@ -349,6 +352,47 @@ const result = await renderer.render(composition);
 // Write to file
 fs.writeFileSync('output.mid', result.data);
 ```
+
+### Sample Libraries (PLANNED Feature)
+
+Contour will support loading external sample libraries for realistic instrument sounds:
+
+```typescript
+import { SampleLibraryManager } from '@contour/tone-adapter';
+
+// Load a SoundFont
+const sampleManager = new SampleLibraryManager();
+await sampleManager.loadLibrary({
+  name: 'GeneralUserGS',
+  format: 'soundfont',
+  url: 'https://example.com/GeneralUser-GS.sf2'
+});
+
+// Use sampled instruments in compositions
+const piano = new Voice(
+  melodyPattern,
+  'GeneralUserGS:AcousticGrandPiano'  // Sampled piano
+);
+
+const bass = new Voice(
+  bassPattern,
+  'synth'  // Mix with Tone.js synths
+);
+
+// Schedule and play
+const scheduler = new CompositionScheduler();
+scheduler.setSampleLibraryManager(sampleManager);
+scheduler.scheduleComposition(composition);
+```
+
+**Features:**
+- Load SoundFonts (.sf2) from URLs or local files
+- Type-safe instrument names with autocomplete
+- Mix sampled and synthesized instruments
+- Zero impact on core package (optional feature)
+- JSON-serializable composition format
+
+See [SAMPLE_LIBRARY_SPEC.md](docs/SAMPLE_LIBRARY_SPEC.md) for full specification.
 
 ## Testing
 
