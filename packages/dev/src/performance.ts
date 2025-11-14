@@ -127,6 +127,7 @@ function enableControls() {
   elements.bpmSlider.disabled = false;
   elements.volumeSlider.disabled = false;
   elements.clearAllBtn.disabled = false;
+  elements.demoBtn.disabled = false;
 }
 
 function setTempo(bpm: number) {
@@ -473,11 +474,11 @@ function startVisualization() {
     const waveform = state.waveformAnalyzer.getValue() as Float32Array;
 
     // Clear canvas
-    ctx.fillStyle = '#0a0e27';
+    ctx.fillStyle = '#1a1b26';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Draw waveform
-    ctx.strokeStyle = '#667eea';
+    ctx.strokeStyle = '#7aa2f7';
     ctx.lineWidth = 2;
     ctx.beginPath();
 
@@ -745,7 +746,7 @@ function init() {
   console.log(`
 ╔════════════════════════════════════════╗
 ║                                        ║
-║   🎵 Contour Live Performance 🎵      ║
+║   🎵 Contour Live Performance 🎵       ║
 ║                                        ║
 ║  Click pads or "Start Demo Jam"!       ║
 ║  Audio will initialize automatically.  ║
