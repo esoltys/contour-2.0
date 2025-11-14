@@ -4,6 +4,7 @@ import type { NoteEvent, ChordEvent, RestEvent } from '../../src/primitives/Even
 import { C, D, E, G } from '../../src/primitives/Note';
 import { Velocity } from '../../src/types/brands';
 import { Durations } from '../../src/types/music';
+import { Scale } from '../../src/theory/Scale';
 
 describe('PatternBuilder', () => {
   describe('construction', () => {
@@ -744,6 +745,84 @@ describe('PatternBuilder', () => {
       // Odd indices should be delayed
       expect(builtPattern.events[1].time).toBeGreaterThan(0.125);
       expect(builtPattern.events[3].time).toBeGreaterThan(0.375);
+    });
+  });
+
+  describe('withScale and degrees', () => {
+    it('creates pattern from scale degrees', () => {
+      const scale = new Scale('C4', 'major');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees([1, 3, 5, 8])
+        .build();
+
+      expect(pattern.events).toHaveLength(4);
+      expect(pattern.events[0].note.name).toBe('C4');
+      expect(pattern.events[1].note.name).toBe('E4');
+      expect(pattern.events[2].note.name).toBe('G4');
+      expect(pattern.events[3].note.name).toBe('C5');
+    });
+
+    it('throws error if degrees() called without withScale()', () => {
+      expect(() => {
+        new PatternBuilder().degrees([1, 3, 5]).build();
+      }).toThrow('Must call withScale() before using degrees()');
+    });
+
+    it('uses custom durations with degrees', () => {
+      const scale = new Scale('D4', 'Dorian');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees(
+          [1, 2, 3],
+          [Durations.half, Durations.quarter, Durations.eighth]
+        )
+        .build();
+
+      expect(pattern.events[0].duration).toBe(0.5);
+      expect(pattern.events[1].duration).toBe(0.25);
+      expect(pattern.events[2].duration).toBe(0.125);
+    });
+
+    it('uses single duration for all degrees', () => {
+      const scale = new Scale('E4', 'minorPentatonic');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees([1, 2, 3, 4, 5], Durations.sixteenth)
+        .build();
+
+      expect(pattern.events).toHaveLength(5);
+      expect(pattern.events.every(e => e.duration === 0.0625)).toBe(true);
+    });
+
+    it('can chain with other builder methods', () => {
+      const scale = new Scale('G4', 'major');
+
+      const pattern = new PatternBuilder()
+        .withDuration(Durations.eighth)
+        .note('G4')
+        .withScale(scale)
+        .degrees([2, 3, 4])
+        .rest()
+        .note('D5', Durations.half)
+        .build();
+
+      expect(pattern.events).toHaveLength(6); // 1 note + 3 degrees + 1 rest + 1 note
+    });
+
+    it('works with different modes', () => {
+      const phrygian = new Scale('E4', 'Phrygian');
+
+      const pattern = new PatternBuilder()
+        .withScale(phrygian)
+        .degrees([1, 2, 3])
+        .build();
+
+      // Phrygian has b2 (F instead of F#)
+      expect(pattern.events[1].note.name).toBe('F4');
     });
   });
 });
