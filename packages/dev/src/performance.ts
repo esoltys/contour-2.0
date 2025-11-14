@@ -28,7 +28,6 @@ class PerformanceState {
   isDemoRunning = false;
   bpm = 120;
   volume = 0;
-  metronomeEnabled = false;
   waveformAnalyzer: Tone.Analyser | null = null;
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;
@@ -67,7 +66,6 @@ const elements = {
   bpmValue: document.getElementById('bpmValue') as HTMLSpanElement,
   volumeSlider: document.getElementById('volumeSlider') as HTMLInputElement,
   volumeValue: document.getElementById('volumeValue') as HTMLSpanElement,
-  metronomeCheck: document.getElementById('metronomeCheck') as HTMLInputElement,
   clearAllBtn: document.getElementById('clearAllBtn') as HTMLButtonElement,
   demoBtn: document.getElementById('demoBtn') as HTMLButtonElement,
 
@@ -128,7 +126,6 @@ function enableControls() {
   elements.playBtn.disabled = false;
   elements.bpmSlider.disabled = false;
   elements.volumeSlider.disabled = false;
-  elements.metronomeCheck.disabled = false;
   elements.clearAllBtn.disabled = false;
 }
 
@@ -170,23 +167,25 @@ function playAll() {
 function stopAll() {
   if (!state.scheduler) return;
 
-  console.log('[Contour] Stopping playback...');
+  console.log('[Contour] Pausing playback...');
   state.scheduler.stop();
-  state.scheduler.clear();
   state.isPlaying = false;
 
-  // Deactivate all pads
-  state.pads.forEach(pad => {
-    pad.isActive = false;
-  });
-
+  // Note: We keep pads active so they can resume when Play is pressed again
   // Update UI
   elements.playBtn.textContent = '▶';
   updatePadVisuals();
 }
 
 function clearAll() {
-  stopAll();
+  if (!state.scheduler) return;
+
+  console.log('[Contour] Clearing all patterns...');
+  state.scheduler.stop();
+  state.scheduler.clear();
+  state.isPlaying = false;
+
+  // Deactivate all pads
   state.pads.forEach(pad => {
     pad.isActive = false;
     pad.pattern = null;
@@ -610,11 +609,6 @@ function initEventListeners() {
     setVolume(volume);
   });
 
-  elements.metronomeCheck.addEventListener('change', (e) => {
-    state.metronomeEnabled = (e.target as HTMLInputElement).checked;
-    // TODO: Implement metronome
-    console.log('[Contour] Metronome:', state.metronomeEnabled);
-  });
 
   elements.clearAllBtn.addEventListener('click', clearAll);
   elements.demoBtn.addEventListener('click', playDemoJam);
