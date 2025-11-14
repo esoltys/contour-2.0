@@ -746,9 +746,9 @@ function init() {
   console.log(`
 ╔════════════════════════════════════════╗
 ║                                        ║
-║   🎵 Contour Live Performance 🎵       ║
+║      🎵 Contour Playground 🎵          ║
 ║                                        ║
-║  Click pads or "Start Demo Jam"!       ║
+║  Click pads or "Start Playground"!     ║
 ║  Audio will initialize automatically.  ║
 ║                                        ║
 ║  Press ? for keyboard shortcuts        ║

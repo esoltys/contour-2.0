@@ -46,7 +46,7 @@ pnpm test
 Start the development server with hot-reload:
 
 ```bash
-cd packages/dev
+cd packages/playground
 pnpm dev
 ```
 
@@ -69,7 +69,7 @@ pnpm run export
 pnpm test
 
 # For audio playback, use the browser-based dev server instead:
-cd ../../packages/dev
+cd ../../packages/playground
 pnpm dev
 # Then open http://localhost:3000
 ```
@@ -79,7 +79,7 @@ pnpm dev
 Explore live pattern performance with the interactive grid interface:
 
 ```bash
-cd packages/dev
+cd packages/playground
 pnpm dev
 # Open http://localhost:3000/performance.html
 ```

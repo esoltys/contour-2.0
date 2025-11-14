@@ -128,7 +128,7 @@ contour/
 │   │   └── midi/           # @contour/plugin-midi - MIDI File Format 1
 │   │       ├── src/MIDIRenderer.ts
 │   │       └── tests/
-│   └── dev/                # @contour/dev - Vite dev server with interactive UI
+│   └── playground/         # @contour/playground - Interactive playground with debug tools
 │       ├── src/
 │       │   ├── main.ts         # Main dev entry point
 │       │   ├── performance.ts  # 4×4 interactive pattern grid
@@ -546,7 +546,7 @@ Success = composition renders to audio that is recognizable as Bach Invention No
 
 ### Interactive Development Environment
 
-The `@contour/dev` package provides a rich interactive development environment with multiple tools:
+The `@contour/playground` package provides a rich interactive development environment with multiple tools:
 
 #### 1. Simple Playback Demo (`index.html`)
 - Run: `pnpm dev` (opens http://localhost:3000)
