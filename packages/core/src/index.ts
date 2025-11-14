@@ -4,6 +4,7 @@
 // Types
 export * from './types/brands';
 export * from './types/music';
+export * from './types/theory';
 
 // Primitives
 export * from './primitives/Note';
@@ -29,3 +30,6 @@ export * from './debug/Logger';
 export * from './debug/PatternInspector';
 export * from './debug/Validator';
 export * from './errors/MusicalError';
+
+// Music Theory (Phase 7)
+export * from './theory';

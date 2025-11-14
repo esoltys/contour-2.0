@@ -294,6 +294,86 @@ export class Pattern {
   toConsole(options?: { showVelocity?: boolean }): void {
     PatternInspector.toConsole(this, options);
   }
+
+  /**
+   * Quantize pattern notes to a scale (snap to nearest scale degree).
+   *
+   * This method adjusts all note events to the nearest pitch in the given scale.
+   * Useful for constraining melodic content to a specific scale or mode.
+   *
+   * @param scale - Scale to quantize to
+   * @returns New Pattern with quantized notes
+   *
+   * @example
+   * ```typescript
+   * import { Scale, PatternBuilder } from '@contour/core';
+   *
+   * // Create a chromatic melody
+   * const chromatic = new PatternBuilder()
+   *   .notes(['C4', 'C#4', 'D4', 'D#4', 'E4'])
+   *   .build();
+   *
+   * // Quantize to C major scale
+   * const cMajor = new Scale('C4', 'major');
+   * const quantized = chromatic.inScale(cMajor);
+   * // C#4 becomes D4, D#4 becomes E4
+   * ```
+   */
+  inScale(scale: any): Pattern {
+    // Import Scale type dynamically to avoid circular dependency
+    const scaleNotes = scale.getNotes();
+
+    return this.map((event) => {
+      if (event.type === 'note') {
+        // Find nearest scale note by pitch
+        let nearestNote = scaleNotes[0];
+        let minDistance = Math.abs(scaleNotes[0].pitch - event.pitch);
+
+        for (const scaleNote of scaleNotes) {
+          const distance = Math.abs(scaleNote.pitch - event.pitch);
+          // In case of tie, prefer the higher note (upward snap)
+          if (distance < minDistance ||
+              (distance === minDistance && scaleNote.pitch > nearestNote.pitch)) {
+            minDistance = distance;
+            nearestNote = scaleNote;
+          }
+        }
+
+        return {
+          ...event,
+          note: nearestNote,
+          pitch: nearestNote.pitch,
+        };
+      }
+
+      if (event.type === 'chord') {
+        // Quantize each note in the chord
+        const quantizedNotes = event.notes.map((note) => {
+          let nearestNote = scaleNotes[0];
+          let minDistance = Math.abs(scaleNotes[0].pitch - note.pitch);
+
+          for (const scaleNote of scaleNotes) {
+            const distance = Math.abs(scaleNote.pitch - note.pitch);
+            // In case of tie, prefer the higher note (upward snap)
+            if (distance < minDistance ||
+                (distance === minDistance && scaleNote.pitch > nearestNote.pitch)) {
+              minDistance = distance;
+              nearestNote = scaleNote;
+            }
+          }
+
+          return nearestNote;
+        });
+
+        return {
+          ...event,
+          notes: quantizedNotes,
+        };
+      }
+
+      return event;
+    });
+  }
 }
 
 /**
