@@ -5,6 +5,7 @@ import {
   SampleLibraryManager,
   SampleAdapter,
   SynthAdapter,
+  DrumAdapter,
   type InstrumentAdapter
 } from '@contour/tone-adapter';
 import { PATTERN_PRESETS, type PatternPreset } from './patterns/presets.js';
@@ -354,27 +355,34 @@ async function togglePad(padId: string) {
     // Create instrument adapter based on mode and category
     let instrument: InstrumentAdapter;
 
-    if (state.useSamples && pad.preset.category !== 'drums') {
-      // Use samples for bass, melody, effects
-      const categoryMap = state.instrumentMap[pad.preset.category as keyof typeof state.instrumentMap];
-
-      if (!categoryMap) {
-        console.warn(`[Contour] No category mapping for ${pad.preset.category}, falling back to synth`);
-        instrument = new SynthAdapter();
+    if (state.useSamples) {
+      // Use samples - either drums or melodic instruments
+      if (pad.preset.category === 'drums') {
+        // Use drum samples (CR78 kit)
+        instrument = new DrumAdapter('CR78');
+        console.log(`[Contour] Using CR78 drum samples for ${pad.preset.name}`);
       } else {
-        const instrumentName = categoryMap[pad.preset.id as keyof typeof categoryMap];
+        // Use melodic samples for bass, melody, effects
+        const categoryMap = state.instrumentMap[pad.preset.category as keyof typeof state.instrumentMap];
 
-        if (!instrumentName || !state.sampleLibraryManager) {
-          console.warn(`[Contour] No instrument mapping for ${pad.preset.category}/${pad.preset.id}, falling back to synth`);
+        if (!categoryMap) {
+          console.warn(`[Contour] No category mapping for ${pad.preset.category}, falling back to synth`);
           instrument = new SynthAdapter();
         } else {
-          const soundfontInst = state.sampleLibraryManager.getInstrument(instrumentName);
-          instrument = new SampleAdapter(soundfontInst, Tone.context.rawContext as AudioContext);
-          console.log(`[Contour] Using sample instrument: ${instrumentName} for ${pad.preset.name}`);
+          const instrumentName = categoryMap[pad.preset.id as keyof typeof categoryMap];
+
+          if (!instrumentName || !state.sampleLibraryManager) {
+            console.warn(`[Contour] No instrument mapping for ${pad.preset.category}/${pad.preset.id}, falling back to synth`);
+            instrument = new SynthAdapter();
+          } else {
+            const soundfontInst = state.sampleLibraryManager.getInstrument(instrumentName);
+            instrument = new SampleAdapter(soundfontInst, Tone.context.rawContext as AudioContext);
+            console.log(`[Contour] Using sample instrument: ${instrumentName} for ${pad.preset.name}`);
+          }
         }
       }
     } else {
-      // Use synth for drums or when samples disabled
+      // Use synth when samples disabled
       instrument = new SynthAdapter();
       console.log(`[Contour] Using synth for ${pad.preset.name}`);
     }
@@ -490,11 +498,13 @@ function initGrid() {
     padElement.className = 'pad';
     padElement.dataset.padId = padId;
 
-    // Determine if this pad supports samples
-    const supportsSamples = pad.preset.category !== 'drums';
-    const sampleBadge = supportsSamples ?
-      '<div class="pad-sample-badge" title="Uses samples when enabled">🎻</div>' :
-      '<div class="pad-synth-badge" title="Always uses synth">🎹</div>';
+    // Determine the sample badge for this pad
+    let sampleBadge: string;
+    if (pad.preset.category === 'drums') {
+      sampleBadge = '<div class="pad-sample-badge" title="Uses drum samples when enabled">🥁</div>';
+    } else {
+      sampleBadge = '<div class="pad-sample-badge" title="Uses samples when enabled">🎻</div>';
+    }
 
     // Pad content
     padElement.innerHTML = `

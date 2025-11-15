@@ -9,6 +9,8 @@ export { MusicalSynth } from './wrappers/MusicalSynth';
 export type { InstrumentAdapter } from './wrappers/InstrumentAdapter.js';
 export { SynthAdapter } from './wrappers/SynthAdapter.js';
 export { SampleAdapter } from './wrappers/SampleAdapter.js';
+export { DrumAdapter } from './wrappers/DrumAdapter.js';
+export type { DrumKit } from './wrappers/DrumAdapter.js';
 
 // Hot Module Replacement
 export { HMRHandler } from './hmr/HMRHandler';
