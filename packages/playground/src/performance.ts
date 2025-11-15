@@ -643,18 +643,9 @@ function initGrid() {
     padElement.className = 'pad';
     padElement.dataset.padId = padId;
 
-    // Determine the sample badge for this pad
-    let sampleBadge: string;
-    if (pad.preset.category === 'drums') {
-      sampleBadge = '<div class="pad-sample-badge" title="Uses drum samples when enabled">🥁</div>';
-    } else {
-      sampleBadge = '<div class="pad-sample-badge" title="Uses samples when enabled">🎻</div>';
-    }
-
     // Pad content
     padElement.innerHTML = `
       <div class="pad-edit">Edit Pattern</div>
-      ${sampleBadge}
       <div class="pad-icon">${pad.preset.icon}</div>
       <div class="pad-name">${pad.preset.name}</div>
     `;
