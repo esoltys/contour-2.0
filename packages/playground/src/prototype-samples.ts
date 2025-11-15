@@ -225,23 +225,29 @@ async function playChord() {
   });
 }
 
-// Play simple melody
+// Play simple melody (Ode to Joy)
 async function playMelody() {
   if (!currentInstrument) return;
 
   const melody = [
-    { note: 'C4', time: 0, duration: 0.5 },
-    { note: 'D4', time: 0.5, duration: 0.5 },
-    { note: 'E4', time: 1.0, duration: 0.5 },
-    { note: 'F4', time: 1.5, duration: 0.5 },
-    { note: 'G4', time: 2.0, duration: 0.5 },
-    { note: 'G4', time: 2.5, duration: 0.5 },
-    { note: 'A4', time: 3.0, duration: 0.5 },
-    { note: 'A4', time: 3.5, duration: 0.5 },
-    { note: 'G4', time: 4.0, duration: 1.0 },
+    { note: 'E4', time: 0, duration: 0.4 },
+    { note: 'E4', time: 0.5, duration: 0.4 },
+    { note: 'F4', time: 1.0, duration: 0.4 },
+    { note: 'G4', time: 1.5, duration: 0.4 },
+    { note: 'G4', time: 2.0, duration: 0.4 },
+    { note: 'F4', time: 2.5, duration: 0.4 },
+    { note: 'E4', time: 3.0, duration: 0.4 },
+    { note: 'D4', time: 3.5, duration: 0.4 },
+    { note: 'C4', time: 4.0, duration: 0.4 },
+    { note: 'C4', time: 4.5, duration: 0.4 },
+    { note: 'D4', time: 5.0, duration: 0.4 },
+    { note: 'E4', time: 5.5, duration: 0.4 },
+    { note: 'E4', time: 6.0, duration: 0.6 },
+    { note: 'D4', time: 6.7, duration: 0.3 },
+    { note: 'D4', time: 7.0, duration: 0.8 },
   ];
 
-  log('Playing simple melody...');
+  log('Playing Ode to Joy...');
 
   melody.forEach(({ note, time, duration }) => {
     setTimeout(() => {
