@@ -391,9 +391,22 @@ async function loadSampleInstruments(): Promise<void> {
 
     console.log('[Contour] Sample instruments loaded');
 
-    // Update all pad badges
+    // Update all pad badges to show sample mode
     state.pads.forEach((pad) => {
-      updatePadBadge(pad.id, pad.instrument || 'synth');
+      // Get the instrument name for this pad
+      const categoryMap = state.instrumentMap[pad.preset.category as keyof typeof state.instrumentMap];
+      let instrumentName = 'synth';
+
+      if (pad.preset.category === 'drums') {
+        instrumentName = 'MusyngKite:drums'; // Placeholder for drum kit
+      } else if (categoryMap) {
+        const gmInstrument = categoryMap[pad.preset.id as keyof typeof categoryMap];
+        if (gmInstrument) {
+          instrumentName = `MusyngKite:${gmInstrument}`;
+        }
+      }
+
+      updatePadBadge(pad.id, instrumentName);
     });
   } catch (error) {
     console.error('[Contour] Failed to load sample instruments:', error);
