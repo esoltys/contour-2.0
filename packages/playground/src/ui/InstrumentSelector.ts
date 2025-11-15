@@ -9,9 +9,13 @@
  * - Apply selected instrument to current pad
  */
 
-import { SampleLibraryManager } from '@contour/tone-adapter';
-import { GMInstrument, SoundfontLibrary, createQualifiedName } from '@contour/tone-adapter';
-import { MusicalSampler } from '@contour/tone-adapter';
+import {
+  SampleLibraryManager,
+  GMInstrument,
+  SoundfontLibrary,
+  createQualifiedName,
+  MusicalSampler
+} from '@contour/tone-adapter';
 
 export type InstrumentCategory =
   | 'all'
