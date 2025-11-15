@@ -4,6 +4,7 @@ export { CompositionScheduler } from './scheduling/CompositionScheduler';
 
 // Musical Wrappers
 export { MusicalSynth } from './wrappers/MusicalSynth';
+export { MusicalSampler } from './wrappers/MusicalSampler';
 
 // Instrument Adapters
 export type { InstrumentAdapter } from './wrappers/InstrumentAdapter.js';
@@ -24,9 +25,21 @@ export type {
   TransportSnapshot,
 } from './debug/TransportDebugger';
 
-// Sample Library Loading (PROTOTYPE - Phase 12)
-export { SampleLibraryManager } from './samples/index.js';
-export type { SampleLibraryConfig } from './samples/index.js';
+// Sample Library Loading (Phase 12)
+export {
+  SampleLibraryManager,
+  GMInstrument,
+  SoundfontLibrary,
+  createQualifiedName,
+  parseQualifiedName,
+  isQualifiedName,
+} from './samples/index.js';
+export type {
+  SampleLibraryConfig,
+  SoundfontInstrument,
+  SoundfontFormat,
+  QualifiedInstrumentName,
+} from './samples/index.js';
 
 // Re-export Tone.js for convenience
 export * as Tone from 'tone';

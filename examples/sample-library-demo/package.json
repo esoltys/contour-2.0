@@ -1,0 +1,18 @@
+{
+  "name": "@contour-examples/sample-library-demo",
+  "version": "1.0.0",
+  "description": "Demonstration of Contour's sample library integration using soundfont-player",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "play": "tsx simple-melody.ts",
+    "dev": "tsx watch simple-melody.ts"
+  },
+  "dependencies": {
+    "@contour/core": "workspace:*",
+    "@contour/tone-adapter": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0"
+  }
+}

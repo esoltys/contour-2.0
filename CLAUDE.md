@@ -530,6 +530,16 @@ class PluginRegistry {
 - [x] Interactive pattern grid with 16 musical presets
 - [x] Visual pattern timeline with note visualization
 
+### Phase 12A Complete ✅ (Sample Library Integration - Phase 1)
+- [x] TypeScript type definitions (GMInstrument enum, SoundfontLibrary enum, typed interfaces)
+- [x] MusicalSampler Tone.js wrapper for soundfont-player integration
+- [x] CompositionScheduler integration with qualified instrument names ('Library:Instrument')
+- [x] Automatic instrument loading via SampleLibraryManager
+- [x] Support for mixing sampled instruments and Tone.js synths
+- [x] Full Tone.js effects chain compatibility (reverb, delay, filters)
+- [x] Demo example with simple melody and chord progression
+- [x] Comprehensive usage documentation
+
 ## Acceptance Test: Bach Invention No. 4
 
 The primary acceptance criteria is implementing Bach's Invention No. 4 in D Minor (BWV 775). This piece demonstrates:
@@ -683,12 +693,12 @@ When working on Contour, focus on:
 - **Phase 9**: Performance optimizations and caching
 - **Phase 10**: Additional plugins (visualizers, notation export)
 - **Phase 11**: Advanced live coding features (pattern morphing, probabilistic patterns)
-- **Phase 12**: External sample library loading (SoundFonts, sample packs)
-  - Load .sf2 SoundFont files from URLs or local paths
-  - Type-safe instrument names with GM instrument autocomplete
-  - Mix sampled and synthesized instruments in compositions
-  - Toggle between synth/samples in playground demo
-  - Zero impact on core package (extension in tone-adapter)
+- **Phase 12B**: Sample library enhancements (Phase 2+)
+  - Playground UI integration with toggle button
+  - Load .sf2 SoundFont files from local paths (not just CDN)
+  - Velocity layers and articulations
+  - Custom sample pack support
+  - Advanced: .sf2 parser for offline use (currently uses CDN-hosted pre-rendered samples)
   - See [docs/SAMPLE_LIBRARY_SPEC.md](docs/SAMPLE_LIBRARY_SPEC.md) for full specification
 
 ## Quick Start for AI Assistants
