@@ -23,12 +23,12 @@ interface PadState {
   id: string;
   preset: PatternPreset;
   pattern: Pattern | null;
+  scheduler: PatternScheduler | null;
   isActive: boolean;
   code: string;
 }
 
 class PerformanceState {
-  scheduler: PatternScheduler | null = null;
   pads: Map<string, PadState> = new Map();
   isAudioStarted = false;
   isPlaying = false;
@@ -52,7 +52,7 @@ class PerformanceState {
   // Instrument mapping for each category
   instrumentMap = {
     bass: {
-      'bass-groove': 'acoustic_bass',
+      'bass-groove': 'electric_bass_finger',
       'acid-bass': 'synth_bass_1',
       'walking-bass': 'acoustic_bass',
       'sub-bass': 'synth_bass_2'
@@ -79,6 +79,7 @@ class PerformanceState {
         id: padId,
         preset,
         pattern: null,
+        scheduler: null,
         isActive: false,
         code: preset.code
       });
@@ -129,10 +130,6 @@ async function initAudio() {
     // Start Tone.js
     await Tone.start();
 
-    // Create scheduler
-    state.scheduler = new PatternScheduler();
-    state.scheduler.setTempo(state.bpm);
-
     // Set initial volume
     Tone.getDestination().volume.value = state.volume;
 
@@ -167,9 +164,12 @@ function enableControls() {
 
 function setTempo(bpm: number) {
   state.bpm = bpm;
-  if (state.scheduler) {
-    state.scheduler.setTempo(bpm);
-  }
+  // Update tempo on all active pad schedulers
+  state.pads.forEach(pad => {
+    if (pad.scheduler) {
+      pad.scheduler.setTempo(bpm);
+    }
+  });
   elements.bpmValue.textContent = bpm.toString();
 }
 
@@ -180,20 +180,17 @@ function setVolume(db: number) {
 }
 
 function playAll() {
-  if (!state.scheduler || state.isPlaying) return;
+  if (state.isPlaying) return;
 
   console.log('[Contour] Starting playback...');
   state.isPlaying = true;
 
-  // Schedule all active patterns
+  // Start all active pad schedulers
   state.pads.forEach(pad => {
-    if (pad.isActive && pad.pattern) {
-      state.scheduler!.schedule(pad.pattern);
+    if (pad.isActive && pad.scheduler) {
+      pad.scheduler.start();
     }
   });
-
-  // Start transport
-  state.scheduler.start();
 
   // Update UI
   elements.playBtn.textContent = 'Pause';
@@ -201,11 +198,15 @@ function playAll() {
 }
 
 function stopAll() {
-  if (!state.scheduler) return;
-
   console.log('[Contour] Pausing playback...');
-  state.scheduler.stop();
   state.isPlaying = false;
+
+  // Stop all active pad schedulers
+  state.pads.forEach(pad => {
+    if (pad.scheduler) {
+      pad.scheduler.stop();
+    }
+  });
 
   // Note: We keep pads active so they can resume when Play is pressed again
   // Update UI
@@ -214,15 +215,17 @@ function stopAll() {
 }
 
 function clearAll() {
-  if (!state.scheduler) return;
-
   console.log('[Contour] Clearing all patterns...');
-  state.scheduler.stop();
-  state.scheduler.clear();
   state.isPlaying = false;
 
-  // Deactivate all pads
+  // Deactivate all pads and dispose their schedulers
   state.pads.forEach(pad => {
+    if (pad.scheduler) {
+      pad.scheduler.stop();
+      pad.scheduler.clear();
+      pad.scheduler.dispose();
+      pad.scheduler = null;
+    }
     pad.isActive = false;
     pad.pattern = null;
   });
@@ -247,14 +250,17 @@ async function toggleSamples() {
     // Switching to samples - load soundfonts
     try {
       toggleBtn.disabled = true;
-      toggleBtn.textContent = 'Loading samples...';
+
+      // Pause playback during loading
+      const wasPlaying = state.isPlaying;
+      if (wasPlaying) {
+        stopAll();
+      }
 
       // Initialize sample library manager if needed
       if (!state.sampleLibraryManager) {
         state.sampleLibraryManager = new SampleLibraryManager();
-        await state.sampleLibraryManager.initialize({
-          soundfontUrl: 'https://gleitz.github.io/midi-js-soundfonts/MusyngKite'
-        });
+        await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
       }
 
       // Collect unique instrument names from the mapping
@@ -280,16 +286,26 @@ async function toggleSamples() {
 
       console.log('[Contour] Final list of instruments to load:', validInstrumentNames);
 
-      await Promise.all(
-        validInstrumentNames.map(name => {
-          console.log(`[Contour] Loading instrument: ${name}`);
-          return state.sampleLibraryManager!.loadInstrument({ instrument: name });
-        })
-      );
+      // Load instruments one at a time to show progress
+      const total = validInstrumentNames.length;
+      let loaded = 0;
+
+      for (const name of validInstrumentNames) {
+        toggleBtn.textContent = `Loading samples... ${loaded}/${total}`;
+        console.log(`[Contour] Loading instrument ${loaded + 1}/${total}: ${name}`);
+        await state.sampleLibraryManager!.loadInstrument({ instrument: name });
+        loaded++;
+      }
 
       state.useSamples = true;
       toggleBtn.textContent = '🎹 Use Synths';
       console.log('[Contour] Switched to sampled instruments');
+
+      // Resume playback if it was playing before
+      if (wasPlaying) {
+        rescheduleActivePads();
+        playAll();
+      }
     } catch (error) {
       console.error('[Contour] Failed to load samples:', error);
       alert(`Failed to load samples: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -318,7 +334,7 @@ async function togglePad(padId: string) {
   }
 
   const pad = state.pads.get(padId);
-  if (!pad || !state.scheduler) return;
+  if (!pad) return;
 
   pad.isActive = !pad.isActive;
 
@@ -363,8 +379,10 @@ async function togglePad(padId: string) {
       console.log(`[Contour] Using synth for ${pad.preset.name}`);
     }
 
-    // Set the instrument on the scheduler
-    state.scheduler.setInstrument(instrument);
+    // Create a new scheduler for this pad with its instrument
+    pad.scheduler = new PatternScheduler(instrument);
+    pad.scheduler.setTempo(state.bpm);
+    pad.scheduler.schedule(pad.pattern);
 
     // Register pattern with debug panel
     if (state.debugPanel) {
@@ -374,12 +392,12 @@ async function togglePad(padId: string) {
       }
     }
 
-    // Auto-start playback if not already playing
-    if (!state.isPlaying) {
-      playAll();
+    // If already playing, start this pad's scheduler
+    if (state.isPlaying) {
+      pad.scheduler.start();
     } else {
-      // If already playing, schedule this pattern immediately
-      state.scheduler.schedule(pad.pattern);
+      // Auto-start playback if not already playing
+      playAll();
     }
   } else {
     // Unregister pattern from debug panel
@@ -390,9 +408,12 @@ async function togglePad(padId: string) {
       }
     }
 
-    // If playing, we need to restart to remove this pattern
-    if (state.isPlaying) {
-      rescheduleActivePads();
+    // Stop and dispose this pad's scheduler
+    if (pad.scheduler) {
+      pad.scheduler.stop();
+      pad.scheduler.clear();
+      pad.scheduler.dispose();
+      pad.scheduler = null;
     }
   }
 
@@ -412,19 +433,17 @@ function compilePattern(code: string): Pattern {
 }
 
 function rescheduleActivePads() {
-  if (!state.scheduler) return;
-
-  state.scheduler.stop();
-  state.scheduler.clear();
-
-  // Re-schedule all active patterns
+  // Clear and reschedule each pad's own scheduler
   state.pads.forEach(pad => {
-    if (pad.isActive && pad.pattern) {
-      state.scheduler!.schedule(pad.pattern);
+    if (pad.isActive && pad.scheduler && pad.pattern) {
+      pad.scheduler.stop();
+      pad.scheduler.clear();
+      pad.scheduler.schedule(pad.pattern);
+      if (state.isPlaying) {
+        pad.scheduler.start();
+      }
     }
   });
-
-  state.scheduler.start();
 }
 
 function updatePatternCode(padId: string, code: string) {
@@ -471,9 +490,16 @@ function initGrid() {
     padElement.className = 'pad';
     padElement.dataset.padId = padId;
 
+    // Determine if this pad supports samples
+    const supportsSamples = pad.preset.category !== 'drums';
+    const sampleBadge = supportsSamples ?
+      '<div class="pad-sample-badge" title="Uses samples when enabled">🎻</div>' :
+      '<div class="pad-synth-badge" title="Always uses synth">🎹</div>';
+
     // Pad content
     padElement.innerHTML = `
       <div class="pad-edit">Edit Pattern</div>
+      ${sampleBadge}
       <div class="pad-icon">${pad.preset.icon}</div>
       <div class="pad-name">${pad.preset.name}</div>
     `;
@@ -682,46 +708,14 @@ async function playDemoJam() {
   ];
 
   // Activate first pad and start playback immediately
-  const firstPad = state.pads.get('pad-0');
-  if (firstPad) {
-    // Compile pattern if needed
-    if (!firstPad.pattern) {
-      try {
-        firstPad.pattern = compilePattern(firstPad.code);
-      } catch (error) {
-        console.error('[Contour] Failed to compile demo pattern:', error);
-        return;
-      }
-    }
-
-    // Set active AFTER stopAll() cleared it
-    firstPad.isActive = true;
-    updatePadVisual('pad-0');
-    playAll();
-  }
+  togglePad('pad-0');
 
   // Add remaining pads while playing
   for (let i = 1; i < demoSequence.length; i++) {
     const { padIndex, delay } = demoSequence[i];
     setTimeout(() => {
       const padId = `pad-${padIndex}`;
-      const pad = state.pads.get(padId);
-      if (pad && !pad.isActive && state.isPlaying) {
-        pad.isActive = true;
-        if (!pad.pattern) {
-          try {
-            pad.pattern = compilePattern(pad.code);
-          } catch (error) {
-            console.error(`[Contour] Failed to compile pattern for ${padId}:`, error);
-            return;
-          }
-        }
-        // Schedule this new pattern
-        if (state.scheduler) {
-          state.scheduler.schedule(pad.pattern);
-        }
-        updatePadVisual(padId);
-      }
+      togglePad(padId);
     }, delay);
   }
 
