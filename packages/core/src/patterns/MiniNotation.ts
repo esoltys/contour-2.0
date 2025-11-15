@@ -14,6 +14,7 @@ enum TokenType {
   NOTE = 'NOTE',           // C4, Db3, etc.
   CHORD = 'CHORD',         // Cmaj7, Dm7, etc.
   REST = 'REST',           // ~ or _
+  DEGREE = 'DEGREE',       // $1, $3, $5, etc. (scale degrees)
   REPEAT = 'REPEAT',       // *n
   EXTEND = 'EXTEND',       // @n
   DURATION = 'DURATION',   // /n or suffix like 'q', 'h'
@@ -46,8 +47,8 @@ export class MiniNotationError extends Error {
  * Parsed element from mini-notation.
  */
 interface ParsedElement {
-  type: 'note' | 'chord' | 'rest' | 'group';
-  value?: string;           // Note name or chord symbol
+  type: 'note' | 'chord' | 'rest' | 'group' | 'degree';
+  value?: string;           // Note name, chord symbol, or degree number
   children?: ParsedElement[]; // For groups
   repeat: number;           // Repetition factor
   extend: number;           // Extension factor (duration multiplier)
@@ -85,6 +86,11 @@ class MiniNotationLexer {
       } else if (char === '~' || char === '_') {
         tokens.push({ type: TokenType.REST, value: char, position });
         this.current++;
+      } else if (char === '$') {
+        // Scale degree syntax: $1, $3, $5, etc.
+        this.current++;
+        const num = this.readNumber();
+        tokens.push({ type: TokenType.DEGREE, value: num, position });
       } else if (char === '*') {
         this.current++;
         const num = this.readNumber();
@@ -220,6 +226,8 @@ class MiniNotationParser {
       return this.parseChordElement();
     } else if (token.type === TokenType.REST) {
       return this.parseRest();
+    } else if (token.type === TokenType.DEGREE) {
+      return this.parseDegree();
     } else if (token.type === TokenType.LBRACKET) {
       return this.parseGroup();
     } else {
@@ -261,6 +269,19 @@ class MiniNotationParser {
     this.advance();
     const element: ParsedElement = {
       type: 'rest',
+      repeat: 1,
+      extend: 1,
+    };
+
+    this.parseModifiers(element);
+    return element;
+  }
+
+  private parseDegree(): ParsedElement {
+    const token = this.advance();
+    const element: ParsedElement = {
+      type: 'degree',
+      value: token.value,
       repeat: 1,
       extend: 1,
     };
@@ -341,6 +362,7 @@ interface GenerationContext {
   defaultDuration: Duration;
   defaultVelocity: Velocity;
   currentTime: Seconds;
+  scale?: any; // Scale for degree notation (avoid circular dependency)
 }
 
 /**
@@ -355,6 +377,7 @@ class EventGenerator {
       defaultDuration: options.defaultDuration ?? Durations.quarter,
       defaultVelocity: options.defaultVelocity ?? Velocity(80),
       currentTime: options.currentTime ?? Seconds(0),
+      scale: options.scale,
     };
   }
 
@@ -381,6 +404,8 @@ class EventGenerator {
         events.push(this.createChordEvent(element.value!, duration));
       } else if (element.type === 'rest') {
         events.push(this.createRestEvent(duration));
+      } else if (element.type === 'degree') {
+        events.push(this.createDegreeEvent(element.value!, duration));
       } else if (element.type === 'group') {
         // Subdivide group into available time
         const groupDuration = duration;
@@ -464,6 +489,38 @@ class EventGenerator {
     return event;
   }
 
+  private createDegreeEvent(degreeStr: string, duration: Duration): NoteEvent {
+    if (!this.context.scale) {
+      throw new MiniNotationError(
+        'Scale degree notation ($n) requires a scale context',
+        0
+      );
+    }
+
+    // Parse degree number (1-indexed)
+    const degree = parseInt(degreeStr);
+    if (isNaN(degree) || degree < 1) {
+      throw new MiniNotationError(
+        `Invalid scale degree: ${degreeStr}`,
+        0
+      );
+    }
+
+    // Get note from scale
+    const note = this.context.scale.degree(degree);
+
+    const event: NoteEvent = {
+      type: 'note',
+      time: this.context.currentTime,
+      duration,
+      velocity: this.context.defaultVelocity,
+      pitch: note.pitch,
+      note,
+    };
+
+    return event;
+  }
+
   private parseNoteWithOctave(noteStr: string): Note {
     // Check if note has explicit octave
     if (/\d$/.test(noteStr)) {
@@ -491,6 +548,7 @@ class EventGenerator {
  * - Duration: "C4/8" (eighth note)
  * - Octave persistence: "C4 D E F" (all octave 4)
  * - Chord symbols: "Cmaj7 Dm7 G7"
+ * - Scale degrees: "$1 $3 $5" (requires scale context via parseMiniNotationWithDefaults)
  *
  * @param notation - Mini-notation string
  * @returns Array of musical events
@@ -531,6 +589,7 @@ export function parseMiniNotationWithDefaults(
     defaultOctave?: string;
     defaultDuration?: Duration;
     defaultVelocity?: Velocity;
+    scale?: any; // Scale for degree notation (avoid circular dependency)
   } = {}
 ): Event[] {
   if (!notation || notation.trim().length === 0) {
@@ -546,6 +605,7 @@ export function parseMiniNotationWithDefaults(
     defaultOctave: options.defaultOctave,
     defaultDuration: options.defaultDuration,
     defaultVelocity: options.defaultVelocity,
+    scale: options.scale,
   });
 
   return generator.generate(elements);
