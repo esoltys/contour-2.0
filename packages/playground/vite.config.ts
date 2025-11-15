@@ -30,6 +30,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['monaco-editor'],
+    exclude: ['@contour/core', '@contour/tone-adapter'],
   },
   worker: {
     format: 'es',
