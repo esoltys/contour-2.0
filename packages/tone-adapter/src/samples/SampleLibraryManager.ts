@@ -11,7 +11,7 @@
  * - Simple API for loading and accessing instruments
  */
 
-import Soundfont from 'soundfont-player';
+import * as Soundfont from 'soundfont-player';
 import type {
   SampleLibraryConfig,
   SoundfontInstrument,
