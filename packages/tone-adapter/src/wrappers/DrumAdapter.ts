@@ -80,12 +80,21 @@ export class DrumAdapter implements InstrumentAdapter {
    * @param velocity - Hit velocity (0-127), controls volume
    */
   playNote(note: string, duration: number, time: number, velocity: number): void {
+    // Don't play if samples aren't loaded yet
+    if (!this.isLoaded) {
+      return;
+    }
+
     // Normalize velocity to 0-1 range
     const gain = velocity / 127;
 
     // Trigger drum sample
     // Note: Duration is ignored for drums - they play to completion
-    this.sampler.triggerAttack(note, time, gain);
+    try {
+      this.sampler.triggerAttack(note, time, gain);
+    } catch (error) {
+      console.warn(`[DrumAdapter] Failed to play note ${note}:`, error);
+    }
   }
 
   /**
@@ -97,12 +106,21 @@ export class DrumAdapter implements InstrumentAdapter {
    * @param velocity - Hit velocity
    */
   playChord(notes: string[], duration: number, time: number, velocity: number): void {
+    // Don't play if samples aren't loaded yet
+    if (!this.isLoaded) {
+      return;
+    }
+
     // Normalize velocity
     const gain = velocity / 127;
 
     // Trigger all drum samples simultaneously
     notes.forEach(note => {
-      this.sampler.triggerAttack(note, time, gain);
+      try {
+        this.sampler.triggerAttack(note, time, gain);
+      } catch (error) {
+        console.warn(`[DrumAdapter] Failed to play note ${note}:`, error);
+      }
     });
   }
 
