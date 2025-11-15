@@ -11,7 +11,8 @@
  * - Simple API for loading and accessing instruments
  */
 
-import * as Soundfont from 'soundfont-player';
+// @ts-ignore - browser bundle doesn't have types
+import Soundfont from 'soundfont-player/dist/soundfont-player.js';
 import type {
   SampleLibraryConfig,
   SoundfontInstrument,
