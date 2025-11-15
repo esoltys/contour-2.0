@@ -40,7 +40,6 @@ class PerformanceState {
   isDemoRunning = false;
   bpm = 120;
   volume = 0;
-  waveformAnalyzer: Tone.Analyser | null = null;
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;
   currentEditingPad: string | null = null;
@@ -143,10 +142,6 @@ async function initAudio() {
 
     // Set initial volume
     Tone.getDestination().volume.value = state.volume;
-
-    // Create waveform analyzer
-    state.waveformAnalyzer = new Tone.Analyser('waveform', 512);
-    Tone.getDestination().connect(state.waveformAnalyzer);
 
     // Update state
     state.isAudioStarted = true;
@@ -777,43 +772,106 @@ function applyEditorChanges() {
 function startVisualization() {
   const canvas = elements.waveformCanvas;
   const ctx = canvas.getContext('2d');
-  if (!ctx || !state.waveformAnalyzer) return;
+  if (!ctx) {
+    console.warn('[Contour] Cannot start visualization: no canvas context');
+    return;
+  }
+
+  console.log('[Contour] Starting piano roll visualization');
+
+  const NOTE_HEIGHT = 4; // Height of each note lane
+  const TIME_SCALE = 60; // Pixels per beat
+  const OCTAVES = 3; // Show 3 octaves (C2-B4)
+  const LOWEST_NOTE = 36; // MIDI C2
+  const TOTAL_NOTES = OCTAVES * 12;
 
   function draw() {
     requestAnimationFrame(draw);
 
-    if (!state.waveformAnalyzer) return;
-
-    const waveform = state.waveformAnalyzer.getValue() as Float32Array;
-
-    // Clear canvas
+    // Clear canvas with dark background
     ctx.fillStyle = '#0a0a0b';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw waveform with neon cyan
-    ctx.strokeStyle = '#00fff5';
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#00fff5';
-    ctx.beginPath();
-
-    const sliceWidth = canvas.width / waveform.length;
-    let x = 0;
-
-    for (let i = 0; i < waveform.length; i++) {
-      const v = (waveform[i] + 1) / 2; // Normalize from [-1, 1] to [0, 1]
-      const y = v * canvas.height;
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-
-      x += sliceWidth;
+    // Draw grid lines for octaves
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= OCTAVES; i++) {
+      const y = (i * 12) * NOTE_HEIGHT;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
     }
 
+    // Draw beat lines
+    const beatsToShow = Math.ceil(canvas.width / TIME_SCALE);
+    for (let i = 0; i <= beatsToShow; i++) {
+      const x = i * TIME_SCALE;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+
+    if (!state.isPlaying) return;
+
+    // Get current transport position in beats
+    const currentBeat = Tone.Transport.seconds * (state.bpm / 60);
+
+    // Draw playhead
+    const playheadX = (currentBeat % beatsToShow) * TIME_SCALE;
+    ctx.strokeStyle = '#00fff5';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(playheadX, 0);
+    ctx.lineTo(playheadX, canvas.height);
     ctx.stroke();
+
+    // Draw active notes from all active pads
+    const colors = [
+      'rgba(0, 255, 245, 0.6)',   // Cyan
+      'rgba(255, 0, 255, 0.6)',   // Magenta
+      'rgba(0, 255, 127, 0.6)',   // Spring green
+      'rgba(255, 127, 0, 0.6)',   // Orange
+    ];
+    let colorIndex = 0;
+
+    state.pads.forEach((pad) => {
+      if (!pad.isActive || !pad.pattern) return;
+
+      const color = colors[colorIndex % colors.length];
+      colorIndex++;
+
+      // Calculate pattern length
+      let patternLength = 4; // Default 4 beats
+      if (pad.pattern.events.length > 0) {
+        const lastEvent = pad.pattern.events[pad.pattern.events.length - 1];
+        patternLength = Math.max(patternLength, lastEvent.time + lastEvent.duration);
+      }
+
+      // Draw notes
+      pad.pattern.events.forEach((event) => {
+        if (event.type === 'rest') return;
+
+        const notes = event.type === 'note' ? [event.note] : event.notes;
+
+        notes.forEach((note) => {
+          const midi = note.pitch;
+          if (midi < LOWEST_NOTE || midi >= LOWEST_NOTE + TOTAL_NOTES) return;
+
+          const noteIndex = midi - LOWEST_NOTE;
+          const y = (TOTAL_NOTES - noteIndex - 1) * NOTE_HEIGHT;
+
+          // Calculate x position considering loop
+          const eventBeat = (currentBeat % patternLength) + event.time;
+          const x = (eventBeat % beatsToShow) * TIME_SCALE;
+          const width = event.duration * TIME_SCALE;
+
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, Math.max(width, 2), NOTE_HEIGHT - 1);
+        });
+      });
+    });
   }
 
   draw();
