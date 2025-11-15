@@ -634,6 +634,12 @@
       object-fit: contain;
       display: block;
       background: var(--bg-void);
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .carousel-slide img:hover {
+      opacity: 0.9;
     }
 
     .carousel-controls {
@@ -1175,6 +1181,14 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
           prevSlide();
         }
       }
+
+      // Click on images to open in new tab
+      const slides = document.querySelectorAll('.carousel-slide img');
+      slides.forEach((img) => {
+        img.addEventListener('click', () => {
+          window.open(img.src, '_blank');
+        });
+      });
 
       // Start auto-play on load
       startAutoPlay();
