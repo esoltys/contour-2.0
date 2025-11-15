@@ -14,35 +14,35 @@ export const PATTERN_PRESETS: PatternPreset[] = [
   // === DRUMS (Row 1) ===
   {
     id: 'techno-kick',
-    name: 'Techno Kick',
+    name: 'CR78 Kick',
     icon: '🥁',
     category: 'drums',
     code: `pattern().fromNotation("C1*4")`,
-    description: 'Four-on-the-floor kick drum'
+    description: 'Four-on-the-floor 808-style kick'
   },
   {
     id: 'funky-snare',
-    name: 'Funky Snare',
+    name: 'CR78 Snare',
     icon: '🎵',
     category: 'drums',
     code: `pattern().fromNotation("[~ D1] ~ D1 ~")`,
-    description: 'Syncopated snare pattern'
+    description: 'Syncopated 808 snare pattern'
   },
   {
     id: 'euclidean-hat',
-    name: 'Euclidean Hat',
+    name: 'CR78 Hi-Hat',
     icon: '🎩',
     category: 'drums',
     code: `pattern().fromNotation("F#1 ~ F#1 ~ F#1 ~ F#1 F#1")`,
-    description: 'Hi-hat with euclidean rhythm'
+    description: '808 hi-hat euclidean rhythm'
   },
   {
     id: 'breakbeat',
-    name: 'Breakbeat',
+    name: 'CR78 Break',
     icon: '💥',
     category: 'drums',
     code: `pattern().fromNotation("C1 ~ D1 ~ C1 D1 ~ D1")`,
-    description: 'Classic breakbeat pattern'
+    description: 'Classic 808 breakbeat'
   },
 
   // === BASS (Row 2) ===
