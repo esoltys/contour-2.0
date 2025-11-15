@@ -31,11 +31,6 @@
       --border-strong: rgba(255, 255, 255, 0.15);
     }
 
-    @keyframes scanline {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100vh); }
-    }
-
     @keyframes pulse-glow {
       0%, 100% {
         box-shadow: 0 0 20px var(--neon-cyan),
@@ -85,25 +80,6 @@
       pointer-events: none;
       z-index: 9999;
       opacity: 0.3;
-    }
-
-    /* Animated scanline */
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg,
-        transparent,
-        var(--neon-cyan),
-        transparent
-      );
-      opacity: 0.3;
-      animation: scanline 8s linear infinite;
-      pointer-events: none;
-      z-index: 9998;
     }
 
     /* Navigation */

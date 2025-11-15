@@ -39,11 +39,6 @@
       --pulse-inactive: var(--bg-elevated);
     }
 
-    @keyframes scanline {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100vh); }
-    }
-
     @keyframes glitch {
       0%, 100% { transform: translate(0); }
       20% { transform: translate(-2px, 2px); }
@@ -110,25 +105,6 @@
       pointer-events: none;
       z-index: 9999;
       opacity: 0.3;
-    }
-
-    /* Subtle animated scanline */
-    body::after {
-      content: '';
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg,
-        transparent,
-        var(--neon-cyan),
-        transparent
-      );
-      opacity: 0.3;
-      animation: scanline 8s linear infinite;
-      pointer-events: none;
-      z-index: 9998;
     }
 
     /* ========== HEADER ========== */
