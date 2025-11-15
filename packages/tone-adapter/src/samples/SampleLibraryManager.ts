@@ -11,8 +11,9 @@
  * - Simple API for loading and accessing instruments
  */
 
-// @ts-ignore - browser bundle doesn't have types
-import Soundfont from 'soundfont-player/dist/soundfont-player.js';
+// Load soundfont-player browser bundle (sets window.Soundfont global)
+import 'soundfont-player/dist/soundfont-player.js';
+
 import type {
   SampleLibraryConfig,
   SoundfontInstrument,
@@ -22,6 +23,15 @@ import type {
   SoundfontFormat,
 } from './types.js';
 import { parseQualifiedName, isQualifiedName } from './types.js';
+
+// Access Soundfont from window global
+declare global {
+  interface Window {
+    Soundfont: any;
+  }
+}
+
+const Soundfont = typeof window !== 'undefined' ? window.Soundfont : null;
 
 /**
  * Manages loading and caching of soundfont instruments.
