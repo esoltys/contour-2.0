@@ -10,6 +10,10 @@
 
 import { SampleLibraryManager, Tone } from '@contour/tone-adapter';
 
+// Debug: Log successful import
+console.log('[DEBUG] SampleLibraryManager:', SampleLibraryManager);
+console.log('[DEBUG] Tone:', Tone);
+
 // UI Elements
 const instrumentSelect = document.getElementById('instrumentSelect') as HTMLSelectElement;
 const loadBtn = document.getElementById('loadBtn') as HTMLButtonElement;
@@ -81,11 +85,16 @@ function updateMetrics(loadTime?: number) {
 async function initAudioContext() {
   if (!audioContextInitialized) {
     try {
+      console.log('[DEBUG] Initializing Tone.js...');
       await Tone.start();
+      console.log('[DEBUG] Tone.context:', Tone.context);
+      console.log('[DEBUG] Tone.context.rawContext:', Tone.context.rawContext);
+
       await manager.initialize(Tone.context.rawContext as AudioContext);
       audioContextInitialized = true;
       log('✓ Audio context initialized', true);
     } catch (error) {
+      console.error('[ERROR] Audio initialization failed:', error);
       log(`✗ Failed to initialize audio: ${error}`, true);
       throw error;
     }
@@ -126,8 +135,17 @@ async function loadInstrument() {
     unloadBtn.disabled = false;
 
   } catch (error) {
-    log(`✗ Failed to load instrument: ${error}`, true);
-    updateStatus(`Error loading instrument: ${error}`, 'error');
+    console.error('[ERROR] Failed to load instrument:', error);
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : '';
+
+    log(`✗ Failed to load instrument: ${errorMsg}`, true);
+    if (errorStack) {
+      console.error('[ERROR] Stack trace:', errorStack);
+      log(`Stack: ${errorStack.split('\n').slice(0, 3).join(' | ')}`);
+    }
+
+    updateStatus(`Error: ${errorMsg}`, 'error');
   } finally {
     loadBtn.disabled = false;
   }
