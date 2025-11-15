@@ -184,3 +184,22 @@ MIT
 - **[Strudel](https://strudel.cc/)** - TypeScript TidalCycles implementation
 - **[Sonic Pi](https://sonic-pi.net/)** - Live coding music synthesis
 - **[Overtone](https://overtone.github.io/)** - Collaborative programmable music
+
+## Sample Sources
+
+Contour uses high-quality audio samples from the following sources:
+
+### Drum Samples
+- **[Tone.js Drum Samples](https://tonejs.github.io/audio/drum-samples/)** - Curated collection of drum machine samples
+  - CR78 (Roland CR-78)
+  - Techno
+  - Acoustic Kit
+  - LINN (LinnDrum)
+  - KPR77 (Korg KPR-77)
+  - Source: [Web Audio Samples](https://github.com/cwilso/web-audio-samples)
+
+### Melodic Instruments
+- **[MIDI.js Soundfonts](https://gleitz.github.io/midi-js-soundfonts/)** - General MIDI soundfont library
+  - MusyngKite soundfont collection
+  - 127 GM instruments (pianos, strings, brass, synths, etc.)
+  - Source: [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts)
