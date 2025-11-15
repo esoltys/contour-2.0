@@ -20,6 +20,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         performance: resolve(__dirname, 'performance.html'),
+        prototypeSamples: resolve(__dirname, 'prototype-samples.html'),
       },
     },
   },

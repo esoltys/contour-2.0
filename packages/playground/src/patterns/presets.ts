@@ -48,103 +48,103 @@ export const PATTERN_PRESETS: PatternPreset[] = [
   // === BASS (Row 2) ===
   {
     id: 'bass-groove',
-    name: 'Bass Groove',
+    name: 'E-Bass Finger',
     icon: '🎸',
     category: 'bass',
     code: `pattern().fromNotation("C2*4 ~ Eb2*2 ~")`,
-    description: 'Deep bass groove'
+    description: 'Electric bass fingerstyle'
   },
   {
     id: 'acid-bass',
-    name: 'Acid Bass',
+    name: 'Synth Bass 1',
     icon: '⚡',
     category: 'bass',
     code: `pattern().fromNotation("C2 Eb2 G2 C3 G2 Eb2 C2 Bb1")`,
-    description: 'Classic acid bassline'
+    description: 'Classic synth bass'
   },
   {
     id: 'walking-bass',
-    name: 'Walking Bass',
+    name: 'Acoustic Bass',
     icon: '🚶',
     category: 'bass',
     code: `pattern().fromNotation("C2 E2 G2 A2")`,
-    description: 'Jazz walking bass'
+    description: 'Upright acoustic bass'
   },
   {
     id: 'sub-bass',
-    name: 'Sub Bass',
+    name: 'Synth Bass 2',
     icon: '🔊',
     category: 'bass',
     code: `pattern().fromNotation("C1@4")`,
-    description: 'Deep sustained sub bass'
+    description: 'Deep synth sub bass'
   },
 
   // === MELODY (Row 3) ===
   {
     id: 'arpeggio',
-    name: 'Arpeggio',
+    name: 'Grand Piano',
     icon: '🎹',
     category: 'melody',
     code: `pattern().fromNotation("C4 E4 G4 C5")`,
-    description: 'Classic C major arpeggio'
+    description: 'Acoustic grand piano'
   },
   {
     id: 'melody-lead',
-    name: 'Melody Lead',
+    name: 'Square Lead',
     icon: '🎼',
     category: 'melody',
     code: `pattern().fromNotation("E4 D4 C4 ~ G3 ~ C4 ~")`,
-    description: 'Simple melodic phrase'
+    description: 'Square wave synth lead'
   },
   {
     id: 'fast-arp',
-    name: 'Fast Arp',
+    name: 'Electric Piano',
     icon: '⚡',
     category: 'melody',
     code: `pattern().fromNotation("C4 E4 G4 B4 C5 B4 G4 E4")`,
-    description: 'Fast ascending-descending arp'
+    description: 'Electric piano sound'
   },
   {
     id: 'pentatonic',
-    name: 'Pentatonic',
+    name: 'Nylon Guitar',
     icon: '🌏',
     category: 'melody',
     code: `pattern().fromNotation("C4 D4 E4 G4 A4 G4 E4 D4")`,
-    description: 'Pentatonic scale melody'
+    description: 'Acoustic nylon guitar'
   },
 
   // === EFFECTS (Row 4) ===
   {
     id: 'ambient-swell',
-    name: 'Ambient Swell',
+    name: 'Warm Pad',
     icon: '🌊',
     category: 'effects',
     code: `pattern().fromNotation("C3@2 E3@2")`,
-    description: 'Slow ambient pad'
+    description: 'Warm ambient pad'
   },
   {
     id: 'stab-chord',
-    name: 'Stab Chord',
+    name: 'String Ensemble',
     icon: '💫',
     category: 'effects',
     code: `pattern().fromNotation("~ ~ [C4 E4 G4] ~")`,
-    description: 'Chord stab accent'
+    description: 'String ensemble stabs'
   },
   {
     id: 'texture',
-    name: 'Texture',
+    name: 'Brightness FX',
     icon: '✨',
     category: 'effects',
     code: `pattern().fromNotation("C5 ~ G5 ~ E5 ~ C6 ~")`,
-    description: 'High textural elements'
+    description: 'Bright textural FX'
   },
   {
     id: 'riser',
-    name: 'Riser',
+    name: 'Choir Pad',
     icon: '📈',
     category: 'effects',
     code: `pattern().fromNotation("C3 D3 E3 F3 G3 A3 B3 C4")`,
-    description: 'Rising tension effect'
+    description: 'Choir pad rising melody'
   }
 ];
 

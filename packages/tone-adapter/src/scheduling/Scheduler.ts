@@ -1,24 +1,43 @@
 import * as Tone from 'tone';
 import type { Pattern, Event, NoteEvent, ChordEvent, RestEvent } from '@contour/core';
 import { Seconds } from '@contour/core';
+import type { InstrumentAdapter } from '../wrappers/InstrumentAdapter.js';
+import { SynthAdapter } from '../wrappers/SynthAdapter.js';
 
 /**
  * Schedules Pattern events to Tone.Transport.
  *
  * CRITICAL: Uses Tone.Transport.schedule() for sample-accurate timing.
  * NEVER use setTimeout or setInterval for audio scheduling!
+ *
+ * Now supports both Tone.js synths AND soundfont instruments via adapter pattern.
  */
 export class PatternScheduler {
   private scheduledEvents: number[] = [];
-  private synth: Tone.PolySynth | null = null;
+  private instrument: InstrumentAdapter;
 
-  constructor() {
-    // Create a polyphonic synth with better bass response
-    // AMSynth has richer harmonics and better low-end than basic Synth
-    this.synth = new Tone.PolySynth(Tone.AMSynth, {
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.8 }
-    }).toDestination();
+  /**
+   * Create a PatternScheduler with optional custom instrument.
+   *
+   * @param instrument - Optional InstrumentAdapter (defaults to AMSynth if not provided)
+   */
+  constructor(instrument?: InstrumentAdapter) {
+    // Default to AMSynth for backward compatibility
+    this.instrument = instrument || new SynthAdapter();
+  }
+
+  /**
+   * Set a different instrument.
+   * Useful for switching between synth and samples dynamically.
+   *
+   * @param instrument - The new instrument adapter to use
+   */
+  setInstrument(instrument: InstrumentAdapter): void {
+    // Dispose old instrument
+    if (this.instrument) {
+      this.instrument.dispose();
+    }
+    this.instrument = instrument;
   }
 
   /**
@@ -28,8 +47,8 @@ export class PatternScheduler {
    * @param startTime - When to start playing (in seconds from now)
    */
   schedule(pattern: Pattern, startTime: Seconds = Seconds(0)): void {
-    if (!this.synth) {
-      throw new Error('Scheduler has been disposed');
+    if (!this.instrument) {
+      throw new Error('No instrument configured');
     }
 
     // Calculate pattern length (find the last event time + its duration)
@@ -61,17 +80,16 @@ export class PatternScheduler {
    * Schedule a single note event to loop.
    */
   private scheduleNoteEventLooping(event: NoteEvent, startTime: number, loopLength: number): void {
-    if (!this.synth) return;
+    if (!this.instrument) return;
 
     const id = Tone.Transport.scheduleRepeat((audioTime) => {
-      if (!this.synth) return;
+      if (!this.instrument) return;
 
-      // Convert note to Tone.js format and trigger
       const noteName = event.note.name;
       const duration = event.duration;
-      const velocity = event.velocity / 127; // Normalize to 0-1
+      const velocity = event.velocity;
 
-      this.synth.triggerAttackRelease(noteName, duration, audioTime, velocity);
+      this.instrument.playNote(noteName, duration, audioTime, velocity);
     }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
@@ -81,17 +99,16 @@ export class PatternScheduler {
    * Schedule a chord event to loop.
    */
   private scheduleChordEventLooping(event: ChordEvent, startTime: number, loopLength: number): void {
-    if (!this.synth) return;
+    if (!this.instrument) return;
 
     const id = Tone.Transport.scheduleRepeat((audioTime) => {
-      if (!this.synth) return;
+      if (!this.instrument) return;
 
-      // Trigger all notes in the chord simultaneously
       const noteNames = event.notes.map(n => n.name);
       const duration = event.duration;
-      const velocity = event.velocity / 127; // Normalize to 0-1
+      const velocity = event.velocity;
 
-      this.synth.triggerAttackRelease(noteNames, duration, audioTime, velocity);
+      this.instrument.playChord(noteNames, duration, audioTime, velocity);
     }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
@@ -151,9 +168,8 @@ export class PatternScheduler {
   dispose(): void {
     this.clear();
 
-    if (this.synth) {
-      this.synth.dispose();
-      this.synth = null;
+    if (this.instrument) {
+      this.instrument.dispose();
     }
   }
 }

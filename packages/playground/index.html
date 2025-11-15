@@ -102,6 +102,39 @@
       animation: fade-in 0.8s ease-out;
     }
 
+    .nav {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-strong);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-strong);
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav a:hover {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 255, 245, 0.2);
+    }
+
+    .nav a.active {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 245, 0.05);
+    }
+
     /* Corner accents */
     .container::before,
     .container::after {
@@ -380,6 +413,12 @@
   <div class="container">
     <div class="accent-bar"></div>
 
+    <nav class="nav">
+      <a href="/" class="active">Home</a>
+      <a href="/performance.html">Contour Live</a>
+      <a href="/prototype-samples.html">Sample Library</a>
+    </nav>
+
     <h1>CONTOUR</h1>
     <p class="subtitle">Music Composition as Code</p>
 
@@ -404,6 +443,10 @@
 
     <a href="/performance.html" class="cta-link">
       <span>→ OPEN LIVE PLAYGROUND</span>
+    </a>
+
+    <a href="/prototype-samples.html" class="cta-link">
+      <span>→ SAMPLE LIBRARY PROTOTYPE</span>
     </a>
 
     <div id="status" class="status stopped">

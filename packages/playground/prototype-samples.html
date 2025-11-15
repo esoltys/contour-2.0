@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONTOUR // SAMPLE LIBRARY PROTOTYPE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      /* Brutalist color scheme */
+      --bg-void: #0a0a0b;
+      --bg-panel: #16161a;
+      --bg-surface: #1f1f24;
+      --bg-elevated: #28282e;
+
+      /* Electric accents */
+      --neon-cyan: #00fff5;
+      --neon-magenta: #ff00ff;
+      --neon-yellow: #ffff00;
+      --neon-green: #00ff41;
+
+      /* Functional colors */
+      --text-primary: #e7e7ea;
+      --text-secondary: #94949a;
+      --text-tertiary: #5a5a62;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+    }
+
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan);
+      }
+      50% {
+        box-shadow: 0 0 30px var(--neon-cyan), 0 0 60px var(--neon-cyan);
+      }
+    }
+
+    @keyframes slide-in-up {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg-void);
+      color: var(--text-primary);
+      min-height: 100vh;
+      padding: 2rem;
+      position: relative;
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* Scanline effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        transparent 50%,
+        rgba(0, 255, 245, 0.02) 50%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: scanline 8s linear infinite;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      animation: slide-in-up 0.6s ease-out;
+    }
+
+    h1 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: clamp(1.5rem, 5vw, 3rem);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .section {
+      background: var(--bg-panel);
+      border: 2px solid var(--border-strong);
+      border-radius: 0;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .section::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: -1;
+      border-radius: 0;
+    }
+
+    .section:hover::before {
+      opacity: 0.1;
+    }
+
+    .section h2 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+
+    button, select {
+      background: var(--bg-elevated);
+      border: 2px solid var(--border-strong);
+      color: var(--text-primary);
+      padding: 0.75rem 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 0;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--neon-cyan);
+      color: var(--bg-void);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px var(--neon-cyan);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(2px);
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    select {
+      min-width: 200px;
+      cursor: pointer;
+      padding-right: 3rem; /* Extra padding for dropdown arrow */
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2300fff5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.5rem center;
+      background-size: 12px 8px;
+    }
+
+    select:hover {
+      border-color: var(--neon-cyan);
+    }
+
+    .nav {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border-strong);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--neon-cyan);
+      text-decoration: none;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--border-strong);
+      transition: all 0.2s;
+    }
+
+    .nav a:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+    }
+
+    .nav a.active {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 245, 0.1);
+    }
+
+    .status {
+      padding: 1rem;
+      background: var(--bg-surface);
+      border-left: 4px solid var(--neon-cyan);
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .status.loading {
+      border-color: var(--neon-yellow);
+      color: var(--neon-yellow);
+    }
+
+    .status.error {
+      border-color: var(--neon-magenta);
+      color: var(--neon-magenta);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .metric {
+      background: var(--bg-surface);
+      padding: 1rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 0;
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      color: var(--neon-cyan);
+      font-weight: 500;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .log {
+      background: var(--bg-surface);
+      padding: 1rem;
+      border-radius: 0;
+      max-height: 300px;
+      overflow-y: auto;
+      font-size: 0.8125rem;
+      font-family: 'DM Mono', monospace;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .log-entry {
+      margin-bottom: 0.25rem;
+      opacity: 0.7;
+      line-height: 1.5;
+    }
+
+    .log-entry.highlight {
+      color: var(--neon-yellow);
+      opacity: 1;
+      font-weight: 500;
+    }
+
+    .piano {
+      display: flex;
+      gap: 2px;
+      margin-top: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .key {
+      width: 60px;
+      height: 180px;
+      background: var(--text-primary);
+      border: 2px solid var(--bg-void);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding-bottom: 1rem;
+      color: var(--bg-void);
+      font-weight: 700;
+      transition: all 0.1s;
+      font-size: 0.875rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .key::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--neon-cyan);
+      opacity: 0;
+      transition: opacity 0.1s;
+    }
+
+    .key span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .key:hover::before {
+      opacity: 0.3;
+    }
+
+    .key:active,
+    .key.active {
+      transform: translateY(4px);
+    }
+
+    .key:active::before,
+    .key.active::before {
+      opacity: 1;
+      box-shadow: 0 0 30px var(--neon-cyan);
+    }
+
+    /* Scrollbar styling */
+    .log::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .log::-webkit-scrollbar-track {
+      background: var(--bg-void);
+    }
+
+    .log::-webkit-scrollbar-thumb {
+      background: var(--neon-cyan);
+      border-radius: 0;
+    }
+
+    .log::-webkit-scrollbar-thumb:hover {
+      background: var(--neon-magenta);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <a href="/">← Home</a>
+      <a href="/performance.html">Contour Live</a>
+      <a href="/prototype-samples.html" class="active">Sample Library</a>
+    </nav>
+
+    <h1>Sample Library</h1>
+    <p class="subtitle">External instrument loading prototype</p>
+
+    <div class="section">
+      <h2>Load Instrument</h2>
+      <div class="controls">
+        <select id="instrumentSelect">
+          <option value="acoustic_grand_piano">Acoustic Grand Piano</option>
+          <option value="bright_acoustic_piano">Bright Acoustic Piano</option>
+          <option value="electric_piano_1">Electric Piano 1</option>
+          <option value="acoustic_bass">Acoustic Bass</option>
+          <option value="violin">Violin</option>
+          <option value="cello">Cello</option>
+          <option value="flute">Flute</option>
+          <option value="trumpet">Trumpet</option>
+        </select>
+        <button id="loadBtn">Load</button>
+        <button id="unloadBtn" disabled>Unload All</button>
+      </div>
+      <div id="status" class="status">Click LOAD to start</div>
+    </div>
+
+    <div class="section">
+      <h2>Play Notes</h2>
+      <div class="controls">
+        <button id="playScaleBtn" disabled>Play Scale</button>
+        <button id="playChordBtn" disabled>Play Chord</button>
+        <button id="playMelodyBtn" disabled>Play Melody</button>
+      </div>
+      <div class="piano" id="piano"></div>
+    </div>
+
+    <div class="section">
+      <h2>Performance Metrics</h2>
+      <div class="metrics" id="metrics">
+        <div class="metric">
+          <div class="metric-label">Load Time</div>
+          <div class="metric-value" id="loadTime">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Instruments</div>
+          <div class="metric-value" id="instrumentCount">0</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Memory</div>
+          <div class="metric-value" id="memoryUsage">--</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Status</div>
+          <div class="metric-value" id="statusMetric">Idle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Event Log</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/prototype-samples.ts"></script>
+</body>
+</html>
