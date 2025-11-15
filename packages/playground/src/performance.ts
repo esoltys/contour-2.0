@@ -158,6 +158,11 @@ async function initAudio() {
     startVisualization();
 
     console.log('[Contour] Audio system ready!');
+
+    // Auto-load sample instruments if in sample mode
+    if (state.useSamples) {
+      await loadSampleInstruments();
+    }
   } catch (error) {
     console.error('[Contour] Failed to initialize audio:', error);
     alert('Failed to start audio system. Please try again.');
@@ -324,6 +329,80 @@ function handlePadFocus(padId: string): void {
 }
 
 /**
+ * Load sample instruments for all presets.
+ */
+async function loadSampleInstruments(): Promise<void> {
+  try {
+    // Initialize sample library manager if needed
+    if (!state.sampleLibraryManager) {
+      state.sampleLibraryManager = new SampleLibraryManager();
+      await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
+
+      // Initialize sample library UI components after manager is ready
+      if (!state.instrumentSelector) {
+        state.instrumentSelector = new InstrumentSelector(
+          state.sampleLibraryManager,
+          Tone.context.rawContext as AudioContext,
+          (padId: string, instrument: string) => {
+            updatePadInstrument(padId, instrument);
+          }
+        );
+      }
+
+      if (!state.sampleLibraryPanel) {
+        state.sampleLibraryPanel = new SampleLibraryPanel(state.sampleLibraryManager);
+      }
+    }
+
+    // Show loading progress
+    state.loadingProgress?.show('Loading sample instruments...');
+
+    // Collect unique instrument names from the mapping
+    const instrumentNames = new Set<string>();
+
+    Object.entries(state.instrumentMap).forEach(([category, categoryMap]) => {
+      Object.entries(categoryMap).forEach(([presetId, instrumentName]) => {
+        if (instrumentName && typeof instrumentName === 'string') {
+          instrumentNames.add(instrumentName);
+        }
+      });
+    });
+
+    // Filter out any undefined/null values
+    const validInstrumentNames = Array.from(instrumentNames).filter(name => {
+      return name && typeof name === 'string' && name !== 'undefined';
+    });
+
+    console.log('[Contour] Loading instruments:', validInstrumentNames);
+
+    // Load instruments one at a time to show progress
+    const total = validInstrumentNames.length;
+    let loaded = 0;
+
+    for (const name of validInstrumentNames) {
+      state.loadingProgress?.updateProgress(loaded, total);
+      await state.sampleLibraryManager!.loadInstrument({ instrument: name });
+      loaded++;
+    }
+
+    // Update progress to 100% and show success
+    state.loadingProgress?.updateProgress(total, total);
+    state.loadingProgress?.showSuccess('All instruments loaded!');
+
+    console.log('[Contour] Sample instruments loaded');
+
+    // Update all pad badges
+    state.pads.forEach((pad) => {
+      updatePadBadge(pad.id, pad.instrument || 'synth');
+    });
+  } catch (error) {
+    console.error('[Contour] Failed to load sample instruments:', error);
+    state.loadingProgress?.showError(error instanceof Error ? error.message : 'Unknown error');
+    throw error;
+  }
+}
+
+/**
  * Toggle between synthesized and sampled instruments.
  */
 async function toggleSamples() {
@@ -354,76 +433,12 @@ async function toggleSamples() {
         stopAll();
       }
 
-      // Initialize sample library manager if needed
-      if (!state.sampleLibraryManager) {
-        state.sampleLibraryManager = new SampleLibraryManager();
-        await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
-
-        // Initialize sample library UI components after manager is ready
-        if (!state.instrumentSelector) {
-          state.instrumentSelector = new InstrumentSelector(
-            state.sampleLibraryManager,
-            Tone.context.rawContext as AudioContext,
-            (padId: string, instrument: string) => {
-              updatePadInstrument(padId, instrument);
-            }
-          );
-        }
-
-        if (!state.sampleLibraryPanel) {
-          state.sampleLibraryPanel = new SampleLibraryPanel(state.sampleLibraryManager);
-        }
-      }
-
-      // Show loading progress
-      state.loadingProgress?.show('Preparing to load instruments...');
-
-      // Collect unique instrument names from the mapping
-      const instrumentNames = new Set<string>();
-
-      console.log('[Contour] Instrument map keys:', Object.keys(state.instrumentMap));
-      Object.entries(state.instrumentMap).forEach(([category, categoryMap]) => {
-        console.log(`[Contour] Processing category: ${category}, map:`, categoryMap);
-        Object.entries(categoryMap).forEach(([presetId, instrumentName]) => {
-          console.log(`[Contour]   - ${presetId} => ${instrumentName} (type: ${typeof instrumentName})`);
-          if (instrumentName && typeof instrumentName === 'string') {
-            instrumentNames.add(instrumentName);
-          }
-        });
-      });
-
-      // Filter out any undefined/null values and load all required instruments
-      const validInstrumentNames = Array.from(instrumentNames).filter(name => {
-        const isValid = name && typeof name === 'string' && name !== 'undefined';
-        console.log(`[Contour] Checking instrument: "${name}", valid: ${isValid}`);
-        return isValid;
-      });
-
-      console.log('[Contour] Final list of instruments to load:', validInstrumentNames);
-
-      // Load instruments one at a time to show progress
-      const total = validInstrumentNames.length;
-      let loaded = 0;
-
-      for (const name of validInstrumentNames) {
-        state.loadingProgress?.updateProgress(loaded, total);
-        console.log(`[Contour] Loading instrument ${loaded + 1}/${total}: ${name}`);
-        await state.sampleLibraryManager!.loadInstrument({ instrument: name });
-        loaded++;
-      }
-
-      // Update progress to 100% and show success
-      state.loadingProgress?.updateProgress(total, total);
-      state.loadingProgress?.showSuccess('All instruments loaded!');
+      // Load sample instruments
+      await loadSampleInstruments();
 
       state.useSamples = true;
       toggleBtn.textContent = '🎹 Use Synths';
       console.log('[Contour] Switched to sampled instruments');
-
-      // Update all pad badges
-      state.pads.forEach((pad) => {
-        updatePadBadge(pad.id, pad.instrument || 'synth');
-      });
 
       // Resume playback if it was playing before
       if (wasPlaying) {
@@ -432,7 +447,6 @@ async function toggleSamples() {
       }
     } catch (error) {
       console.error('[Contour] Failed to load samples:', error);
-      state.loadingProgress?.showError(error instanceof Error ? error.message : 'Unknown error');
       toggleBtn.textContent = '🎻 Use Samples';
       return;
     } finally {
