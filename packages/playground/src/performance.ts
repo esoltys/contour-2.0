@@ -55,7 +55,7 @@ class PerformanceState {
 
   // Sample library
   sampleLibraryManager: SampleLibraryManager | null = null;
-  useSamples = false;
+  useSamples = true; // Start with samples by default
 
   // UI state
   focusedPadId: string | null = null;
@@ -333,7 +333,17 @@ async function toggleSamples() {
 
   const toggleBtn = document.getElementById('toggleSamplesBtn') as HTMLButtonElement;
 
-  if (!state.useSamples) {
+  if (state.useSamples) {
+    // Switching to synths
+    state.useSamples = false;
+    toggleBtn.textContent = '🎻 Use Samples';
+    console.log('[Contour] Switched to synthesized instruments');
+
+    // Update all pad badges
+    state.pads.forEach((pad) => {
+      updatePadBadge(pad.id, 'synth');
+    });
+  } else {
     // Switching to samples - load soundfonts
     try {
       toggleBtn.disabled = true;
@@ -428,11 +438,6 @@ async function toggleSamples() {
     } finally {
       toggleBtn.disabled = false;
     }
-  } else {
-    // Switching back to synths
-    state.useSamples = false;
-    toggleBtn.textContent = '🎻 Use Samples';
-    console.log('[Contour] Switched to synthesized instruments');
   }
 
   // Reschedule active pads with new instruments
