@@ -29,7 +29,7 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   optimizeDeps: {
-    include: ['monaco-editor'],
+    include: ['monaco-editor', 'soundfont-player'],
     exclude: ['@contour/core', '@contour/tone-adapter'],
   },
   worker: {
