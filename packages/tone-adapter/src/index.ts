@@ -5,6 +5,11 @@ export { CompositionScheduler } from './scheduling/CompositionScheduler';
 // Musical Wrappers
 export { MusicalSynth } from './wrappers/MusicalSynth';
 
+// Instrument Adapters
+export type { InstrumentAdapter } from './wrappers/InstrumentAdapter.js';
+export { SynthAdapter } from './wrappers/SynthAdapter.js';
+export { SampleAdapter } from './wrappers/SampleAdapter.js';
+
 // Hot Module Replacement
 export { HMRHandler } from './hmr/HMRHandler';
 

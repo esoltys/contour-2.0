@@ -12,7 +12,9 @@
   },
   "dependencies": {
     "@contour/core": "workspace:*",
+    "adsr": "^1.0.1",
     "audio-loader": "^0.5.0",
+    "midimessage": "^1.0.5",
     "note-parser": "^2.0.0",
     "sample-player": "^0.5.5",
     "soundfont-player": "^0.12.0",

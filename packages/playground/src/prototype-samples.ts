@@ -35,6 +35,8 @@ const statusMetric = document.getElementById('statusMetric') as HTMLDivElement;
 const manager = new SampleLibraryManager();
 let currentInstrument: any = null;
 let audioContextInitialized = false;
+const keyElements = new Map<string, HTMLElement>();
+const keyTimeouts = new Map<string, number>();
 
 // Logging
 function log(message: string, highlight = false) {
@@ -166,6 +168,29 @@ function unloadAll() {
   log('All instruments unloaded');
 }
 
+// Highlight a key visually
+function highlightKey(note: string, durationMs: number) {
+  const key = keyElements.get(note);
+  if (!key) return;
+
+  // Clear any existing timeout for this key
+  const existingTimeout = keyTimeouts.get(note);
+  if (existingTimeout) {
+    clearTimeout(existingTimeout);
+  }
+
+  // Add the active class (re-adding is safe and ensures it's active)
+  key.classList.add('active');
+
+  // Schedule removal of the active class with a tiny buffer for overlapping notes
+  const timeoutId = window.setTimeout(() => {
+    key.classList.remove('active');
+    keyTimeouts.delete(note);
+  }, durationMs + 10); // Add 10ms buffer to prevent flicker on back-to-back notes
+
+  keyTimeouts.set(note, timeoutId);
+}
+
 // Play C major scale
 async function playScale() {
   if (!currentInstrument) return;
@@ -178,6 +203,7 @@ async function playScale() {
   for (let i = 0; i < notes.length; i++) {
     setTimeout(() => {
       currentInstrument.play(notes[i], Tone.now(), { duration });
+      highlightKey(notes[i], duration * 1000);
       log(`  → ${notes[i]}`);
     }, i * 300);
   }
@@ -194,6 +220,7 @@ async function playChord() {
 
   notes.forEach(note => {
     currentInstrument.play(note, Tone.now(), { duration });
+    highlightKey(note, duration * 1000);
     log(`  → ${note}`);
   });
 }
@@ -219,6 +246,7 @@ async function playMelody() {
   melody.forEach(({ note, time, duration }) => {
     setTimeout(() => {
       currentInstrument.play(note, Tone.now(), { duration });
+      highlightKey(note, duration * 1000);
       log(`  → ${note} (${duration}s)`);
     }, time * 1000);
   });
@@ -231,6 +259,7 @@ function createPiano() {
   notes.forEach(note => {
     const key = document.createElement('div');
     key.className = 'key';
+    key.dataset.note = note;
 
     const span = document.createElement('span');
     span.textContent = note;
@@ -239,11 +268,13 @@ function createPiano() {
     key.addEventListener('click', () => {
       if (currentInstrument) {
         currentInstrument.play(note, Tone.now(), { duration: 0.8 });
+        highlightKey(note, 800);
         log(`Played ${note}`);
       }
     });
 
     piano.appendChild(key);
+    keyElements.set(note, key);
   });
 }
 

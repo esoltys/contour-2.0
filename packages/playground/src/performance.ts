@@ -1,5 +1,12 @@
 import { Pattern, pattern } from '@contour/core';
-import { PatternScheduler, Tone } from '@contour/tone-adapter';
+import {
+  PatternScheduler,
+  Tone,
+  SampleLibraryManager,
+  SampleAdapter,
+  SynthAdapter,
+  type InstrumentAdapter
+} from '@contour/tone-adapter';
 import { PATTERN_PRESETS, type PatternPreset } from './patterns/presets.js';
 import loader from '@monaco-editor/loader';
 import type * as Monaco from 'monaco-editor';
@@ -38,6 +45,32 @@ class PerformanceState {
   patternPlayground: PatternPlayground | null = null;
   keyboardShortcuts: KeyboardShortcuts | null = null;
 
+  // Sample library
+  sampleLibraryManager: SampleLibraryManager | null = null;
+  useSamples = false;
+
+  // Instrument mapping for each category
+  instrumentMap = {
+    bass: {
+      'bass-groove': 'acoustic_bass',
+      'acid-bass': 'synth_bass_1',
+      'walking-bass': 'acoustic_bass',
+      'sub-bass': 'synth_bass_2'
+    },
+    melody: {
+      'arpeggio': 'acoustic_grand_piano',
+      'melody-lead': 'lead_1_square',
+      'fast-arp': 'electric_piano_1',
+      'pentatonic': 'acoustic_guitar_nylon'
+    },
+    effects: {
+      'ambient-swell': 'pad_2_warm',
+      'stab-chord': 'string_ensemble_1',
+      'texture': 'fx_5_brightness',
+      'riser': 'pad_4_choir'
+    }
+  };
+
   constructor() {
     // Initialize pads with presets
     PATTERN_PRESETS.forEach((preset, index) => {
@@ -68,6 +101,7 @@ const elements = {
   volumeValue: document.getElementById('volumeValue') as HTMLSpanElement,
   clearAllBtn: document.getElementById('clearAllBtn') as HTMLButtonElement,
   demoBtn: document.getElementById('demoBtn') as HTMLButtonElement,
+  toggleSamplesBtn: document.getElementById('toggleSamplesBtn') as HTMLButtonElement,
 
   // Grid
   performanceGrid: document.getElementById('performanceGrid') as HTMLDivElement,
@@ -128,6 +162,7 @@ function enableControls() {
   elements.volumeSlider.disabled = false;
   elements.clearAllBtn.disabled = false;
   elements.demoBtn.disabled = false;
+  elements.toggleSamplesBtn.disabled = false;
 }
 
 function setTempo(bpm: number) {
@@ -161,7 +196,7 @@ function playAll() {
   state.scheduler.start();
 
   // Update UI
-  elements.playBtn.textContent = '⏸';
+  elements.playBtn.textContent = 'Pause';
   updatePadVisuals();
 }
 
@@ -174,7 +209,7 @@ function stopAll() {
 
   // Note: We keep pads active so they can resume when Play is pressed again
   // Update UI
-  elements.playBtn.textContent = '▶';
+  elements.playBtn.textContent = 'Play';
   updatePadVisuals();
 }
 
@@ -197,6 +232,84 @@ function clearAll() {
 // ============================================================================
 // Pattern Management
 // ============================================================================
+
+/**
+ * Toggle between synthesized and sampled instruments.
+ */
+async function toggleSamples() {
+  if (!state.isAudioStarted) {
+    await initAudio();
+  }
+
+  const toggleBtn = document.getElementById('toggleSamplesBtn') as HTMLButtonElement;
+
+  if (!state.useSamples) {
+    // Switching to samples - load soundfonts
+    try {
+      toggleBtn.disabled = true;
+      toggleBtn.textContent = 'Loading samples...';
+
+      // Initialize sample library manager if needed
+      if (!state.sampleLibraryManager) {
+        state.sampleLibraryManager = new SampleLibraryManager();
+        await state.sampleLibraryManager.initialize({
+          soundfontUrl: 'https://gleitz.github.io/midi-js-soundfonts/MusyngKite'
+        });
+      }
+
+      // Collect unique instrument names from the mapping
+      const instrumentNames = new Set<string>();
+
+      console.log('[Contour] Instrument map keys:', Object.keys(state.instrumentMap));
+      Object.entries(state.instrumentMap).forEach(([category, categoryMap]) => {
+        console.log(`[Contour] Processing category: ${category}, map:`, categoryMap);
+        Object.entries(categoryMap).forEach(([presetId, instrumentName]) => {
+          console.log(`[Contour]   - ${presetId} => ${instrumentName} (type: ${typeof instrumentName})`);
+          if (instrumentName && typeof instrumentName === 'string') {
+            instrumentNames.add(instrumentName);
+          }
+        });
+      });
+
+      // Filter out any undefined/null values and load all required instruments
+      const validInstrumentNames = Array.from(instrumentNames).filter(name => {
+        const isValid = name && typeof name === 'string' && name !== 'undefined';
+        console.log(`[Contour] Checking instrument: "${name}", valid: ${isValid}`);
+        return isValid;
+      });
+
+      console.log('[Contour] Final list of instruments to load:', validInstrumentNames);
+
+      await Promise.all(
+        validInstrumentNames.map(name => {
+          console.log(`[Contour] Loading instrument: ${name}`);
+          return state.sampleLibraryManager!.loadInstrument({ instrument: name });
+        })
+      );
+
+      state.useSamples = true;
+      toggleBtn.textContent = '🎹 Use Synths';
+      console.log('[Contour] Switched to sampled instruments');
+    } catch (error) {
+      console.error('[Contour] Failed to load samples:', error);
+      alert(`Failed to load samples: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toggleBtn.textContent = '🎻 Use Samples';
+      return;
+    } finally {
+      toggleBtn.disabled = false;
+    }
+  } else {
+    // Switching back to synths
+    state.useSamples = false;
+    toggleBtn.textContent = '🎻 Use Samples';
+    console.log('[Contour] Switched to synthesized instruments');
+  }
+
+  // Reschedule active pads with new instruments
+  if (state.isPlaying) {
+    rescheduleActivePads();
+  }
+}
 
 async function togglePad(padId: string) {
   // Initialize audio if not started
@@ -221,6 +334,37 @@ async function togglePad(padId: string) {
         return;
       }
     }
+
+    // Create instrument adapter based on mode and category
+    let instrument: InstrumentAdapter;
+
+    if (state.useSamples && pad.preset.category !== 'drums') {
+      // Use samples for bass, melody, effects
+      const categoryMap = state.instrumentMap[pad.preset.category as keyof typeof state.instrumentMap];
+
+      if (!categoryMap) {
+        console.warn(`[Contour] No category mapping for ${pad.preset.category}, falling back to synth`);
+        instrument = new SynthAdapter();
+      } else {
+        const instrumentName = categoryMap[pad.preset.id as keyof typeof categoryMap];
+
+        if (!instrumentName || !state.sampleLibraryManager) {
+          console.warn(`[Contour] No instrument mapping for ${pad.preset.category}/${pad.preset.id}, falling back to synth`);
+          instrument = new SynthAdapter();
+        } else {
+          const soundfontInst = state.sampleLibraryManager.getInstrument(instrumentName);
+          instrument = new SampleAdapter(soundfontInst, Tone.context.rawContext as AudioContext);
+          console.log(`[Contour] Using sample instrument: ${instrumentName} for ${pad.preset.name}`);
+        }
+      }
+    } else {
+      // Use synth for drums or when samples disabled
+      instrument = new SynthAdapter();
+      console.log(`[Contour] Using synth for ${pad.preset.name}`);
+    }
+
+    // Set the instrument on the scheduler
+    state.scheduler.setInstrument(instrument);
 
     // Register pattern with debug panel
     if (state.debugPanel) {
@@ -615,6 +759,7 @@ function initEventListeners() {
 
   elements.clearAllBtn.addEventListener('click', clearAll);
   elements.demoBtn.addEventListener('click', playDemoJam);
+  elements.toggleSamplesBtn.addEventListener('click', toggleSamples);
 
   // Editor modal
   elements.closeEditorBtn.addEventListener('click', closeEditor);

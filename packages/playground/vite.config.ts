@@ -30,7 +30,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['monaco-editor'],
-    exclude: ['soundfont-player', 'sample-player', 'audio-loader', 'note-parser'],
   },
   worker: {
     format: 'es',

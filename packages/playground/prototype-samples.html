@@ -189,10 +189,48 @@
     select {
       min-width: 200px;
       cursor: pointer;
+      padding-right: 3rem; /* Extra padding for dropdown arrow */
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2300fff5' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1.5rem center;
+      background-size: 12px 8px;
     }
 
     select:hover {
       border-color: var(--neon-cyan);
+    }
+
+    .nav {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border-strong);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--neon-cyan);
+      text-decoration: none;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--border-strong);
+      transition: all 0.2s;
+    }
+
+    .nav a:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 20px rgba(0, 255, 245, 0.3);
+    }
+
+    .nav a.active {
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 245, 0.1);
     }
 
     .status {
@@ -310,11 +348,13 @@
       opacity: 0.3;
     }
 
-    .key:active {
+    .key:active,
+    .key.active {
       transform: translateY(4px);
     }
 
-    .key:active::before {
+    .key:active::before,
+    .key.active::before {
       opacity: 1;
       box-shadow: 0 0 30px var(--neon-cyan);
     }
@@ -340,6 +380,12 @@
 </head>
 <body>
   <div class="container">
+    <nav class="nav">
+      <a href="/">← Home</a>
+      <a href="/performance.html">Contour Live</a>
+      <a href="/prototype-samples.html" class="active">Sample Library</a>
+    </nav>
+
     <h1>Sample Library</h1>
     <p class="subtitle">External instrument loading prototype</p>
 
