@@ -201,12 +201,8 @@ function playAll() {
   console.log('[Contour] Starting playback...');
   state.isPlaying = true;
 
-  // Start all active pad schedulers
-  state.pads.forEach(pad => {
-    if (pad.isActive && pad.scheduler) {
-      pad.scheduler.start();
-    }
-  });
+  // Start the global transport (all scheduled events will play)
+  Tone.Transport.start();
 
   // Update UI
   elements.playBtn.textContent = 'Pause';
@@ -217,14 +213,10 @@ function stopAll() {
   console.log('[Contour] Pausing playback...');
   state.isPlaying = false;
 
-  // Stop all active pad schedulers
-  state.pads.forEach(pad => {
-    if (pad.scheduler) {
-      pad.scheduler.stop();
-    }
-  });
+  // Stop the global transport (only need to do this once)
+  Tone.Transport.stop();
 
-  // Note: We keep pads active so they can resume when Play is pressed again
+  // Note: We keep pads active and their schedulers so they can resume when Play is pressed again
   // Update UI
   elements.playBtn.textContent = 'Play';
   updatePadVisuals();
@@ -234,10 +226,12 @@ function clearAll() {
   console.log('[Contour] Clearing all patterns...');
   state.isPlaying = false;
 
+  // Stop the global transport
+  Tone.Transport.stop();
+
   // Deactivate all pads and dispose their schedulers
   state.pads.forEach(pad => {
     if (pad.scheduler) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.dispose();
       pad.scheduler = null;
@@ -545,11 +539,9 @@ async function togglePad(padId: string) {
       }
     }
 
-    // If already playing, start this pad's scheduler
-    if (state.isPlaying) {
-      pad.scheduler.start();
-    } else {
-      // Auto-start playback if not already playing
+    // Auto-start playback if not already playing
+    // Note: If already playing, the newly scheduled events will play automatically
+    if (!state.isPlaying) {
       playAll();
     }
   } else {
@@ -561,9 +553,9 @@ async function togglePad(padId: string) {
       }
     }
 
-    // Stop and dispose this pad's scheduler
+    // Clear and dispose this pad's scheduler
+    // Note: Don't call stop() - that stops the global transport!
     if (pad.scheduler) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.dispose();
       pad.scheduler = null;
@@ -587,14 +579,12 @@ function compilePattern(code: string): Pattern {
 
 function rescheduleActivePads() {
   // Clear and reschedule each pad's own scheduler
+  // Note: Don't call stop()/start() - those control the global transport
   state.pads.forEach(pad => {
     if (pad.isActive && pad.scheduler && pad.pattern) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.schedule(pad.pattern);
-      if (state.isPlaying) {
-        pad.scheduler.start();
-      }
+      // No need to call start() - if transport is playing, events will fire automatically
     }
   });
 }
