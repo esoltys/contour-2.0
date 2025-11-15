@@ -60,22 +60,6 @@
       justify-content: center;
       padding: 2rem;
       position: relative;
-      overflow: hidden;
-    }
-
-    /* Scanline effect */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background: linear-gradient(
-        transparent 50%,
-        rgba(0, 255, 245, 0.02) 50%
-      );
-      background-size: 100% 4px;
-      pointer-events: none;
-      z-index: 9999;
-      opacity: 0.3;
     }
 
     /* Grid background */
