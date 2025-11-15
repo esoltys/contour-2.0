@@ -779,11 +779,11 @@ function startVisualization() {
 
   console.log('[Contour] Starting piano roll visualization');
 
-  const NOTE_HEIGHT = 3; // Height of each note lane
+  const NOTE_HEIGHT = 2.4; // Height of each note lane
   const TIME_SCALE = 60; // Pixels per beat
-  const OCTAVES = 4; // Show 4 octaves (C1-B4)
+  const OCTAVES = 5; // Show 5 octaves (C1-C6)
   const LOWEST_NOTE = 24; // MIDI C1 (includes sub-bass range)
-  const TOTAL_NOTES = OCTAVES * 12;
+  const TOTAL_NOTES = OCTAVES * 12 + 1; // +1 to include C6
 
   function draw() {
     requestAnimationFrame(draw);
