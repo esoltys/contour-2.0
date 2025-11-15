@@ -14,6 +14,9 @@ import type * as Monaco from 'monaco-editor';
 import { DebugPanel } from './ui/DebugPanel.js';
 import { PatternPlayground } from './ui/PatternPlayground.js';
 import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+import { InstrumentSelector } from './ui/InstrumentSelector.js';
+import { SampleLibraryPanel } from './ui/SampleLibraryPanel.js';
+import { LoadingProgress } from './ui/LoadingProgress.js';
 import './ui/debug-panel.css';
 
 // ============================================================================
@@ -27,6 +30,7 @@ interface PadState {
   scheduler: PatternScheduler | null;
   isActive: boolean;
   code: string;
+  instrument?: string; // Qualified instrument name (e.g., 'MusyngKite:acoustic_grand_piano') or null for synth
 }
 
 class PerformanceState {
@@ -36,7 +40,6 @@ class PerformanceState {
   isDemoRunning = false;
   bpm = 120;
   volume = 0;
-  waveformAnalyzer: Tone.Analyser | null = null;
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;
   currentEditingPad: string | null = null;
@@ -45,10 +48,16 @@ class PerformanceState {
   debugPanel: DebugPanel | null = null;
   patternPlayground: PatternPlayground | null = null;
   keyboardShortcuts: KeyboardShortcuts | null = null;
+  instrumentSelector: InstrumentSelector | null = null;
+  sampleLibraryPanel: SampleLibraryPanel | null = null;
+  loadingProgress: LoadingProgress | null = null;
 
   // Sample library
   sampleLibraryManager: SampleLibraryManager | null = null;
-  useSamples = false;
+  useSamples = true; // Start with samples by default
+
+  // UI state
+  focusedPadId: string | null = null;
 
   // Instrument mapping for each category
   instrumentMap = {
@@ -134,10 +143,6 @@ async function initAudio() {
     // Set initial volume
     Tone.getDestination().volume.value = state.volume;
 
-    // Create waveform analyzer
-    state.waveformAnalyzer = new Tone.Analyser('waveform', 512);
-    Tone.getDestination().connect(state.waveformAnalyzer);
-
     // Update state
     state.isAudioStarted = true;
 
@@ -148,6 +153,11 @@ async function initAudio() {
     startVisualization();
 
     console.log('[Contour] Audio system ready!');
+
+    // Auto-load sample instruments if in sample mode
+    if (state.useSamples) {
+      await loadSampleInstruments();
+    }
   } catch (error) {
     console.error('[Contour] Failed to initialize audio:', error);
     alert('Failed to start audio system. Please try again.');
@@ -186,12 +196,8 @@ function playAll() {
   console.log('[Contour] Starting playback...');
   state.isPlaying = true;
 
-  // Start all active pad schedulers
-  state.pads.forEach(pad => {
-    if (pad.isActive && pad.scheduler) {
-      pad.scheduler.start();
-    }
-  });
+  // Start the global transport (all scheduled events will play)
+  Tone.Transport.start();
 
   // Update UI
   elements.playBtn.textContent = 'Pause';
@@ -202,14 +208,10 @@ function stopAll() {
   console.log('[Contour] Pausing playback...');
   state.isPlaying = false;
 
-  // Stop all active pad schedulers
-  state.pads.forEach(pad => {
-    if (pad.scheduler) {
-      pad.scheduler.stop();
-    }
-  });
+  // Stop the global transport (only need to do this once)
+  Tone.Transport.stop();
 
-  // Note: We keep pads active so they can resume when Play is pressed again
+  // Note: We keep pads active and their schedulers so they can resume when Play is pressed again
   // Update UI
   elements.playBtn.textContent = 'Play';
   updatePadVisuals();
@@ -219,10 +221,12 @@ function clearAll() {
   console.log('[Contour] Clearing all patterns...');
   state.isPlaying = false;
 
+  // Stop the global transport
+  Tone.Transport.stop();
+
   // Deactivate all pads and dispose their schedulers
   state.pads.forEach(pad => {
     if (pad.scheduler) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.dispose();
       pad.scheduler = null;
@@ -238,6 +242,169 @@ function clearAll() {
 // ============================================================================
 
 /**
+ * Update pad instrument and reschedule if active.
+ */
+function updatePadInstrument(padId: string, instrument: string): void {
+  const padData = state.pads.get(padId);
+  if (!padData) return;
+
+  // Update pad data
+  padData.instrument = instrument;
+
+  // Update badge
+  updatePadBadge(padId, instrument);
+
+  // Reschedule if playing
+  if (padData.isActive) {
+    reschedulePattern(padId);
+  }
+
+  console.log(`[Contour] Updated pad ${padId} instrument to ${instrument}`);
+}
+
+/**
+ * Update the visual badge on a pad to show instrument type.
+ */
+function updatePadBadge(padId: string, instrument: string): void {
+  const padElement = document.querySelector(`[data-pad-id="${padId}"]`) as HTMLElement;
+  if (!padElement) return;
+
+  // Remove existing badge
+  const existingBadge = padElement.querySelector('.pad-badge');
+  if (existingBadge) {
+    existingBadge.remove();
+  }
+
+  // Create new badge
+  const badge = document.createElement('div');
+  badge.className = 'pad-badge';
+
+  const isSampled = instrument && instrument !== 'synth' && instrument.includes(':');
+  badge.classList.add(isSampled ? 'badge-sample' : 'badge-synth');
+
+  // Extract display name
+  let displayName = 'Synth';
+  if (isSampled) {
+    const parts = instrument.split(':');
+    if (parts.length === 2) {
+      displayName = parts[1].replace(/_/g, ' ');
+      // Truncate if too long
+      if (displayName.length > 12) {
+        displayName = displayName.substring(0, 12) + '...';
+      }
+    }
+  }
+
+  badge.textContent = displayName;
+  badge.title = instrument; // Full name in tooltip
+
+  padElement.appendChild(badge);
+}
+
+/**
+ * Handle pad focus for keyboard shortcuts.
+ */
+function handlePadFocus(padId: string): void {
+  state.focusedPadId = padId;
+
+  // Add visual focus indicator
+  const pads = document.querySelectorAll('.pad');
+  pads.forEach(pad => pad.classList.remove('focused'));
+
+  const padElement = document.querySelector(`[data-pad-id="${padId}"]`);
+  if (padElement) {
+    padElement.classList.add('focused');
+  }
+}
+
+/**
+ * Load sample instruments for all presets.
+ */
+async function loadSampleInstruments(): Promise<void> {
+  try {
+    // Initialize sample library manager if needed
+    if (!state.sampleLibraryManager) {
+      state.sampleLibraryManager = new SampleLibraryManager();
+      await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
+
+      // Initialize sample library UI components after manager is ready
+      if (!state.instrumentSelector) {
+        state.instrumentSelector = new InstrumentSelector(
+          state.sampleLibraryManager,
+          Tone.context.rawContext as AudioContext,
+          (padId: string, instrument: string) => {
+            updatePadInstrument(padId, instrument);
+          }
+        );
+      }
+
+      if (!state.sampleLibraryPanel) {
+        state.sampleLibraryPanel = new SampleLibraryPanel(state.sampleLibraryManager);
+      }
+    }
+
+    // Show loading progress
+    state.loadingProgress?.show('Loading sample instruments...');
+
+    // Collect unique instrument names from the mapping
+    const instrumentNames = new Set<string>();
+
+    Object.entries(state.instrumentMap).forEach(([category, categoryMap]) => {
+      Object.entries(categoryMap).forEach(([presetId, instrumentName]) => {
+        if (instrumentName && typeof instrumentName === 'string') {
+          instrumentNames.add(instrumentName);
+        }
+      });
+    });
+
+    // Filter out any undefined/null values
+    const validInstrumentNames = Array.from(instrumentNames).filter(name => {
+      return name && typeof name === 'string' && name !== 'undefined';
+    });
+
+    console.log('[Contour] Loading instruments:', validInstrumentNames);
+
+    // Load instruments one at a time to show progress
+    const total = validInstrumentNames.length;
+    let loaded = 0;
+
+    for (const name of validInstrumentNames) {
+      state.loadingProgress?.updateProgress(loaded, total);
+      await state.sampleLibraryManager!.loadInstrument({ instrument: name });
+      loaded++;
+    }
+
+    // Update progress to 100% and show success
+    state.loadingProgress?.updateProgress(total, total);
+    state.loadingProgress?.showSuccess('All instruments loaded!');
+
+    console.log('[Contour] Sample instruments loaded');
+
+    // Update all pad badges to show sample mode
+    state.pads.forEach((pad) => {
+      // Get the instrument name for this pad
+      const categoryMap = state.instrumentMap[pad.preset.category as keyof typeof state.instrumentMap];
+      let instrumentName = 'synth';
+
+      if (pad.preset.category === 'drums') {
+        instrumentName = 'MusyngKite:drums'; // Placeholder for drum kit
+      } else if (categoryMap) {
+        const gmInstrument = categoryMap[pad.preset.id as keyof typeof categoryMap];
+        if (gmInstrument) {
+          instrumentName = `MusyngKite:${gmInstrument}`;
+        }
+      }
+
+      updatePadBadge(pad.id, instrumentName);
+    });
+  } catch (error) {
+    console.error('[Contour] Failed to load sample instruments:', error);
+    state.loadingProgress?.showError(error instanceof Error ? error.message : 'Unknown error');
+    throw error;
+  }
+}
+
+/**
  * Toggle between synthesized and sampled instruments.
  */
 async function toggleSamples() {
@@ -247,7 +414,17 @@ async function toggleSamples() {
 
   const toggleBtn = document.getElementById('toggleSamplesBtn') as HTMLButtonElement;
 
-  if (!state.useSamples) {
+  if (state.useSamples) {
+    // Switching to synths
+    state.useSamples = false;
+    toggleBtn.textContent = '🎻 Use Samples';
+    console.log('[Contour] Switched to synthesized instruments');
+
+    // Update all pad badges
+    state.pads.forEach((pad) => {
+      updatePadBadge(pad.id, 'synth');
+    });
+  } else {
     // Switching to samples - load soundfonts
     try {
       toggleBtn.disabled = true;
@@ -258,45 +435,8 @@ async function toggleSamples() {
         stopAll();
       }
 
-      // Initialize sample library manager if needed
-      if (!state.sampleLibraryManager) {
-        state.sampleLibraryManager = new SampleLibraryManager();
-        await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
-      }
-
-      // Collect unique instrument names from the mapping
-      const instrumentNames = new Set<string>();
-
-      console.log('[Contour] Instrument map keys:', Object.keys(state.instrumentMap));
-      Object.entries(state.instrumentMap).forEach(([category, categoryMap]) => {
-        console.log(`[Contour] Processing category: ${category}, map:`, categoryMap);
-        Object.entries(categoryMap).forEach(([presetId, instrumentName]) => {
-          console.log(`[Contour]   - ${presetId} => ${instrumentName} (type: ${typeof instrumentName})`);
-          if (instrumentName && typeof instrumentName === 'string') {
-            instrumentNames.add(instrumentName);
-          }
-        });
-      });
-
-      // Filter out any undefined/null values and load all required instruments
-      const validInstrumentNames = Array.from(instrumentNames).filter(name => {
-        const isValid = name && typeof name === 'string' && name !== 'undefined';
-        console.log(`[Contour] Checking instrument: "${name}", valid: ${isValid}`);
-        return isValid;
-      });
-
-      console.log('[Contour] Final list of instruments to load:', validInstrumentNames);
-
-      // Load instruments one at a time to show progress
-      const total = validInstrumentNames.length;
-      let loaded = 0;
-
-      for (const name of validInstrumentNames) {
-        toggleBtn.textContent = `Loading samples... ${loaded}/${total}`;
-        console.log(`[Contour] Loading instrument ${loaded + 1}/${total}: ${name}`);
-        await state.sampleLibraryManager!.loadInstrument({ instrument: name });
-        loaded++;
-      }
+      // Load sample instruments
+      await loadSampleInstruments();
 
       state.useSamples = true;
       toggleBtn.textContent = '🎹 Use Synths';
@@ -309,17 +449,11 @@ async function toggleSamples() {
       }
     } catch (error) {
       console.error('[Contour] Failed to load samples:', error);
-      alert(`Failed to load samples: ${error instanceof Error ? error.message : 'Unknown error'}`);
       toggleBtn.textContent = '🎻 Use Samples';
       return;
     } finally {
       toggleBtn.disabled = false;
     }
-  } else {
-    // Switching back to synths
-    state.useSamples = false;
-    toggleBtn.textContent = '🎻 Use Samples';
-    console.log('[Contour] Switched to synthesized instruments');
   }
 
   // Reschedule active pads with new instruments
@@ -400,11 +534,9 @@ async function togglePad(padId: string) {
       }
     }
 
-    // If already playing, start this pad's scheduler
-    if (state.isPlaying) {
-      pad.scheduler.start();
-    } else {
-      // Auto-start playback if not already playing
+    // Auto-start playback if not already playing
+    // Note: If already playing, the newly scheduled events will play automatically
+    if (!state.isPlaying) {
       playAll();
     }
   } else {
@@ -416,9 +548,9 @@ async function togglePad(padId: string) {
       }
     }
 
-    // Stop and dispose this pad's scheduler
+    // Clear and dispose this pad's scheduler
+    // Note: Don't call stop() - that stops the global transport!
     if (pad.scheduler) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.dispose();
       pad.scheduler = null;
@@ -442,14 +574,12 @@ function compilePattern(code: string): Pattern {
 
 function rescheduleActivePads() {
   // Clear and reschedule each pad's own scheduler
+  // Note: Don't call stop()/start() - those control the global transport
   state.pads.forEach(pad => {
     if (pad.isActive && pad.scheduler && pad.pattern) {
-      pad.scheduler.stop();
       pad.scheduler.clear();
       pad.scheduler.schedule(pad.pattern);
-      if (state.isPlaying) {
-        pad.scheduler.start();
-      }
+      // No need to call start() - if transport is playing, events will fire automatically
     }
   });
 }
@@ -498,18 +628,9 @@ function initGrid() {
     padElement.className = 'pad';
     padElement.dataset.padId = padId;
 
-    // Determine the sample badge for this pad
-    let sampleBadge: string;
-    if (pad.preset.category === 'drums') {
-      sampleBadge = '<div class="pad-sample-badge" title="Uses drum samples when enabled">🥁</div>';
-    } else {
-      sampleBadge = '<div class="pad-sample-badge" title="Uses samples when enabled">🎻</div>';
-    }
-
     // Pad content
     padElement.innerHTML = `
       <div class="pad-edit">Edit Pattern</div>
-      ${sampleBadge}
       <div class="pad-icon">${pad.preset.icon}</div>
       <div class="pad-name">${pad.preset.name}</div>
     `;
@@ -523,10 +644,17 @@ function initGrid() {
         return;
       }
 
-      if (state.isAudioStarted) {
-        togglePad(padId);
-      }
+      // Toggle pad (will initialize audio if needed)
+      togglePad(padId);
     });
+
+    // Hover to track focus for keyboard shortcuts
+    padElement.addEventListener('mouseenter', () => {
+      handlePadFocus(padId);
+    });
+
+    // Initialize badge
+    updatePadBadge(padId, pad.instrument || 'synth');
 
     elements.performanceGrid.appendChild(padElement);
   });
@@ -644,43 +772,106 @@ function applyEditorChanges() {
 function startVisualization() {
   const canvas = elements.waveformCanvas;
   const ctx = canvas.getContext('2d');
-  if (!ctx || !state.waveformAnalyzer) return;
+  if (!ctx) {
+    console.warn('[Contour] Cannot start visualization: no canvas context');
+    return;
+  }
+
+  console.log('[Contour] Starting piano roll visualization');
+
+  const OCTAVES = 5; // Show 5 octaves (C1-C6)
+  const LOWEST_NOTE = 24; // MIDI C1 (includes sub-bass range)
+  const TOTAL_NOTES = OCTAVES * 12 + 1; // +1 to include C6 (61 notes total)
+  const NOTE_HEIGHT = canvas.height / TOTAL_NOTES; // Exactly fit all notes
+  const TIME_SCALE = 60; // Pixels per beat
 
   function draw() {
     requestAnimationFrame(draw);
 
-    if (!state.waveformAnalyzer) return;
-
-    const waveform = state.waveformAnalyzer.getValue() as Float32Array;
-
-    // Clear canvas
+    // Clear canvas with dark background
     ctx.fillStyle = '#0a0a0b';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw waveform with neon cyan
-    ctx.strokeStyle = '#00fff5';
-    ctx.lineWidth = 2;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#00fff5';
-    ctx.beginPath();
-
-    const sliceWidth = canvas.width / waveform.length;
-    let x = 0;
-
-    for (let i = 0; i < waveform.length; i++) {
-      const v = (waveform[i] + 1) / 2; // Normalize from [-1, 1] to [0, 1]
-      const y = v * canvas.height;
-
-      if (i === 0) {
-        ctx.moveTo(x, y);
-      } else {
-        ctx.lineTo(x, y);
-      }
-
-      x += sliceWidth;
+    // Draw grid lines for octaves
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= OCTAVES; i++) {
+      const y = (i * 12) * NOTE_HEIGHT;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
     }
 
+    // Draw beat lines
+    const beatsToShow = Math.ceil(canvas.width / TIME_SCALE);
+    for (let i = 0; i <= beatsToShow; i++) {
+      const x = i * TIME_SCALE;
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+
+    if (!state.isPlaying) return;
+
+    // Get current transport position in beats
+    const currentBeat = Tone.Transport.seconds * (state.bpm / 60);
+
+    // Draw playhead
+    const playheadX = (currentBeat % beatsToShow) * TIME_SCALE;
+    ctx.strokeStyle = '#00fff5';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(playheadX, 0);
+    ctx.lineTo(playheadX, canvas.height);
     ctx.stroke();
+
+    // Draw active notes from all active pads
+    const colors = [
+      'rgba(0, 255, 245, 0.6)',   // Cyan
+      'rgba(255, 0, 255, 0.6)',   // Magenta
+      'rgba(0, 255, 127, 0.6)',   // Spring green
+      'rgba(255, 127, 0, 0.6)',   // Orange
+    ];
+    let colorIndex = 0;
+
+    state.pads.forEach((pad) => {
+      if (!pad.isActive || !pad.pattern) return;
+
+      const color = colors[colorIndex % colors.length];
+      colorIndex++;
+
+      // Calculate pattern length
+      let patternLength = 4; // Default 4 beats
+      if (pad.pattern.events.length > 0) {
+        const lastEvent = pad.pattern.events[pad.pattern.events.length - 1];
+        patternLength = Math.max(patternLength, lastEvent.time + lastEvent.duration);
+      }
+
+      // Draw notes
+      pad.pattern.events.forEach((event) => {
+        if (event.type === 'rest') return;
+
+        const notes = event.type === 'note' ? [event.note] : event.notes;
+
+        notes.forEach((note) => {
+          const midi = note.pitch;
+          if (midi < LOWEST_NOTE || midi >= LOWEST_NOTE + TOTAL_NOTES) return;
+
+          const noteIndex = midi - LOWEST_NOTE;
+          const y = (TOTAL_NOTES - noteIndex - 1) * NOTE_HEIGHT;
+
+          // Calculate x position considering loop
+          const eventBeat = (currentBeat % patternLength) + event.time;
+          const x = (eventBeat % beatsToShow) * TIME_SCALE;
+          const width = event.duration * TIME_SCALE;
+
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, Math.max(width, 2), NOTE_HEIGHT - 1);
+        });
+      });
+    });
   }
 
   draw();
@@ -837,6 +1028,32 @@ function initEventListeners() {
       return;
     }
 
+    // I key: select instrument for focused pad
+    if ((e.key === 'i' || e.key === 'I') && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      if (state.focusedPadId && state.instrumentSelector) {
+        const padData = state.pads.get(state.focusedPadId);
+        state.instrumentSelector.show(state.focusedPadId, padData?.instrument);
+      }
+      return;
+    }
+
+    // L key: toggle sample library panel
+    if ((e.key === 'l' || e.key === 'L') && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      if (state.sampleLibraryPanel) {
+        state.sampleLibraryPanel.toggle();
+      }
+      return;
+    }
+
+    // Shift+S: toggle samples/synths
+    if (e.shiftKey && e.code === 'KeyS') {
+      e.preventDefault();
+      toggleSamples();
+      return;
+    }
+
     // Number keys 1-9 and Q-I: trigger pads 0-15
     // Use e.code instead of e.key to handle Shift properly
     const codeMap: { [code: string]: number } = {
@@ -890,6 +1107,9 @@ function init() {
   });
 
   state.keyboardShortcuts = new KeyboardShortcuts();
+
+  // Initialize loading progress component
+  state.loadingProgress = new LoadingProgress();
 
   console.log('[Contour] Debug UI initialized');
   console.log('[Contour] Press ? for keyboard shortcuts, Cmd+D for debug panel, Cmd+K for playground');

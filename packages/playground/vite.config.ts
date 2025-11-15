@@ -16,6 +16,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+    commonjsOptions: {
+      include: [/soundfont-player/, /node_modules/],
+    },
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -29,7 +32,12 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   optimizeDeps: {
-    include: ['monaco-editor'],
+    include: ['monaco-editor', 'soundfont-player'],
+    exclude: ['@contour/core', '@contour/tone-adapter'],
+    esbuildOptions: {
+      // Needed for soundfont-player CommonJS compatibility
+      platform: 'browser',
+    },
   },
   worker: {
     format: 'es',

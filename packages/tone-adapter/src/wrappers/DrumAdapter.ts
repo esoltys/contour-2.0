@@ -20,6 +20,7 @@ const DRUM_KIT_URLS: Record<DrumKit, string> = {
 /**
  * Note mapping for drum samples
  * Maps MIDI note names to sample filenames
+ * Note: Not all kits have all samples - missing samples will be skipped
  */
 const DRUM_NOTE_MAP: Record<string, string> = {
   'C1': 'kick',      // MIDI 36 - Bass Drum
@@ -28,7 +29,8 @@ const DRUM_NOTE_MAP: Record<string, string> = {
   'F#1': 'hihat',    // MIDI 42 - Closed Hi-Hat
   'G1': 'tom2',      // MIDI 43 - Mid Tom
   'A1': 'tom3',      // MIDI 45 - High Tom
-  'A#1': 'crash',    // MIDI 46 - Open Hi-Hat / Crash
+  // Note: crash.mp3 is missing from CR78 kit, so we skip it
+  // 'A#1': 'crash',    // MIDI 46 - Open Hi-Hat / Crash
 };
 
 /**
@@ -66,7 +68,10 @@ export class DrumAdapter implements InstrumentAdapter {
         console.log(`[Contour] Loaded ${kit} drum kit`);
       },
       onerror: (error) => {
-        console.error(`[Contour] Failed to load ${kit} drum kit:`, error);
+        console.warn(`[Contour] Some samples failed to load for ${kit} drum kit:`, error);
+        // Still mark as loaded even if some samples fail
+        // The ones that loaded will still work
+        this.isLoaded = true;
       }
     }).toDestination();
   }
@@ -80,12 +85,21 @@ export class DrumAdapter implements InstrumentAdapter {
    * @param velocity - Hit velocity (0-127), controls volume
    */
   playNote(note: string, duration: number, time: number, velocity: number): void {
+    // Don't play if samples aren't loaded yet
+    if (!this.isLoaded) {
+      return;
+    }
+
     // Normalize velocity to 0-1 range
     const gain = velocity / 127;
 
     // Trigger drum sample
     // Note: Duration is ignored for drums - they play to completion
-    this.sampler.triggerAttack(note, time, gain);
+    try {
+      this.sampler.triggerAttack(note, time, gain);
+    } catch (error) {
+      console.warn(`[DrumAdapter] Failed to play note ${note}:`, error);
+    }
   }
 
   /**
@@ -97,12 +111,21 @@ export class DrumAdapter implements InstrumentAdapter {
    * @param velocity - Hit velocity
    */
   playChord(notes: string[], duration: number, time: number, velocity: number): void {
+    // Don't play if samples aren't loaded yet
+    if (!this.isLoaded) {
+      return;
+    }
+
     // Normalize velocity
     const gain = velocity / 127;
 
     // Trigger all drum samples simultaneously
     notes.forEach(note => {
-      this.sampler.triggerAttack(note, time, gain);
+      try {
+        this.sampler.triggerAttack(note, time, gain);
+      } catch (error) {
+        console.warn(`[DrumAdapter] Failed to play note ${note}:`, error);
+      }
     });
   }
 
