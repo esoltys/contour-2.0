@@ -29,11 +29,14 @@ export class KeyboardShortcuts {
       // Pattern Grid
       { key: '1-4, Q-R, A-F, Z-V', description: 'Trigger pads', category: 'Pattern Grid' },
       { key: 'Shift + Pad Key', description: 'Edit pattern', category: 'Pattern Grid' },
+      { key: 'I', description: 'Select instrument for pad', category: 'Pattern Grid' },
+      { key: 'Shift + S', description: 'Toggle samples/synths', category: 'Pattern Grid' },
 
       // Debug Tools
       { key: 'Cmd/Ctrl + D', description: 'Toggle debug panel', category: 'Debug Tools' },
       { key: 'Cmd/Ctrl + K', description: 'Open playground', category: 'Debug Tools' },
       { key: 'Cmd/Ctrl + Shift + I', description: 'Inspect selected pattern', category: 'Debug Tools' },
+      { key: 'L', description: 'Toggle sample library panel', category: 'Debug Tools' },
       { key: '?', description: 'Show keyboard shortcuts', category: 'Debug Tools' },
 
       // Editor

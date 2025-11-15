@@ -14,6 +14,9 @@ import type * as Monaco from 'monaco-editor';
 import { DebugPanel } from './ui/DebugPanel.js';
 import { PatternPlayground } from './ui/PatternPlayground.js';
 import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+import { InstrumentSelector } from './ui/InstrumentSelector.js';
+import { SampleLibraryPanel } from './ui/SampleLibraryPanel.js';
+import { LoadingProgress } from './ui/LoadingProgress.js';
 import './ui/debug-panel.css';
 
 // ============================================================================
@@ -27,6 +30,7 @@ interface PadState {
   scheduler: PatternScheduler | null;
   isActive: boolean;
   code: string;
+  instrument?: string; // Qualified instrument name (e.g., 'MusyngKite:acoustic_grand_piano') or null for synth
 }
 
 class PerformanceState {
@@ -45,10 +49,16 @@ class PerformanceState {
   debugPanel: DebugPanel | null = null;
   patternPlayground: PatternPlayground | null = null;
   keyboardShortcuts: KeyboardShortcuts | null = null;
+  instrumentSelector: InstrumentSelector | null = null;
+  sampleLibraryPanel: SampleLibraryPanel | null = null;
+  loadingProgress: LoadingProgress | null = null;
 
   // Sample library
   sampleLibraryManager: SampleLibraryManager | null = null;
   useSamples = false;
+
+  // UI state
+  focusedPadId: string | null = null;
 
   // Instrument mapping for each category
   instrumentMap = {
@@ -238,6 +248,82 @@ function clearAll() {
 // ============================================================================
 
 /**
+ * Update pad instrument and reschedule if active.
+ */
+function updatePadInstrument(padId: string, instrument: string): void {
+  const padData = state.pads.get(padId);
+  if (!padData) return;
+
+  // Update pad data
+  padData.instrument = instrument;
+
+  // Update badge
+  updatePadBadge(padId, instrument);
+
+  // Reschedule if playing
+  if (padData.isActive) {
+    reschedulePattern(padId);
+  }
+
+  console.log(`[Contour] Updated pad ${padId} instrument to ${instrument}`);
+}
+
+/**
+ * Update the visual badge on a pad to show instrument type.
+ */
+function updatePadBadge(padId: string, instrument: string): void {
+  const padElement = document.querySelector(`[data-pad-id="${padId}"]`) as HTMLElement;
+  if (!padElement) return;
+
+  // Remove existing badge
+  const existingBadge = padElement.querySelector('.pad-badge');
+  if (existingBadge) {
+    existingBadge.remove();
+  }
+
+  // Create new badge
+  const badge = document.createElement('div');
+  badge.className = 'pad-badge';
+
+  const isSampled = instrument && instrument !== 'synth' && instrument.includes(':');
+  badge.classList.add(isSampled ? 'badge-sample' : 'badge-synth');
+
+  // Extract display name
+  let displayName = 'Synth';
+  if (isSampled) {
+    const parts = instrument.split(':');
+    if (parts.length === 2) {
+      displayName = parts[1].replace(/_/g, ' ');
+      // Truncate if too long
+      if (displayName.length > 12) {
+        displayName = displayName.substring(0, 12) + '...';
+      }
+    }
+  }
+
+  badge.textContent = displayName;
+  badge.title = instrument; // Full name in tooltip
+
+  padElement.appendChild(badge);
+}
+
+/**
+ * Handle pad focus for keyboard shortcuts.
+ */
+function handlePadFocus(padId: string): void {
+  state.focusedPadId = padId;
+
+  // Add visual focus indicator
+  const pads = document.querySelectorAll('.pad');
+  pads.forEach(pad => pad.classList.remove('focused'));
+
+  const padElement = document.querySelector(`[data-pad-id="${padId}"]`);
+  if (padElement) {
+    padElement.classList.add('focused');
+  }
+}
+
+/**
  * Toggle between synthesized and sampled instruments.
  */
 async function toggleSamples() {
@@ -262,7 +348,25 @@ async function toggleSamples() {
       if (!state.sampleLibraryManager) {
         state.sampleLibraryManager = new SampleLibraryManager();
         await state.sampleLibraryManager.initialize(Tone.context.rawContext as AudioContext);
+
+        // Initialize sample library UI components after manager is ready
+        if (!state.instrumentSelector) {
+          state.instrumentSelector = new InstrumentSelector(
+            state.sampleLibraryManager,
+            Tone.context.rawContext as AudioContext,
+            (padId: string, instrument: string) => {
+              updatePadInstrument(padId, instrument);
+            }
+          );
+        }
+
+        if (!state.sampleLibraryPanel) {
+          state.sampleLibraryPanel = new SampleLibraryPanel(state.sampleLibraryManager);
+        }
       }
+
+      // Show loading progress
+      state.loadingProgress?.show('Preparing to load instruments...');
 
       // Collect unique instrument names from the mapping
       const instrumentNames = new Set<string>();
@@ -292,15 +396,24 @@ async function toggleSamples() {
       let loaded = 0;
 
       for (const name of validInstrumentNames) {
-        toggleBtn.textContent = `Loading samples... ${loaded}/${total}`;
+        state.loadingProgress?.updateProgress(loaded, total);
         console.log(`[Contour] Loading instrument ${loaded + 1}/${total}: ${name}`);
         await state.sampleLibraryManager!.loadInstrument({ instrument: name });
         loaded++;
       }
 
+      // Update progress to 100% and show success
+      state.loadingProgress?.updateProgress(total, total);
+      state.loadingProgress?.showSuccess('All instruments loaded!');
+
       state.useSamples = true;
       toggleBtn.textContent = '🎹 Use Synths';
       console.log('[Contour] Switched to sampled instruments');
+
+      // Update all pad badges
+      state.pads.forEach((pad) => {
+        updatePadBadge(pad.id, pad.instrument || 'synth');
+      });
 
       // Resume playback if it was playing before
       if (wasPlaying) {
@@ -309,7 +422,7 @@ async function toggleSamples() {
       }
     } catch (error) {
       console.error('[Contour] Failed to load samples:', error);
-      alert(`Failed to load samples: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      state.loadingProgress?.showError(error instanceof Error ? error.message : 'Unknown error');
       toggleBtn.textContent = '🎻 Use Samples';
       return;
     } finally {
@@ -527,6 +640,14 @@ function initGrid() {
         togglePad(padId);
       }
     });
+
+    // Hover to track focus for keyboard shortcuts
+    padElement.addEventListener('mouseenter', () => {
+      handlePadFocus(padId);
+    });
+
+    // Initialize badge
+    updatePadBadge(padId, pad.instrument || 'synth');
 
     elements.performanceGrid.appendChild(padElement);
   });
@@ -837,6 +958,32 @@ function initEventListeners() {
       return;
     }
 
+    // I key: select instrument for focused pad
+    if ((e.key === 'i' || e.key === 'I') && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      if (state.focusedPadId && state.instrumentSelector) {
+        const padData = state.pads.get(state.focusedPadId);
+        state.instrumentSelector.show(state.focusedPadId, padData?.instrument);
+      }
+      return;
+    }
+
+    // L key: toggle sample library panel
+    if ((e.key === 'l' || e.key === 'L') && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+      if (state.sampleLibraryPanel) {
+        state.sampleLibraryPanel.toggle();
+      }
+      return;
+    }
+
+    // Shift+S: toggle samples/synths
+    if (e.shiftKey && e.code === 'KeyS') {
+      e.preventDefault();
+      toggleSamples();
+      return;
+    }
+
     // Number keys 1-9 and Q-I: trigger pads 0-15
     // Use e.code instead of e.key to handle Shift properly
     const codeMap: { [code: string]: number } = {
@@ -890,6 +1037,9 @@ function init() {
   });
 
   state.keyboardShortcuts = new KeyboardShortcuts();
+
+  // Initialize loading progress component
+  state.loadingProgress = new LoadingProgress();
 
   console.log('[Contour] Debug UI initialized');
   console.log('[Contour] Press ? for keyboard shortcuts, Cmd+D for debug panel, Cmd+K for playground');
