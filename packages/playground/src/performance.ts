@@ -659,9 +659,8 @@ function initGrid() {
         return;
       }
 
-      if (state.isAudioStarted) {
-        togglePad(padId);
-      }
+      // Toggle pad (will initialize audio if needed)
+      togglePad(padId);
     });
 
     // Hover to track focus for keyboard shortcuts
