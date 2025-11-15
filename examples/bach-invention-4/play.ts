@@ -50,8 +50,8 @@ async function main() {
   const scheduler = new CompositionScheduler();
 
   try {
-    // Schedule the composition
-    scheduler.scheduleComposition(invention);
+    // Schedule the composition (await since it may load instruments)
+    await scheduler.scheduleComposition(invention);
 
     // Start playback (requires user gesture in browser)
     await scheduler.start();
