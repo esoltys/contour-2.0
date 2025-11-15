@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { parseMiniNotation, parseMiniNotationWithDefaults, MiniNotationError } from '../../src/patterns/MiniNotation';
 import { Velocity, Duration } from '../../src/types/brands';
 import { Durations } from '../../src/types/music';
+import { Scale } from '../../src/theory/Scale';
 
 describe('MiniNotation', () => {
   describe('Basic parsing', () => {
@@ -291,6 +292,151 @@ describe('MiniNotation', () => {
       expect(events[0].time).toBe(0);
       expect(events[1].time).toBe(Durations.quarter);
       expect(events[2].time).toBeCloseTo(Durations.quarter + Durations.quarter / 2, 5);
+    });
+  });
+
+  describe('Scale degree syntax', () => {
+    it('parses scale degrees with scale context', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1 $3 $5', { scale: cMajor });
+
+      expect(events).toHaveLength(3);
+      expect(events[0].type).toBe('note');
+      expect(events[0].note?.name).toBe('C4'); // 1st degree
+      expect(events[1].note?.name).toBe('E4'); // 3rd degree
+      expect(events[2].note?.name).toBe('G4'); // 5th degree
+    });
+
+    it('parses full scale ascending', () => {
+      const gMajor = new Scale('G4', 'major');
+      const events = parseMiniNotationWithDefaults('$1 $2 $3 $4 $5 $6 $7 $8', {
+        scale: gMajor,
+      });
+
+      expect(events).toHaveLength(8);
+      expect(events[0].note?.name).toBe('G4');
+      expect(events[1].note?.name).toBe('A4');
+      expect(events[2].note?.name).toBe('B4');
+      expect(events[3].note?.name).toBe('C5');
+      expect(events[4].note?.name).toBe('D5');
+      expect(events[5].note?.name).toBe('E5');
+      // F# is enharmonic, accept both spellings
+      expect(['F#5', 'Gb5']).toContain(events[6].note?.name);
+      expect(events[7].note?.name).toBe('G5');
+    });
+
+    it('works with minor scale', () => {
+      const dMinor = new Scale('D4', 'minor');
+      const events = parseMiniNotationWithDefaults('$1 $3 $5', { scale: dMinor });
+
+      expect(events).toHaveLength(3);
+      expect(events[0].note?.name).toBe('D4');
+      expect(events[1].note?.name).toBe('F4');
+      expect(events[2].note?.name).toBe('A4');
+    });
+
+    it('works with modes', () => {
+      const dDorian = new Scale('D4', 'Dorian');
+      const events = parseMiniNotationWithDefaults('$1 $2 $3', { scale: dDorian });
+
+      expect(events).toHaveLength(3);
+      expect(events[0].note?.name).toBe('D4');
+      expect(events[1].note?.name).toBe('E4');
+      expect(events[2].note?.name).toBe('F4');
+    });
+
+    it('supports repetition on degrees', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1*4', { scale: cMajor });
+
+      expect(events).toHaveLength(4);
+      expect(events.every(e => e.note?.name === 'C4')).toBe(true);
+    });
+
+    it('supports extension on degrees', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1@2', { scale: cMajor });
+
+      expect(events).toHaveLength(1);
+      expect(events[0].duration).toBe(Durations.quarter * 2);
+    });
+
+    it('supports duration on degrees', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1/8 $3/16', { scale: cMajor });
+
+      expect(events).toHaveLength(2);
+      expect(events[0].duration).toBe(1 / 8);
+      expect(events[1].duration).toBe(1 / 16);
+    });
+
+    it('supports grouping with degrees', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('[$1 $3 $5]', { scale: cMajor });
+
+      expect(events).toHaveLength(3);
+      // Each note should be 1/3 of a quarter note
+      const expectedDuration = Durations.quarter / 3;
+      events.forEach(e => {
+        expect(e.duration).toBeCloseTo(expectedDuration, 5);
+      });
+    });
+
+    it('mixes degrees with absolute notes', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1 E4 $5 G4', { scale: cMajor });
+
+      expect(events).toHaveLength(4);
+      expect(events[0].note?.name).toBe('C4'); // $1
+      expect(events[1].note?.name).toBe('E4'); // absolute
+      expect(events[2].note?.name).toBe('G4'); // $5
+      expect(events[3].note?.name).toBe('G4'); // absolute
+    });
+
+    it('mixes degrees with rests', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1 ~ $5', { scale: cMajor });
+
+      expect(events).toHaveLength(3);
+      expect(events[0].type).toBe('note');
+      expect(events[1].type).toBe('rest');
+      expect(events[2].type).toBe('note');
+    });
+
+    it('throws error when degree is used without scale', () => {
+      expect(() => {
+        parseMiniNotationWithDefaults('$1 $3 $5');
+      }).toThrow(MiniNotationError);
+    });
+
+    it('throws error for invalid degree number', () => {
+      const cMajor = new Scale('C4', 'major');
+      expect(() => {
+        parseMiniNotationWithDefaults('$0', { scale: cMajor });
+      }).toThrow(MiniNotationError);
+    });
+
+    it('sequences degree events correctly in time', () => {
+      const cMajor = new Scale('C4', 'major');
+      const events = parseMiniNotationWithDefaults('$1 $3 $5', { scale: cMajor });
+
+      expect(events[0].time).toBe(0);
+      expect(events[1].time).toBe(Durations.quarter);
+      expect(events[2].time).toBe(Durations.quarter * 2);
+    });
+
+    it('works with pentatonic scales', () => {
+      const cPentatonic = new Scale('C4', 'majorPentatonic');
+      const events = parseMiniNotationWithDefaults('$1 $2 $3 $4 $5', {
+        scale: cPentatonic,
+      });
+
+      expect(events).toHaveLength(5);
+      expect(events[0].note?.name).toBe('C4');
+      expect(events[1].note?.name).toBe('D4');
+      expect(events[2].note?.name).toBe('E4');
+      expect(events[3].note?.name).toBe('G4');
+      expect(events[4].note?.name).toBe('A4');
     });
   });
 });

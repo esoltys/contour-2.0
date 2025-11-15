@@ -16,6 +16,7 @@ export class PatternBuilder {
   private currentTime: Seconds = Seconds(0);
   private defaultDuration: Duration = Durations.quarter;
   private defaultVelocity: Velocity = Velocity(80);
+  private activeScale?: any; // Scale type (avoid circular dependency)
 
   /**
    * Add a single note.
@@ -216,14 +217,25 @@ export class PatternBuilder {
    * - Duration: "C4/8" (eighth note)
    * - Octave persistence: "C4 D E F" (all octave 4)
    * - Chord symbols: "Cmaj7 Dm7 G7"
+   * - Scale degrees: "$1 $3 $5" (requires withScale to be called first)
    *
    * @param notation - Mini-notation string
    * @returns this for chaining
+   *
+   * @example
+   * ```typescript
+   * const cMajor = new Scale('C4', 'major');
+   * const pattern = new PatternBuilder()
+   *   .withScale(cMajor)
+   *   .fromNotation('$1 $3 $5 $8') // C4, E4, G4, C5
+   *   .build();
+   * ```
    */
   fromNotation(notation: string): this {
     const events = parseMiniNotationWithDefaults(notation, {
       defaultDuration: this.defaultDuration,
       defaultVelocity: this.defaultVelocity,
+      scale: this.activeScale,
     });
 
     // Adjust event times based on current time
@@ -239,6 +251,74 @@ export class PatternBuilder {
       const lastEvent = adjustedEvents[adjustedEvents.length - 1];
       this.currentTime = Seconds(lastEvent.time + lastEvent.duration);
     }
+
+    return this;
+  }
+
+  /**
+   * Set active scale context for degree-based notation.
+   *
+   * After calling this, you can use the degrees() method to add notes
+   * by scale degree instead of absolute pitch.
+   *
+   * @param scale - Scale to use for degree-based notation
+   * @returns this for chaining
+   *
+   * @example
+   * ```typescript
+   * import { Scale, PatternBuilder } from '@contour/core';
+   *
+   * const cMajor = new Scale('C4', 'major');
+   * const pattern = new PatternBuilder()
+   *   .withScale(cMajor)
+   *   .degrees([1, 3, 5, 8]) // C4, E4, G4, C5
+   *   .build();
+   * ```
+   */
+  withScale(scale: any): this {
+    this.activeScale = scale;
+    return this;
+  }
+
+  /**
+   * Add notes by scale degree (requires withScale to be called first).
+   *
+   * Scale degrees are 1-indexed: 1 = tonic, 3 = third, 5 = fifth, etc.
+   *
+   * @param degrees - Array of scale degrees (1-indexed)
+   * @param durations - Optional array of durations (one per degree, or single duration for all)
+   * @param velocity - Optional velocity for all notes
+   * @returns this for chaining
+   *
+   * @example
+   * ```typescript
+   * const dDorian = new Scale('D4', 'Dorian');
+   * const pattern = new PatternBuilder()
+   *   .withScale(dDorian)
+   *   .degrees([1, 2, 3, 4, 5, 6, 7, 8]) // D Dorian scale
+   *   .build();
+   * ```
+   */
+  degrees(
+    degrees: number[],
+    durations?: Duration | Duration[],
+    velocity?: Velocity
+  ): this {
+    if (!this.activeScale) {
+      throw new Error('Must call withScale() before using degrees()');
+    }
+
+    degrees.forEach((deg, i) => {
+      const note = this.activeScale.degree(deg);
+
+      // Handle durations: single value or array
+      let duration: Duration | undefined;
+      if (durations) {
+        duration = Array.isArray(durations) ? durations[i] : durations;
+      }
+
+      this.note(note, duration, velocity);
+    });
 
     return this;
   }

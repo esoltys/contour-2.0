@@ -4,6 +4,7 @@ import type { NoteEvent, ChordEvent, RestEvent } from '../../src/primitives/Even
 import { C, D, E, G } from '../../src/primitives/Note';
 import { Velocity } from '../../src/types/brands';
 import { Durations } from '../../src/types/music';
+import { Scale } from '../../src/theory/Scale';
 
 describe('PatternBuilder', () => {
   describe('construction', () => {
@@ -744,6 +745,260 @@ describe('PatternBuilder', () => {
       // Odd indices should be delayed
       expect(builtPattern.events[1].time).toBeGreaterThan(0.125);
       expect(builtPattern.events[3].time).toBeGreaterThan(0.375);
+    });
+  });
+
+  describe('withScale and degrees', () => {
+    it('creates pattern from scale degrees', () => {
+      const scale = new Scale('C4', 'major');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees([1, 3, 5, 8])
+        .build();
+
+      expect(pattern.events).toHaveLength(4);
+      expect(pattern.events[0].note.name).toBe('C4');
+      expect(pattern.events[1].note.name).toBe('E4');
+      expect(pattern.events[2].note.name).toBe('G4');
+      expect(pattern.events[3].note.name).toBe('C5');
+    });
+
+    it('throws error if degrees() called without withScale()', () => {
+      expect(() => {
+        new PatternBuilder().degrees([1, 3, 5]).build();
+      }).toThrow('Must call withScale() before using degrees()');
+    });
+
+    it('uses custom durations with degrees', () => {
+      const scale = new Scale('D4', 'Dorian');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees(
+          [1, 2, 3],
+          [Durations.half, Durations.quarter, Durations.eighth]
+        )
+        .build();
+
+      expect(pattern.events[0].duration).toBe(0.5);
+      expect(pattern.events[1].duration).toBe(0.25);
+      expect(pattern.events[2].duration).toBe(0.125);
+    });
+
+    it('uses single duration for all degrees', () => {
+      const scale = new Scale('E4', 'minorPentatonic');
+
+      const pattern = new PatternBuilder()
+        .withScale(scale)
+        .degrees([1, 2, 3, 4, 5], Durations.sixteenth)
+        .build();
+
+      expect(pattern.events).toHaveLength(5);
+      expect(pattern.events.every(e => e.duration === 0.0625)).toBe(true);
+    });
+
+    it('can chain with other builder methods', () => {
+      const scale = new Scale('G4', 'major');
+
+      const pattern = new PatternBuilder()
+        .withDuration(Durations.eighth)
+        .note('G4')
+        .withScale(scale)
+        .degrees([2, 3, 4])
+        .rest()
+        .note('D5', Durations.half)
+        .build();
+
+      expect(pattern.events).toHaveLength(6); // 1 note + 3 degrees + 1 rest + 1 note
+    });
+
+    it('works with different modes', () => {
+      const phrygian = new Scale('E4', 'Phrygian');
+
+      const pattern = new PatternBuilder()
+        .withScale(phrygian)
+        .degrees([1, 2, 3])
+        .build();
+
+      // Phrygian has b2 (F instead of F#)
+      expect(pattern.events[1].note.name).toBe('F4');
+    });
+  });
+
+  describe('fromNotation() with scale degrees', () => {
+    it('parses degree notation with scale context', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1 $3 $5')
+        .build();
+
+      expect(pattern.events).toHaveLength(3);
+      expect(pattern.events[0].note.name).toBe('C4');
+      expect(pattern.events[1].note.name).toBe('E4');
+      expect(pattern.events[2].note.name).toBe('G4');
+    });
+
+    it('parses full scale with degrees', () => {
+      const gMajor = new Scale('G4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(gMajor)
+        .fromNotation('$1 $2 $3 $4 $5 $6 $7 $8')
+        .build();
+
+      expect(pattern.events).toHaveLength(8);
+      expect(pattern.events[0].note.name).toBe('G4');
+      expect(pattern.events[7].note.name).toBe('G5');
+    });
+
+    it('supports repetition in degree notation', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1*4 $5*2')
+        .build();
+
+      expect(pattern.events).toHaveLength(6);
+      // First 4 events are C4
+      for (let i = 0; i < 4; i++) {
+        expect(pattern.events[i].note.name).toBe('C4');
+      }
+      // Next 2 events are G4
+      expect(pattern.events[4].note.name).toBe('G4');
+      expect(pattern.events[5].note.name).toBe('G4');
+    });
+
+    it('supports extension in degree notation', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1@2')
+        .build();
+
+      expect(pattern.events).toHaveLength(1);
+      expect(pattern.events[0].duration).toBe(Durations.quarter * 2);
+    });
+
+    it('supports duration modifiers in degree notation', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1/8 $3/16 $5/4')
+        .build();
+
+      expect(pattern.events).toHaveLength(3);
+      expect(pattern.events[0].duration).toBe(1 / 8);
+      expect(pattern.events[1].duration).toBe(1 / 16);
+      expect(pattern.events[2].duration).toBe(1 / 4);
+    });
+
+    it('supports grouping with degrees', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('[$1 $3 $5]')
+        .build();
+
+      expect(pattern.events).toHaveLength(3);
+      const expectedDuration = Durations.quarter / 3;
+      pattern.events.forEach(e => {
+        expect(e.duration).toBeCloseTo(expectedDuration, 5);
+      });
+    });
+
+    it('mixes degrees with absolute notes', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1 E4 $5 G4')
+        .build();
+
+      expect(pattern.events).toHaveLength(4);
+      expect(pattern.events[0].note.name).toBe('C4'); // $1
+      expect(pattern.events[1].note.name).toBe('E4'); // absolute
+      expect(pattern.events[2].note.name).toBe('G4'); // $5
+      expect(pattern.events[3].note.name).toBe('G4'); // absolute
+    });
+
+    it('mixes degrees with rests and chords', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1 ~ Cmaj7 $5')
+        .build();
+
+      expect(pattern.events).toHaveLength(4);
+      expect(pattern.events[0].type).toBe('note');
+      expect(pattern.events[1].type).toBe('rest');
+      expect(pattern.events[2].type).toBe('chord');
+      expect(pattern.events[3].type).toBe('note');
+      expect(pattern.events[3].note.name).toBe('G4');
+    });
+
+    it('works with different scales', () => {
+      const dDorian = new Scale('D4', 'Dorian');
+      const pattern = new PatternBuilder()
+        .withScale(dDorian)
+        .fromNotation('$1 $2 $3')
+        .build();
+
+      expect(pattern.events).toHaveLength(3);
+      expect(pattern.events[0].note.name).toBe('D4');
+      expect(pattern.events[1].note.name).toBe('E4');
+      expect(pattern.events[2].note.name).toBe('F4'); // b3 in Dorian
+    });
+
+    it('works with pentatonic scales', () => {
+      const cPentatonic = new Scale('C4', 'minorPentatonic');
+      const pattern = new PatternBuilder()
+        .withScale(cPentatonic)
+        .fromNotation('$1 $2 $3 $4 $5')
+        .build();
+
+      expect(pattern.events).toHaveLength(5);
+      expect(pattern.events[0].note.name).toBe('C4');
+      // Minor pentatonic: C, Eb, F, G, Bb
+      expect(['Eb4', 'D#4']).toContain(pattern.events[1].note.name);
+    });
+
+    it('can chain with other builder methods', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .note('B3')
+        .withScale(cMajor)
+        .fromNotation('$1 $3 $5')
+        .rest()
+        .note('C5')
+        .build();
+
+      expect(pattern.events).toHaveLength(6);
+      expect(pattern.events[0].note.name).toBe('B3'); // Before scale
+      expect(pattern.events[1].note.name).toBe('C4'); // $1
+      expect(pattern.events[2].note.name).toBe('E4'); // $3
+      expect(pattern.events[3].note.name).toBe('G4'); // $5
+      expect(pattern.events[4].type).toBe('rest');
+      expect(pattern.events[5].note.name).toBe('C5'); // After scale
+    });
+
+    it('throws error when degrees used without scale', () => {
+      expect(() => {
+        new PatternBuilder()
+          .fromNotation('$1 $3 $5')
+          .build();
+      }).toThrow();
+    });
+
+    it('respects timing for degree sequences', () => {
+      const cMajor = new Scale('C4', 'major');
+      const pattern = new PatternBuilder()
+        .withScale(cMajor)
+        .fromNotation('$1 $3 $5')
+        .build();
+
+      expect(pattern.events[0].time).toBe(0);
+      expect(pattern.events[1].time).toBe(Durations.quarter);
+      expect(pattern.events[2].time).toBe(Durations.quarter * 2);
     });
   });
 });

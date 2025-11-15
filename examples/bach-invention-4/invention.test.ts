@@ -46,24 +46,24 @@ describe('Bach Invention No. 4 (PRIMARY ACCEPTANCE TEST)', () => {
 
     it('upper voice has correct number of events', () => {
       const upperVoice = track.voices[0];
-      // 8 bars × 8 sixteenth notes per bar (4/4 time) = 64 events
+      // 16 bars × 8 sixteenth notes per bar (4/4 time) ≈ 128 events
       // Actually varies due to the pattern, but should be substantial
-      expect(upperVoice.pattern.events.length).toBeGreaterThan(50);
+      expect(upperVoice.pattern.events.length).toBeGreaterThan(110);
     });
 
     it('lower voice has correct number of events', () => {
       const lowerVoice = track.voices[1];
-      // Lower voice starts with rest, then enters
-      expect(lowerVoice.pattern.events.length).toBeGreaterThan(50);
+      // Lower voice starts with rest, then enters (slightly fewer events)
+      expect(lowerVoice.pattern.events.length).toBeGreaterThan(110);
     });
 
     it('voices have appropriate duration', () => {
       const upperVoice = track.voices[0];
       const lowerVoice = track.voices[1];
 
-      // Simplified first section - approximately 4.25 whole notes duration
-      expect(upperVoice.pattern.duration).toBeCloseTo(4.25, 1);
-      expect(lowerVoice.pattern.duration).toBeCloseTo(4.25, 1);
+      // First 16 bars - approximately 8.375 whole notes duration
+      expect(upperVoice.pattern.duration).toBeCloseTo(8.375, 1);
+      expect(lowerVoice.pattern.duration).toBeCloseTo(8.375, 1);
     });
   });
 
@@ -101,8 +101,8 @@ describe('Bach Invention No. 4 (PRIMARY ACCEPTANCE TEST)', () => {
       const upperNotes = upperVoice.pattern.events.filter(e => e.type === 'note');
       const lowerNotes = lowerVoice.pattern.events.filter(e => e.type === 'note');
 
-      expect(upperNotes.length).toBeGreaterThan(40);
-      expect(lowerNotes.length).toBeGreaterThan(40);
+      expect(upperNotes.length).toBeGreaterThan(100);
+      expect(lowerNotes.length).toBeGreaterThan(100);
     });
   });
 
@@ -141,9 +141,9 @@ describe('Bach Invention No. 4 (PRIMARY ACCEPTANCE TEST)', () => {
   });
 
   describe('composition duration', () => {
-    it('has reasonable duration for simplified section', () => {
-      // Simplified first section - approximately 4.25 whole notes
-      expect(invention.duration).toBeCloseTo(4.25, 1);
+    it('has reasonable duration for 16-bar section', () => {
+      // First 16 bars - approximately 8.375 whole notes
+      expect(invention.duration).toBeCloseTo(8.375, 1);
     });
 
     it('duration matches longest voice', () => {
