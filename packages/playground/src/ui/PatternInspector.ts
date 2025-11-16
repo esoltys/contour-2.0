@@ -63,6 +63,14 @@ export class PatternInspector {
     defaultOption.textContent = '-- Select a pattern --';
     select.appendChild(defaultOption);
 
+    // Populate with any already-registered patterns
+    this.patterns.forEach((pattern) => {
+      const option = document.createElement('option');
+      option.value = pattern.id;
+      option.textContent = pattern.name;
+      select.appendChild(option);
+    });
+
     section.appendChild(label);
     section.appendChild(select);
 
