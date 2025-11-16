@@ -24,6 +24,7 @@ import {
   ERROR_RESET_TIMEOUT_MS
 } from '../constants.js';
 import { INSTRUMENT_PROGRAM_MAP } from '../config/instruments.js';
+import { div, span, button, inputEl, selectEl, optionEl, labelEl, h2 } from './utils/dom.js';
 
 export type InstrumentCategory =
   | 'all'
@@ -113,62 +114,39 @@ export class InstrumentSelector {
   }
 
   private createModal(): HTMLDivElement {
-    const modal = document.createElement('div');
-    modal.className = 'instrument-selector-modal';
-    modal.style.display = 'none';
+    const modal = div({
+      className: 'instrument-selector-modal',
+      style: { display: 'none' }
+    });
 
-    const content = document.createElement('div');
-    content.className = 'instrument-selector-content';
+    const content = div({ className: 'instrument-selector-content' });
 
-    // Header
-    const header = this.createHeader();
-    content.appendChild(header);
-
-    // Current instrument display
-    const currentInstrumentEl = document.createElement('div');
-    currentInstrumentEl.className = 'current-instrument';
-    currentInstrumentEl.id = 'current-instrument-display';
-    content.appendChild(currentInstrumentEl);
-
-    // Search bar
-    const searchBar = this.createSearchBar();
-    content.appendChild(searchBar);
-
-    // Library selector
-    const librarySelector = this.createLibrarySelector();
-    content.appendChild(librarySelector);
-
-    // Category tabs
-    const categoryTabs = this.createCategoryTabs();
-    content.appendChild(categoryTabs);
-
-    // Instrument list
-    const instrumentList = document.createElement('div');
-    instrumentList.className = 'instrument-list';
-    instrumentList.id = 'instrument-list';
-    content.appendChild(instrumentList);
-
-    // Footer with actions
-    const footer = this.createFooter();
-    content.appendChild(footer);
+    content.appendChild(this.createHeader());
+    content.appendChild(div({ className: 'current-instrument', id: 'current-instrument-display' }));
+    content.appendChild(this.createSearchBar());
+    content.appendChild(this.createLibrarySelector());
+    content.appendChild(this.createCategoryTabs());
+    content.appendChild(div({ className: 'instrument-list', id: 'instrument-list' }));
+    content.appendChild(this.createFooter());
 
     modal.appendChild(content);
     return modal;
   }
 
   private createHeader(): HTMLDivElement {
-    const header = document.createElement('div');
-    header.className = 'instrument-selector-header';
+    const header = div({ className: 'instrument-selector-header' });
 
-    const title = document.createElement('h2');
-    title.textContent = 'Select Instrument';
-    title.id = 'instrument-selector-title';
+    const title = h2({
+      text: 'Select Instrument',
+      id: 'instrument-selector-title'
+    });
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'close-btn';
-    closeBtn.textContent = '×';
-    closeBtn.title = 'Close';
-    closeBtn.addEventListener('click', () => this.hide());
+    const closeBtn = button({
+      className: 'close-btn',
+      text: '×',
+      attrs: { title: 'Close' },
+      events: { click: () => this.hide() }
+    });
 
     header.appendChild(title);
     header.appendChild(closeBtn);
@@ -177,21 +155,23 @@ export class InstrumentSelector {
   }
 
   private createSearchBar(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'search-container';
+    const container = div({ className: 'search-container' });
 
-    const searchIcon = document.createElement('span');
-    searchIcon.className = 'search-icon';
-    searchIcon.textContent = '🔍';
+    const searchIcon = span({
+      className: 'search-icon',
+      text: '🔍'
+    });
 
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'search-input';
-    searchInput.placeholder = 'Search instruments...';
-    searchInput.id = 'instrument-search';
-    searchInput.addEventListener('input', (e) => {
-      const target = e.target as HTMLInputElement;
-      this.handleSearchInput(target.value);
+    const searchInput = inputEl({
+      className: 'search-input',
+      id: 'instrument-search',
+      attrs: { type: 'text', placeholder: 'Search instruments...' },
+      events: {
+        input: (e) => {
+          const target = e.target as HTMLInputElement;
+          this.handleSearchInput(target.value);
+        }
+      }
     });
 
     container.appendChild(searchIcon);
@@ -201,29 +181,33 @@ export class InstrumentSelector {
   }
 
   private createLibrarySelector(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'library-selector-container';
+    const container = div({ className: 'library-selector-container' });
 
-    const label = document.createElement('label');
-    label.textContent = 'Library: ';
-    label.htmlFor = 'library-select';
+    const label = labelEl({
+      text: 'Library: ',
+      attrs: { for: 'library-select' }
+    });
 
-    const select = document.createElement('select');
-    select.id = 'library-select';
-    select.className = 'library-select';
+    const select = selectEl({
+      id: 'library-select',
+      className: 'library-select',
+      events: {
+        change: (e) => {
+          const target = e.target as HTMLSelectElement;
+          this.selectedLibrary = target.value as SoundfontLibrary;
+        }
+      }
+    });
 
     Object.values(SoundfontLibrary).forEach((lib) => {
-      const option = document.createElement('option');
-      option.value = lib as string;
-      option.textContent = lib as string;
+      const option = optionEl({
+        text: lib as string,
+        attrs: { value: lib as string }
+      });
       select.appendChild(option);
     });
 
     select.value = this.selectedLibrary;
-    select.addEventListener('change', (e) => {
-      const target = e.target as HTMLSelectElement;
-      this.selectedLibrary = target.value as SoundfontLibrary;
-    });
 
     container.appendChild(label);
     container.appendChild(select);
@@ -232,41 +216,20 @@ export class InstrumentSelector {
   }
 
   private createCategoryTabs(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'category-tabs';
+    const container = div({ className: 'category-tabs' });
 
     const categories: InstrumentCategory[] = [
-      'all',
-      'piano',
-      'chromatic',
-      'organ',
-      'guitar',
-      'bass',
-      'strings',
-      'ensemble',
-      'brass',
-      'reed',
-      'pipe',
-      'synth-lead',
-      'synth-pad',
-      'synth-fx',
-      'ethnic',
-      'percussive',
-      'sound-fx',
+      'all', 'piano', 'chromatic', 'organ', 'guitar', 'bass',
+      'strings', 'ensemble', 'brass', 'reed', 'pipe',
+      'synth-lead', 'synth-pad', 'synth-fx', 'ethnic', 'percussive', 'sound-fx',
     ];
 
     categories.forEach((category) => {
-      const tab = document.createElement('button');
-      tab.className = 'category-tab';
-      tab.textContent = CATEGORIES[category].name;
-      tab.dataset.category = category;
-
-      if (category === this.currentCategory) {
-        tab.classList.add('active');
-      }
-
-      tab.addEventListener('click', () => {
-        this.setCategory(category);
+      const tab = button({
+        className: category === this.currentCategory ? 'category-tab active' : 'category-tab',
+        text: CATEGORIES[category].name,
+        data: { category },
+        events: { click: () => this.setCategory(category) }
       });
 
       container.appendChild(tab);
@@ -276,13 +239,13 @@ export class InstrumentSelector {
   }
 
   private createFooter(): HTMLDivElement {
-    const footer = document.createElement('div');
-    footer.className = 'instrument-selector-footer';
+    const footer = div({ className: 'instrument-selector-footer' });
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn-secondary';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', () => this.hide());
+    const cancelBtn = button({
+      className: 'btn-secondary',
+      text: 'Cancel',
+      events: { click: () => this.hide() }
+    });
 
     footer.appendChild(cancelBtn);
 
@@ -331,9 +294,10 @@ export class InstrumentSelector {
     });
 
     if (filteredInstruments.length === 0) {
-      const noResults = document.createElement('div');
-      noResults.className = 'no-results';
-      noResults.textContent = 'No instruments found';
+      const noResults = div({
+        className: 'no-results',
+        text: 'No instruments found'
+      });
       listEl.appendChild(noResults);
     }
   }
@@ -347,10 +311,7 @@ export class InstrumentSelector {
       const programNumber = INSTRUMENT_PROGRAM_MAP.get(instrument);
       if (programNumber === undefined) return false;
 
-      if (
-        programNumber < categoryRange[0] ||
-        programNumber > categoryRange[1]
-      ) {
+      if (programNumber < categoryRange[0] || programNumber > categoryRange[1]) {
         return false;
       }
 
@@ -367,35 +328,42 @@ export class InstrumentSelector {
   }
 
   private createInstrumentItem(instrument: GMInstrument): HTMLDivElement {
-    const item = document.createElement('div');
-    item.className = 'instrument-item';
-    item.dataset.instrument = instrument;
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'radio';
-    checkbox.name = 'instrument-selection';
-    checkbox.value = instrument;
-    checkbox.className = 'instrument-checkbox';
-
-    const label = document.createElement('label');
-    label.className = 'instrument-name';
-    label.textContent = this.instrumentToDisplayName(instrument);
-
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'btn-preview';
-    previewBtn.textContent = 'Preview';
-    previewBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.previewInstrument(instrument);
+    const item = div({
+      className: 'instrument-item',
+      data: { instrument }
     });
 
-    const applyBtn = document.createElement('button');
-    applyBtn.className = 'btn-apply';
-    applyBtn.textContent = '✓';
-    applyBtn.title = 'Apply';
-    applyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.applyInstrument(instrument);
+    const checkbox = inputEl({
+      className: 'instrument-checkbox',
+      attrs: { type: 'radio', name: 'instrument-selection', value: instrument }
+    });
+
+    const label = labelEl({
+      className: 'instrument-name',
+      text: this.instrumentToDisplayName(instrument)
+    });
+
+    const previewBtn = button({
+      className: 'btn-preview',
+      text: 'Preview',
+      events: {
+        click: (e) => {
+          e.stopPropagation();
+          this.previewInstrument(instrument);
+        }
+      }
+    });
+
+    const applyBtn = button({
+      className: 'btn-apply',
+      text: '✓',
+      attrs: { title: 'Apply' },
+      events: {
+        click: (e) => {
+          e.stopPropagation();
+          this.applyInstrument(instrument);
+        }
+      }
     });
 
     item.appendChild(checkbox);
@@ -437,9 +405,7 @@ export class InstrumentSelector {
 
       // Load instrument
       const qualifiedName = createQualifiedName(this.selectedLibrary, instrument);
-      const sfInstrument = await this.sampleManager.getInstrumentByQualifiedName(
-        qualifiedName
-      );
+      const sfInstrument = await this.sampleManager.getInstrumentByQualifiedName(qualifiedName);
 
       // Create sampler
       this.previewSampler = new MusicalSampler(sfInstrument);
