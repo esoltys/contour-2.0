@@ -12,6 +12,18 @@
  */
 
 import { Tone, getTransportDebugger } from '@contour/tone-adapter';
+import {
+  PERFORMANCE_HISTORY_LENGTH,
+  PERFORMANCE_WARNING_THRESHOLD,
+  PERFORMANCE_DANGER_THRESHOLD,
+  PERFORMANCE_CANVAS_WIDTH,
+  PERFORMANCE_CANVAS_HEIGHT,
+  PERFORMANCE_UPDATE_INTERVAL_MS,
+  TARGET_FPS,
+  FPS_WARNING_THRESHOLD,
+  CPU_WARNING_THRESHOLD_PERCENT,
+  AUDIO_NODE_WARNING_THRESHOLD
+} from '../constants.js';
 
 interface PerformanceMetrics {
   fps: number;
@@ -29,10 +41,6 @@ export class PerformanceMonitor {
   private lastFrameTime = performance.now();
   private frameCount = 0;
   private canvas: HTMLCanvasElement | null = null;
-
-  private readonly HISTORY_LENGTH = 60; // 60 seconds of history
-  private readonly WARNING_THRESHOLD = 0.7;
-  private readonly DANGER_THRESHOLD = 0.9;
 
   public render(): HTMLDivElement {
     this.container = document.createElement('div');
@@ -104,14 +112,14 @@ export class PerformanceMonitor {
     section.className = 'inspector-section';
 
     const title = document.createElement('h4');
-    title.textContent = 'Performance History (60s)';
+    title.textContent = `Performance History (${PERFORMANCE_HISTORY_LENGTH}s)`;
     section.appendChild(title);
 
     this.canvas = document.createElement('canvas');
     this.canvas.id = 'performance-graph-canvas';
     this.canvas.className = 'performance-graph-canvas';
-    this.canvas.width = 600;
-    this.canvas.height = 200;
+    this.canvas.width = PERFORMANCE_CANVAS_WIDTH;
+    this.canvas.height = PERFORMANCE_CANVAS_HEIGHT;
     section.appendChild(this.canvas);
 
     return section;
@@ -139,7 +147,7 @@ export class PerformanceMonitor {
     // Update every second
     this.updateInterval = window.setInterval(() => {
       this.updateMetrics();
-    }, 1000);
+    }, PERFORMANCE_UPDATE_INTERVAL_MS);
 
     // Start FPS counter
     this.startFPSCounter();
@@ -174,7 +182,7 @@ export class PerformanceMonitor {
       return Math.round(fps);
     }
 
-    return this.fpsHistory[this.fpsHistory.length - 1] || 60;
+    return this.fpsHistory[this.fpsHistory.length - 1] || TARGET_FPS;
   }
 
   private updateMetrics(): void {
@@ -184,7 +192,7 @@ export class PerformanceMonitor {
     const fpsEl = document.getElementById('perf-fps');
     if (fpsEl) {
       fpsEl.innerHTML = `${metrics.fps}<span class="metric-unit"></span>`;
-      this.setMetricStatus(fpsEl, metrics.fps, 60, true); // Inverted threshold (lower is worse)
+      this.setMetricStatus(fpsEl, metrics.fps, TARGET_FPS, true); // Inverted threshold (lower is worse)
     }
 
     // Update Audio Nodes
@@ -223,10 +231,10 @@ export class PerformanceMonitor {
     this.fpsHistory.push(metrics.fps);
     this.cpuHistory.push(metrics.cpuUsage);
 
-    if (this.fpsHistory.length > this.HISTORY_LENGTH) {
+    if (this.fpsHistory.length > PERFORMANCE_HISTORY_LENGTH) {
       this.fpsHistory.shift();
     }
-    if (this.cpuHistory.length > this.HISTORY_LENGTH) {
+    if (this.cpuHistory.length > PERFORMANCE_HISTORY_LENGTH) {
       this.cpuHistory.shift();
     }
 
@@ -302,9 +310,9 @@ export class PerformanceMonitor {
 
     if (inverted) {
       // For FPS, lower is worse
-      if (value >= threshold * 0.9) {
+      if (value >= threshold * PERFORMANCE_DANGER_THRESHOLD) {
         status = 'status-good';
-      } else if (value >= threshold * 0.7) {
+      } else if (value >= threshold * PERFORMANCE_WARNING_THRESHOLD) {
         status = 'status-warning';
       } else {
         status = 'status-danger';
@@ -313,9 +321,9 @@ export class PerformanceMonitor {
       // For other metrics, higher is worse
       const ratio = value / threshold;
 
-      if (ratio < this.WARNING_THRESHOLD) {
+      if (ratio < PERFORMANCE_WARNING_THRESHOLD) {
         status = 'status-good';
-      } else if (ratio < this.DANGER_THRESHOLD) {
+      } else if (ratio < PERFORMANCE_DANGER_THRESHOLD) {
         status = 'status-warning';
       } else {
         status = 'status-danger';
@@ -360,7 +368,7 @@ export class PerformanceMonitor {
 
       this.fpsHistory.forEach((fps, index) => {
         const x = index * stepX;
-        const y = height - (fps / 60) * height; // Normalize to 60 FPS max
+        const y = height - (fps / TARGET_FPS) * height; // Normalize to target FPS max
 
         if (index === 0) {
           ctx.moveTo(x, y);
@@ -411,17 +419,17 @@ export class PerformanceMonitor {
     const warnings: string[] = [];
 
     // Check FPS
-    if (metrics.fps < 54) { // 90% of 60 FPS
-      warnings.push(`Low FPS: ${metrics.fps} (target: 60)`);
+    if (metrics.fps < FPS_WARNING_THRESHOLD) {
+      warnings.push(`Low FPS: ${metrics.fps} (target: ${TARGET_FPS})`);
     }
 
     // Check CPU
-    if (metrics.cpuUsage > 70) {
+    if (metrics.cpuUsage > CPU_WARNING_THRESHOLD_PERCENT) {
       warnings.push(`High CPU usage: ${metrics.cpuUsage}%`);
     }
 
     // Check audio nodes
-    if (metrics.audioNodes > 100) {
+    if (metrics.audioNodes > AUDIO_NODE_WARNING_THRESHOLD) {
       warnings.push(`Many audio nodes: ${metrics.audioNodes} (consider cleanup)`);
     }
 
