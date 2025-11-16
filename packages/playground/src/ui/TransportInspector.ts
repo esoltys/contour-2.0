@@ -22,6 +22,12 @@ export class TransportInspector {
   private container: HTMLDivElement | null = null;
   private updateInterval: number | null = null;
   private eventsTable: HTMLTableElement | null = null;
+  private eventsTableBody: HTMLTableSectionElement | null = null;
+  private eventCountElement: HTMLSpanElement | null = null;
+  private stateElement: HTMLSpanElement | null = null;
+  private bpmElement: HTMLSpanElement | null = null;
+  private positionElement: HTMLSpanElement | null = null;
+  private secondsElement: HTMLSpanElement | null = null;
 
   public render(): HTMLDivElement {
     this.container = document.createElement('div');
@@ -53,30 +59,57 @@ export class TransportInspector {
     const stateGrid = document.createElement('div');
     stateGrid.className = 'state-grid';
 
-    const stateItems = [
-      { id: 'transport-state', label: 'State', value: 'stopped' },
-      { id: 'transport-bpm', label: 'BPM', value: '120' },
-      { id: 'transport-position', label: 'Position', value: '0:0:0' },
-      { id: 'transport-seconds', label: 'Seconds', value: '0.00' }
-    ];
+    // Create state element
+    const stateItemDiv = document.createElement('div');
+    stateItemDiv.className = 'state-item';
+    const stateLabel = document.createElement('div');
+    stateLabel.className = 'state-label';
+    stateLabel.textContent = 'State';
+    this.stateElement = document.createElement('div');
+    this.stateElement.className = 'state-value';
+    this.stateElement.textContent = 'stopped';
+    stateItemDiv.appendChild(stateLabel);
+    stateItemDiv.appendChild(this.stateElement);
+    stateGrid.appendChild(stateItemDiv);
 
-    stateItems.forEach(item => {
-      const itemDiv = document.createElement('div');
-      itemDiv.className = 'state-item';
+    // Create BPM element
+    const bpmItemDiv = document.createElement('div');
+    bpmItemDiv.className = 'state-item';
+    const bpmLabel = document.createElement('div');
+    bpmLabel.className = 'state-label';
+    bpmLabel.textContent = 'BPM';
+    this.bpmElement = document.createElement('div');
+    this.bpmElement.className = 'state-value';
+    this.bpmElement.textContent = '120';
+    bpmItemDiv.appendChild(bpmLabel);
+    bpmItemDiv.appendChild(this.bpmElement);
+    stateGrid.appendChild(bpmItemDiv);
 
-      const label = document.createElement('div');
-      label.className = 'state-label';
-      label.textContent = item.label;
+    // Create position element
+    const positionItemDiv = document.createElement('div');
+    positionItemDiv.className = 'state-item';
+    const positionLabel = document.createElement('div');
+    positionLabel.className = 'state-label';
+    positionLabel.textContent = 'Position';
+    this.positionElement = document.createElement('div');
+    this.positionElement.className = 'state-value';
+    this.positionElement.textContent = '0:0:0';
+    positionItemDiv.appendChild(positionLabel);
+    positionItemDiv.appendChild(this.positionElement);
+    stateGrid.appendChild(positionItemDiv);
 
-      const value = document.createElement('div');
-      value.className = 'state-value';
-      value.id = item.id;
-      value.textContent = item.value;
-
-      itemDiv.appendChild(label);
-      itemDiv.appendChild(value);
-      stateGrid.appendChild(itemDiv);
-    });
+    // Create seconds element
+    const secondsItemDiv = document.createElement('div');
+    secondsItemDiv.className = 'state-item';
+    const secondsLabel = document.createElement('div');
+    secondsLabel.className = 'state-label';
+    secondsLabel.textContent = 'Seconds';
+    this.secondsElement = document.createElement('div');
+    this.secondsElement.className = 'state-value';
+    this.secondsElement.textContent = '0.00';
+    secondsItemDiv.appendChild(secondsLabel);
+    secondsItemDiv.appendChild(this.secondsElement);
+    stateGrid.appendChild(secondsItemDiv);
 
     section.appendChild(stateGrid);
     return section;
@@ -92,13 +125,12 @@ export class TransportInspector {
     const title = document.createElement('h4');
     title.textContent = 'Scheduled Events';
 
-    const eventCount = document.createElement('span');
-    eventCount.className = 'event-count';
-    eventCount.id = 'transport-event-count';
-    eventCount.textContent = '0 events';
+    this.eventCountElement = document.createElement('span');
+    this.eventCountElement.className = 'event-count';
+    this.eventCountElement.textContent = '0 events';
 
     header.appendChild(title);
-    header.appendChild(eventCount);
+    header.appendChild(this.eventCountElement);
     section.appendChild(header);
 
     // Events table container (scrollable)
@@ -107,20 +139,25 @@ export class TransportInspector {
 
     this.eventsTable = document.createElement('table');
     this.eventsTable.className = 'events-table';
-    this.eventsTable.innerHTML = `
-      <thead>
-        <tr>
-          <th>Time</th>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody id="transport-events-body">
-        <tr class="no-events">
-          <td colspan="3">No events scheduled</td>
-        </tr>
-      </tbody>
+
+    const thead = document.createElement('thead');
+    thead.innerHTML = `
+      <tr>
+        <th>Time</th>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
     `;
+
+    this.eventsTableBody = document.createElement('tbody');
+    this.eventsTableBody.innerHTML = `
+      <tr class="no-events">
+        <td colspan="3">No events scheduled</td>
+      </tr>
+    `;
+
+    this.eventsTable.appendChild(thead);
+    this.eventsTable.appendChild(this.eventsTableBody);
 
     tableContainer.appendChild(this.eventsTable);
     section.appendChild(tableContainer);
@@ -168,51 +205,43 @@ export class TransportInspector {
   private updateState(): void {
     if (!this.container) return;
 
-    // Update transport state
-    const stateEl = document.getElementById('transport-state');
-    const bpmEl = document.getElementById('transport-bpm');
-    const positionEl = document.getElementById('transport-position');
-    const secondsEl = document.getElementById('transport-seconds');
-
-    if (stateEl) {
+    // Update transport state using stored element references
+    if (this.stateElement) {
       const state = Tone.getTransport().state;
-      stateEl.textContent = state;
-      stateEl.className = `state-value state-${state}`;
+      this.stateElement.textContent = state;
+      this.stateElement.className = `state-value state-${state}`;
     }
 
-    if (bpmEl) {
-      bpmEl.textContent = Tone.getTransport().bpm.value.toFixed(1);
+    if (this.bpmElement) {
+      this.bpmElement.textContent = Tone.getTransport().bpm.value.toFixed(1);
     }
 
-    if (positionEl) {
-      positionEl.textContent = Tone.getTransport().position.toString();
+    if (this.positionElement) {
+      this.positionElement.textContent = Tone.getTransport().position.toString();
     }
 
-    if (secondsEl) {
-      secondsEl.textContent = Tone.getTransport().seconds.toFixed(2);
+    if (this.secondsElement) {
+      this.secondsElement.textContent = Tone.getTransport().seconds.toFixed(2);
     }
 
-    // Update events (placeholder - will be populated when Phase 8A diagnostics are available)
+    // Update scheduled events
     this.updateEvents();
   }
 
   private updateEvents(): void {
-    const tbody = document.getElementById('transport-events-body');
-    const eventCountEl = document.getElementById('transport-event-count');
-
-    if (!tbody) return;
+    if (!this.eventsTableBody) return;
 
     // Get events from TransportDebugger
     const transportDebugger = getTransportDebugger();
     const events = transportDebugger.getScheduledEvents();
     const pendingEvents = transportDebugger.getPendingEvents();
 
-    if (eventCountEl) {
-      eventCountEl.textContent = `${pendingEvents.length} pending / ${events.length} total`;
+    if (this.eventCountElement) {
+      this.eventCountElement.textContent = `${pendingEvents.length} pending / ${events.length} total`;
     }
 
     if (pendingEvents.length === 0) {
-      tbody.innerHTML = `
+      this.eventsTableBody.innerHTML = `
         <tr class="no-events">
           <td colspan="3">No pending events</td>
         </tr>
@@ -231,7 +260,7 @@ export class TransportInspector {
     const nextEvents = sortedEvents.slice(0, 5);
     const nextEventIds = new Set(nextEvents.map(e => e.id));
 
-    tbody.innerHTML = sortedEvents.map(event => {
+    this.eventsTableBody.innerHTML = sortedEvents.map(event => {
       const isNext = nextEventIds.has(event.id);
       const rowClass = isNext ? 'next-event' : '';
       const timeStr = this.formatEventTime(event.time);
