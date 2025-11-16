@@ -16,6 +16,15 @@ import {
   createQualifiedName,
   MusicalSampler
 } from '@contour/tone-adapter';
+import {
+  SEARCH_DEBOUNCE_MS,
+  PREVIEW_NOTE_DURATION,
+  PREVIEW_NOTE_VELOCITY,
+  PREVIEW_CLEANUP_DELAY_MS,
+  ERROR_RESET_TIMEOUT_MS
+} from '../constants.js';
+import { INSTRUMENT_PROGRAM_MAP } from '../config/instruments.js';
+import { div, span, button, inputEl, selectEl, optionEl, labelEl, h2 } from './utils/dom.js';
 
 export type InstrumentCategory =
   | 'all'
@@ -61,154 +70,6 @@ const CATEGORIES: Record<InstrumentCategory, CategoryInfo> = {
   'sound-fx': { name: 'Sound Effects', range: [120, 127] },
 };
 
-// Map GM instruments to their program numbers for category filtering
-const INSTRUMENT_PROGRAM_MAP: Map<GMInstrument, number> = new Map([
-  // Piano (0-7)
-  [GMInstrument.AcousticGrandPiano, 0],
-  [GMInstrument.BrightAcousticPiano, 1],
-  [GMInstrument.ElectricGrandPiano, 2],
-  [GMInstrument.HonkyTonkPiano, 3],
-  [GMInstrument.ElectricPiano1, 4],
-  [GMInstrument.ElectricPiano2, 5],
-  [GMInstrument.Harpsichord, 6],
-  [GMInstrument.Clavinet, 7],
-  // Chromatic Percussion (8-15)
-  [GMInstrument.Celesta, 8],
-  [GMInstrument.Glockenspiel, 9],
-  [GMInstrument.MusicBox, 10],
-  [GMInstrument.Vibraphone, 11],
-  [GMInstrument.Marimba, 12],
-  [GMInstrument.Xylophone, 13],
-  [GMInstrument.TubularBells, 14],
-  [GMInstrument.Dulcimer, 15],
-  // Organ (16-23)
-  [GMInstrument.DrawbarOrgan, 16],
-  [GMInstrument.PercussiveOrgan, 17],
-  [GMInstrument.RockOrgan, 18],
-  [GMInstrument.ChurchOrgan, 19],
-  [GMInstrument.ReedOrgan, 20],
-  [GMInstrument.Accordion, 21],
-  [GMInstrument.Harmonica, 22],
-  [GMInstrument.TangoAccordion, 23],
-  // Guitar (24-31)
-  [GMInstrument.AcousticGuitarNylon, 24],
-  [GMInstrument.AcousticGuitarSteel, 25],
-  [GMInstrument.ElectricGuitarJazz, 26],
-  [GMInstrument.ElectricGuitarClean, 27],
-  [GMInstrument.ElectricGuitarMuted, 28],
-  [GMInstrument.OverdrivenGuitar, 29],
-  [GMInstrument.DistortionGuitar, 30],
-  [GMInstrument.GuitarHarmonics, 31],
-  // Bass (32-39)
-  [GMInstrument.AcousticBass, 32],
-  [GMInstrument.ElectricBassFinger, 33],
-  [GMInstrument.ElectricBassPick, 34],
-  [GMInstrument.FretlessBass, 35],
-  [GMInstrument.SlapBass1, 36],
-  [GMInstrument.SlapBass2, 37],
-  [GMInstrument.SynthBass1, 38],
-  [GMInstrument.SynthBass2, 39],
-  // Strings (40-47)
-  [GMInstrument.Violin, 40],
-  [GMInstrument.Viola, 41],
-  [GMInstrument.Cello, 42],
-  [GMInstrument.Contrabass, 43],
-  [GMInstrument.TremoloStrings, 44],
-  [GMInstrument.PizzicatoStrings, 45],
-  [GMInstrument.OrchestralHarp, 46],
-  [GMInstrument.Timpani, 47],
-  // Ensemble (48-55)
-  [GMInstrument.StringEnsemble1, 48],
-  [GMInstrument.StringEnsemble2, 49],
-  [GMInstrument.SynthStrings1, 50],
-  [GMInstrument.SynthStrings2, 51],
-  [GMInstrument.ChoirAahs, 52],
-  [GMInstrument.VoiceOohs, 53],
-  [GMInstrument.SynthVoice, 54],
-  [GMInstrument.OrchestraHit, 55],
-  // Brass (56-63)
-  [GMInstrument.Trumpet, 56],
-  [GMInstrument.Trombone, 57],
-  [GMInstrument.Tuba, 58],
-  [GMInstrument.MutedTrumpet, 59],
-  [GMInstrument.FrenchHorn, 60],
-  [GMInstrument.BrassSection, 61],
-  [GMInstrument.SynthBrass1, 62],
-  [GMInstrument.SynthBrass2, 63],
-  // Reed (64-71)
-  [GMInstrument.SopranoSax, 64],
-  [GMInstrument.AltoSax, 65],
-  [GMInstrument.TenorSax, 66],
-  [GMInstrument.BaritoneSax, 67],
-  [GMInstrument.Oboe, 68],
-  [GMInstrument.EnglishHorn, 69],
-  [GMInstrument.Bassoon, 70],
-  [GMInstrument.Clarinet, 71],
-  // Pipe (72-79)
-  [GMInstrument.Piccolo, 72],
-  [GMInstrument.Flute, 73],
-  [GMInstrument.Recorder, 74],
-  [GMInstrument.PanFlute, 75],
-  [GMInstrument.BlownBottle, 76],
-  [GMInstrument.Shakuhachi, 77],
-  [GMInstrument.Whistle, 78],
-  [GMInstrument.Ocarina, 79],
-  // Synth Lead (80-87)
-  [GMInstrument.Lead1Square, 80],
-  [GMInstrument.Lead2Sawtooth, 81],
-  [GMInstrument.Lead3Calliope, 82],
-  [GMInstrument.Lead4Chiff, 83],
-  [GMInstrument.Lead5Charang, 84],
-  [GMInstrument.Lead6Voice, 85],
-  [GMInstrument.Lead7Fifths, 86],
-  [GMInstrument.Lead8BassLead, 87],
-  // Synth Pad (88-95)
-  [GMInstrument.Pad1NewAge, 88],
-  [GMInstrument.Pad2Warm, 89],
-  [GMInstrument.Pad3Polysynth, 90],
-  [GMInstrument.Pad4Choir, 91],
-  [GMInstrument.Pad5Bowed, 92],
-  [GMInstrument.Pad6Metallic, 93],
-  [GMInstrument.Pad7Halo, 94],
-  [GMInstrument.Pad8Sweep, 95],
-  // Synth Effects (96-103)
-  [GMInstrument.FX1Rain, 96],
-  [GMInstrument.FX2Soundtrack, 97],
-  [GMInstrument.FX3Crystal, 98],
-  [GMInstrument.FX4Atmosphere, 99],
-  [GMInstrument.FX5Brightness, 100],
-  [GMInstrument.FX6Goblins, 101],
-  [GMInstrument.FX7Echoes, 102],
-  [GMInstrument.FX8SciFi, 103],
-  // Ethnic (104-111)
-  [GMInstrument.Sitar, 104],
-  [GMInstrument.Banjo, 105],
-  [GMInstrument.Shamisen, 106],
-  [GMInstrument.Koto, 107],
-  [GMInstrument.Kalimba, 108],
-  [GMInstrument.Bagpipe, 109],
-  [GMInstrument.Fiddle, 110],
-  [GMInstrument.Shanai, 111],
-  // Percussive (112-119)
-  [GMInstrument.TinkleBell, 112],
-  [GMInstrument.Agogo, 113],
-  [GMInstrument.SteelDrums, 114],
-  [GMInstrument.Woodblock, 115],
-  [GMInstrument.TaikoDrum, 116],
-  [GMInstrument.MelodicTom, 117],
-  [GMInstrument.SynthDrum, 118],
-  [GMInstrument.ReverseCymbal, 119],
-  // Sound Effects (120-127)
-  [GMInstrument.GuitarFretNoise, 120],
-  [GMInstrument.BreathNoise, 121],
-  [GMInstrument.Seashore, 122],
-  [GMInstrument.BirdTweet, 123],
-  [GMInstrument.TelephoneRing, 124],
-  [GMInstrument.Helicopter, 125],
-  [GMInstrument.Applause, 126],
-  [GMInstrument.Gunshot, 127],
-]);
-
 export class InstrumentSelector {
   private modal: HTMLDivElement | null = null;
   private sampleManager: SampleLibraryManager;
@@ -253,79 +114,58 @@ export class InstrumentSelector {
   }
 
   private createModal(): HTMLDivElement {
-    const modal = document.createElement('div');
-    modal.className = 'instrument-selector-modal';
-    modal.style.display = 'none';
+    const modal = div({
+      className: 'instrument-selector-modal',
+      style: { display: 'none' }
+    });
 
-    const content = document.createElement('div');
-    content.className = 'instrument-selector-content';
+    const content = div({ className: 'instrument-selector-content' });
 
-    // Header
-    const header = this.createHeader();
-    content.appendChild(header);
-
-    // Current instrument display
-    const currentInstrumentEl = document.createElement('div');
-    currentInstrumentEl.className = 'current-instrument';
-    currentInstrumentEl.id = 'current-instrument-display';
-    content.appendChild(currentInstrumentEl);
-
-    // Search bar
-    const searchBar = this.createSearchBar();
-    content.appendChild(searchBar);
-
-    // Library selector
-    const librarySelector = this.createLibrarySelector();
-    content.appendChild(librarySelector);
-
-    // Category tabs
-    const categoryTabs = this.createCategoryTabs();
-    content.appendChild(categoryTabs);
+    content.appendChild(this.createHeader());
+    content.appendChild(div({ className: 'current-instrument', id: 'current-instrument-display' }));
+    content.appendChild(this.createSearchBar());
+    content.appendChild(this.createLibrarySelector());
+    content.appendChild(this.createCategoryTabs());
 
     // Error notification area
-    const errorNotification = document.createElement('div');
-    errorNotification.className = 'instrument-selector-error';
-    errorNotification.id = 'instrument-selector-error';
-    errorNotification.style.cssText = `
-      display: none;
-      background: #ff4444;
-      color: white;
-      padding: 10px 15px;
-      border-radius: 4px;
-      margin: 10px 0;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-    `;
+    const errorNotification = div({
+      className: 'instrument-selector-error',
+      id: 'instrument-selector-error',
+      styles: {
+        display: 'none',
+        background: '#ff4444',
+        color: 'white',
+        padding: '10px 15px',
+        borderRadius: '4px',
+        margin: '10px 0',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px'
+      }
+    });
     content.appendChild(errorNotification);
 
-    // Instrument list
-    const instrumentList = document.createElement('div');
-    instrumentList.className = 'instrument-list';
-    instrumentList.id = 'instrument-list';
-    content.appendChild(instrumentList);
-
-    // Footer with actions
-    const footer = this.createFooter();
-    content.appendChild(footer);
+    content.appendChild(div({ className: 'instrument-list', id: 'instrument-list' }));
+    content.appendChild(this.createFooter());
 
     modal.appendChild(content);
     return modal;
   }
 
   private createHeader(): HTMLDivElement {
-    const header = document.createElement('div');
-    header.className = 'instrument-selector-header';
+    const header = div({ className: 'instrument-selector-header' });
 
-    const title = document.createElement('h2');
-    title.textContent = 'Select Instrument';
-    title.id = 'instrument-selector-title';
+    const title = h2({
+      text: 'Select Instrument',
+      id: 'instrument-selector-title'
+    });
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'close-btn';
-    closeBtn.textContent = '×';
-    closeBtn.title = 'Close';
-    closeBtn.addEventListener('click', () => this.hide());
+    const closeBtn = button({
+      className: 'close-btn',
+      text: '×',
+      attrs: { title: 'Close' },
+      events: { click: () => this.hide() }
+    });
 
     header.appendChild(title);
     header.appendChild(closeBtn);
@@ -334,21 +174,23 @@ export class InstrumentSelector {
   }
 
   private createSearchBar(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'search-container';
+    const container = div({ className: 'search-container' });
 
-    const searchIcon = document.createElement('span');
-    searchIcon.className = 'search-icon';
-    searchIcon.textContent = '🔍';
+    const searchIcon = span({
+      className: 'search-icon',
+      text: '🔍'
+    });
 
-    const searchInput = document.createElement('input');
-    searchInput.type = 'text';
-    searchInput.className = 'search-input';
-    searchInput.placeholder = 'Search instruments...';
-    searchInput.id = 'instrument-search';
-    searchInput.addEventListener('input', (e) => {
-      const target = e.target as HTMLInputElement;
-      this.handleSearchInput(target.value);
+    const searchInput = inputEl({
+      className: 'search-input',
+      id: 'instrument-search',
+      attrs: { type: 'text', placeholder: 'Search instruments...' },
+      events: {
+        input: (e) => {
+          const target = e.target as HTMLInputElement;
+          this.handleSearchInput(target.value);
+        }
+      }
     });
 
     container.appendChild(searchIcon);
@@ -358,29 +200,33 @@ export class InstrumentSelector {
   }
 
   private createLibrarySelector(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'library-selector-container';
+    const container = div({ className: 'library-selector-container' });
 
-    const label = document.createElement('label');
-    label.textContent = 'Library: ';
-    label.htmlFor = 'library-select';
+    const label = labelEl({
+      text: 'Library: ',
+      attrs: { for: 'library-select' }
+    });
 
-    const select = document.createElement('select');
-    select.id = 'library-select';
-    select.className = 'library-select';
+    const select = selectEl({
+      id: 'library-select',
+      className: 'library-select',
+      events: {
+        change: (e) => {
+          const target = e.target as HTMLSelectElement;
+          this.selectedLibrary = target.value as SoundfontLibrary;
+        }
+      }
+    });
 
     Object.values(SoundfontLibrary).forEach((lib) => {
-      const option = document.createElement('option');
-      option.value = lib as string;
-      option.textContent = lib as string;
+      const option = optionEl({
+        text: lib as string,
+        attrs: { value: lib as string }
+      });
       select.appendChild(option);
     });
 
     select.value = this.selectedLibrary;
-    select.addEventListener('change', (e) => {
-      const target = e.target as HTMLSelectElement;
-      this.selectedLibrary = target.value as SoundfontLibrary;
-    });
 
     container.appendChild(label);
     container.appendChild(select);
@@ -389,41 +235,20 @@ export class InstrumentSelector {
   }
 
   private createCategoryTabs(): HTMLDivElement {
-    const container = document.createElement('div');
-    container.className = 'category-tabs';
+    const container = div({ className: 'category-tabs' });
 
     const categories: InstrumentCategory[] = [
-      'all',
-      'piano',
-      'chromatic',
-      'organ',
-      'guitar',
-      'bass',
-      'strings',
-      'ensemble',
-      'brass',
-      'reed',
-      'pipe',
-      'synth-lead',
-      'synth-pad',
-      'synth-fx',
-      'ethnic',
-      'percussive',
-      'sound-fx',
+      'all', 'piano', 'chromatic', 'organ', 'guitar', 'bass',
+      'strings', 'ensemble', 'brass', 'reed', 'pipe',
+      'synth-lead', 'synth-pad', 'synth-fx', 'ethnic', 'percussive', 'sound-fx',
     ];
 
     categories.forEach((category) => {
-      const tab = document.createElement('button');
-      tab.className = 'category-tab';
-      tab.textContent = CATEGORIES[category].name;
-      tab.dataset.category = category;
-
-      if (category === this.currentCategory) {
-        tab.classList.add('active');
-      }
-
-      tab.addEventListener('click', () => {
-        this.setCategory(category);
+      const tab = button({
+        className: category === this.currentCategory ? 'category-tab active' : 'category-tab',
+        text: CATEGORIES[category].name,
+        data: { category },
+        events: { click: () => this.setCategory(category) }
       });
 
       container.appendChild(tab);
@@ -433,13 +258,13 @@ export class InstrumentSelector {
   }
 
   private createFooter(): HTMLDivElement {
-    const footer = document.createElement('div');
-    footer.className = 'instrument-selector-footer';
+    const footer = div({ className: 'instrument-selector-footer' });
 
-    const cancelBtn = document.createElement('button');
-    cancelBtn.className = 'btn-secondary';
-    cancelBtn.textContent = 'Cancel';
-    cancelBtn.addEventListener('click', () => this.hide());
+    const cancelBtn = button({
+      className: 'btn-secondary',
+      text: 'Cancel',
+      events: { click: () => this.hide() }
+    });
 
     footer.appendChild(cancelBtn);
 
@@ -455,7 +280,7 @@ export class InstrumentSelector {
     this.searchDebounceTimer = window.setTimeout(() => {
       this.searchTerm = value.toLowerCase();
       this.updateInstrumentList();
-    }, 300);
+    }, SEARCH_DEBOUNCE_MS);
   }
 
   private setCategory(category: InstrumentCategory): void {
@@ -488,9 +313,10 @@ export class InstrumentSelector {
     });
 
     if (filteredInstruments.length === 0) {
-      const noResults = document.createElement('div');
-      noResults.className = 'no-results';
-      noResults.textContent = 'No instruments found';
+      const noResults = div({
+        className: 'no-results',
+        text: 'No instruments found'
+      });
       listEl.appendChild(noResults);
     }
   }
@@ -504,10 +330,7 @@ export class InstrumentSelector {
       const programNumber = INSTRUMENT_PROGRAM_MAP.get(instrument);
       if (programNumber === undefined) return false;
 
-      if (
-        programNumber < categoryRange[0] ||
-        programNumber > categoryRange[1]
-      ) {
+      if (programNumber < categoryRange[0] || programNumber > categoryRange[1]) {
         return false;
       }
 
@@ -524,35 +347,42 @@ export class InstrumentSelector {
   }
 
   private createInstrumentItem(instrument: GMInstrument): HTMLDivElement {
-    const item = document.createElement('div');
-    item.className = 'instrument-item';
-    item.dataset.instrument = instrument;
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'radio';
-    checkbox.name = 'instrument-selection';
-    checkbox.value = instrument;
-    checkbox.className = 'instrument-checkbox';
-
-    const label = document.createElement('label');
-    label.className = 'instrument-name';
-    label.textContent = this.instrumentToDisplayName(instrument);
-
-    const previewBtn = document.createElement('button');
-    previewBtn.className = 'btn-preview';
-    previewBtn.textContent = 'Preview';
-    previewBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.previewInstrument(instrument);
+    const item = div({
+      className: 'instrument-item',
+      data: { instrument }
     });
 
-    const applyBtn = document.createElement('button');
-    applyBtn.className = 'btn-apply';
-    applyBtn.textContent = '✓';
-    applyBtn.title = 'Apply';
-    applyBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.applyInstrument(instrument);
+    const checkbox = inputEl({
+      className: 'instrument-checkbox',
+      attrs: { type: 'radio', name: 'instrument-selection', value: instrument }
+    });
+
+    const label = labelEl({
+      className: 'instrument-name',
+      text: this.instrumentToDisplayName(instrument)
+    });
+
+    const previewBtn = button({
+      className: 'btn-preview',
+      text: 'Preview',
+      events: {
+        click: (e) => {
+          e.stopPropagation();
+          this.previewInstrument(instrument);
+        }
+      }
+    });
+
+    const applyBtn = button({
+      className: 'btn-apply',
+      text: '✓',
+      attrs: { title: 'Apply' },
+      events: {
+        click: (e) => {
+          e.stopPropagation();
+          this.applyInstrument(instrument);
+        }
+      }
     });
 
     item.appendChild(checkbox);
@@ -594,16 +424,14 @@ export class InstrumentSelector {
 
       // Load instrument
       const qualifiedName = createQualifiedName(this.selectedLibrary, instrument);
-      const sfInstrument = await this.sampleManager.getInstrumentByQualifiedName(
-        qualifiedName
-      );
+      const sfInstrument = await this.sampleManager.getInstrumentByQualifiedName(qualifiedName);
 
       // Create sampler
       this.previewSampler = new MusicalSampler(sfInstrument);
       this.previewSampler.toDestination();
 
-      // Play preview note (C4 for 0.5 seconds)
-      this.previewSampler.triggerAttackRelease('C4', 0.5, undefined, 0.8);
+      // Play preview note
+      this.previewSampler.triggerAttackRelease('C4', PREVIEW_NOTE_DURATION, undefined, PREVIEW_NOTE_VELOCITY);
 
       // Clean up after preview
       setTimeout(() => {
@@ -615,7 +443,7 @@ export class InstrumentSelector {
           previewBtn.disabled = false;
           previewBtn.textContent = 'Preview';
         }
-      }, 600);
+      }, PREVIEW_CLEANUP_DELAY_MS);
     } catch (error) {
       console.error('Preview failed:', error);
       const previewBtn = this.modal?.querySelector(
@@ -644,7 +472,7 @@ export class InstrumentSelector {
         previewBtn.textContent = 'Retry';
         setTimeout(() => {
           previewBtn.textContent = 'Preview';
-        }, 3000);
+        }, ERROR_RESET_TIMEOUT_MS);
       }
     }
   }

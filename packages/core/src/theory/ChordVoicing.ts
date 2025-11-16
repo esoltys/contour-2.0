@@ -10,7 +10,8 @@ import type { ChordQuality } from '../types/theory.js';
 import { Note } from '../primitives/Note.js';
 import { parseChord } from '../patterns/chordParser.js';
 import { PatternBuilder } from '../patterns/PatternBuilder.js';
-import { Duration as DurationConstructor } from '../types/brands.js';
+import { Duration as DurationConstructor, type Duration } from '../types/brands.js';
+import type { PatternLike } from '../types/interfaces.js';
 
 /**
  * Chord with specific pitch instances (not just intervals).
@@ -140,7 +141,7 @@ export class ChordVoicing {
    * const arpeggio = chord.toPattern(Duration(1.0), 'arpeggio');
    * ```
    */
-  toPattern(duration?: any, style: 'block' | 'arpeggio' = 'block'): any {
+  toPattern(duration?: Duration, style: 'block' | 'arpeggio' = 'block'): PatternLike {
     const dur = duration ?? DurationConstructor(0.25);
     const builder = new PatternBuilder();
 

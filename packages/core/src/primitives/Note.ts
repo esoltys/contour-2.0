@@ -107,6 +107,57 @@ export class Note {
     return Note.fromMIDI(MIDINote(pitch));
   }
 
+  /**
+   * Convert MIDI pitch number to note name string.
+   * This is a utility function for display purposes.
+   *
+   * @param midi - MIDI note number (0-127)
+   * @returns Note name string (e.g., "C4", "F#3", "Bb5")
+   *
+   * @example
+   * ```typescript
+   * Note.midiToNoteName(60);  // "C4"
+   * Note.midiToNoteName(69);  // "A4"
+   * Note.midiToNoteName(61);  // "C#4"
+   * ```
+   */
+  static midiToNoteName(midi: number): string {
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const octave = Math.floor(midi / 12) - 1;
+    const noteName = noteNames[midi % 12];
+    return `${noteName}${octave}`;
+  }
+
+  /**
+   * Convert note name string to MIDI pitch number.
+   * This is a utility function for parsing note names.
+   *
+   * @param name - Note name string (e.g., "C4", "F#3", "Db5")
+   * @returns MIDI note number
+   *
+   * @example
+   * ```typescript
+   * Note.noteNameToMidi("C4");  // 60
+   * Note.noteNameToMidi("A4");  // 69
+   * Note.noteNameToMidi("C#4"); // 61
+   * ```
+   */
+  static noteNameToMidi(name: string): number {
+    const noteMap: { [key: string]: number } = {
+      'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
+      'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
+      'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
+    };
+
+    const match = name.match(/^([A-G][#b]?)(-?\d+)$/);
+    if (!match) return 60; // Default to C4
+
+    const noteName = match[1];
+    const octave = parseInt(match[2]);
+
+    return (octave + 1) * 12 + (noteMap[noteName] || 0);
+  }
+
   private noteToPitch(name: NoteName): MIDINote {
     // Parse note name to MIDI number
     // C4 = 60, A4 = 69, etc.

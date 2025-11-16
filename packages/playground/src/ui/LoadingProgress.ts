@@ -8,6 +8,8 @@
  * - Success notification
  */
 
+import { SUCCESS_AUTO_HIDE_MS } from '../constants.js';
+
 export class LoadingProgress {
   private container: HTMLDivElement | null = null;
   private progressBar: HTMLDivElement | null = null;
@@ -133,7 +135,7 @@ export class LoadingProgress {
   /**
    * Show success state and auto-hide after delay.
    */
-  showSuccess(message: string = 'Loading complete!', autoHideMs: number = 2000): void {
+  showSuccess(message: string = 'Loading complete!', autoHideMs: number = SUCCESS_AUTO_HIDE_MS): void {
     if (this.container && this.statusText && this.progressBar) {
       this.container.classList.add('success');
       this.container.classList.remove('error');

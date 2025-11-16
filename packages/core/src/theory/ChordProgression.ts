@@ -12,6 +12,7 @@ import { ChordVoicing } from './ChordVoicing.js';
 import { Scale } from './Scale.js';
 import type { Event, NoteEvent, ChordEvent } from '../primitives/Event.js';
 import { Pattern } from '../patterns/Pattern.js';
+import type { PatternLike } from '../types/interfaces.js';
 
 /**
  * A timed chord change in a progression.
@@ -148,7 +149,7 @@ export class ChordProgression {
    * const arpeggios = prog.toPattern('arpeggio');
    * ```
    */
-  toPattern(style: 'block' | 'arpeggio' = 'block'): any {
+  toPattern(style: 'block' | 'arpeggio' = 'block'): PatternLike {
     if (style === 'block') {
       // Stack all chords at their times (simultaneous notes)
       const events = this.changes.flatMap((c) => {

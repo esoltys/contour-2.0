@@ -10,7 +10,8 @@
  * - Export ASCII visualization
  */
 
-import type { Pattern, PatternInspection } from '@contour/core';
+import { Note, type Pattern, type PatternInspection } from '@contour/core';
+import { PATTERN_CANVAS_WIDTH, PATTERN_CANVAS_HEIGHT } from '../constants.js';
 
 export interface InspectablePattern {
   id: string;
@@ -118,8 +119,8 @@ export class PatternInspector {
     const canvas = document.createElement('canvas');
     canvas.id = 'pattern-timeline-canvas';
     canvas.className = 'pattern-timeline-canvas';
-    canvas.width = 600;
-    canvas.height = 200;
+    canvas.width = PATTERN_CANVAS_WIDTH;
+    canvas.height = PATTERN_CANVAS_HEIGHT;
     section.appendChild(canvas);
 
     // Stats
@@ -228,8 +229,8 @@ export class PatternInspector {
 
       if (inspection.noteRange.lowest !== null) {
         output += `Note Range:\n`;
-        output += `  Lowest:  ${this.midiToNote(inspection.noteRange.lowest)}\n`;
-        output += `  Highest: ${this.midiToNote(inspection.noteRange.highest!)}\n`;
+        output += `  Lowest:  ${Note.midiToNoteName(inspection.noteRange.lowest)}\n`;
+        output += `  Highest: ${Note.midiToNoteName(inspection.noteRange.highest!)}\n`;
         output += `  Span:    ${inspection.noteRange.span} semitones\n\n`;
       }
 
@@ -331,8 +332,8 @@ export class PatternInspector {
 
     if (rangeEl) {
       if (inspection.noteRange.lowest !== null) {
-        const low = this.midiToNote(inspection.noteRange.lowest);
-        const high = this.midiToNote(inspection.noteRange.highest!);
+        const low = Note.midiToNoteName(inspection.noteRange.lowest);
+        const high = Note.midiToNoteName(inspection.noteRange.highest!);
         rangeEl.textContent = `${low} - ${high}`;
       } else {
         rangeEl.textContent = '-';
@@ -377,12 +378,5 @@ export class PatternInspector {
       console.error('[PatternInspector] Failed to copy:', err);
       alert('Failed to copy to clipboard');
     });
-  }
-
-  private midiToNote(midi: number): string {
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const octave = Math.floor(midi / 12) - 1;
-    const note = notes[midi % 12];
-    return `${note}${octave}`;
   }
 }
