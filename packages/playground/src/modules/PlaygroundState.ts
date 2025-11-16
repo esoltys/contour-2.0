@@ -13,6 +13,7 @@ import { KeyboardShortcuts } from '../ui/KeyboardShortcuts.js';
 import { InstrumentSelector } from '../ui/InstrumentSelector.js';
 import { SampleLibraryPanel } from '../ui/SampleLibraryPanel.js';
 import { LoadingProgress } from '../ui/LoadingProgress.js';
+import { DEFAULT_BPM } from '../constants.js';
 
 // ============================================================================
 // Types and Interfaces
@@ -70,7 +71,7 @@ export class PlaygroundState {
   isAudioStarted = false;
   isPlaying = false;
   isDemoRunning = false;
-  bpm = 120;
+  bpm = DEFAULT_BPM;
   volume = 0;
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;

@@ -325,21 +325,7 @@ export class Pattern {
 
     return this.map((event) => {
       if (event.type === 'note') {
-        // Find nearest scale note by pitch
-        let nearestNote = scaleNotes[0];
-        let minDistance = Math.abs(scaleNotes[0].pitch - event.pitch);
-
-        for (const scaleNote of scaleNotes) {
-          const distance = Math.abs(scaleNote.pitch - event.pitch);
-          // In case of tie, prefer the higher note (upward snap)
-          if (distance < minDistance ||
-              (distance === minDistance && scaleNote.pitch > nearestNote.pitch)) {
-            minDistance = distance;
-            nearestNote = scaleNote;
-          }
-        }
-
-        // Cast to Note since we know ScaleLike.getNotes() returns Note[] in practice
+        const nearestNote = this.findNearestScaleNote(event.pitch, scaleNotes);
         return {
           ...event,
           note: nearestNote as Note,
@@ -349,23 +335,9 @@ export class Pattern {
 
       if (event.type === 'chord') {
         // Quantize each note in the chord
-        const quantizedNotes = event.notes.map((note) => {
-          let nearestNote = scaleNotes[0];
-          let minDistance = Math.abs(scaleNotes[0].pitch - note.pitch);
-
-          for (const scaleNote of scaleNotes) {
-            const distance = Math.abs(scaleNote.pitch - note.pitch);
-            // In case of tie, prefer the higher note (upward snap)
-            if (distance < minDistance ||
-                (distance === minDistance && scaleNote.pitch > nearestNote.pitch)) {
-              minDistance = distance;
-              nearestNote = scaleNote;
-            }
-          }
-
-          // Cast to Note since we know ScaleLike.getNotes() returns Note[] in practice
-          return nearestNote as Note;
-        });
+        const quantizedNotes = event.notes.map((note) =>
+          this.findNearestScaleNote(note.pitch, scaleNotes)
+        ) as Note[];
 
         return {
           ...event,
@@ -375,6 +347,31 @@ export class Pattern {
 
       return event;
     });
+  }
+
+  /**
+   * Find the nearest note in a scale to a given pitch.
+   * In case of tie, prefers the higher note (upward snap).
+   *
+   * @param pitch - The pitch to quantize
+   * @param scaleNotes - Array of notes in the scale
+   * @returns The nearest scale note
+   */
+  private findNearestScaleNote(pitch: MIDINote, scaleNotes: NoteLike[]): NoteLike {
+    let nearestNote = scaleNotes[0];
+    let minDistance = Math.abs(scaleNotes[0].pitch - pitch);
+
+    for (const scaleNote of scaleNotes) {
+      const distance = Math.abs(scaleNote.pitch - pitch);
+      // In case of tie, prefer the higher note (upward snap)
+      if (distance < minDistance ||
+          (distance === minDistance && scaleNote.pitch > nearestNote.pitch)) {
+        minDistance = distance;
+        nearestNote = scaleNote;
+      }
+    }
+
+    return nearestNote;
   }
 }
 

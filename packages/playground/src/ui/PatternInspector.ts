@@ -10,7 +10,8 @@
  * - Export ASCII visualization
  */
 
-import type { Pattern, PatternInspection } from '@contour/core';
+import { Note, type Pattern, type PatternInspection } from '@contour/core';
+import { PATTERN_CANVAS_WIDTH, PATTERN_CANVAS_HEIGHT } from '../constants.js';
 
 export interface InspectablePattern {
   id: string;
@@ -118,8 +119,8 @@ export class PatternInspector {
     const canvas = document.createElement('canvas');
     canvas.id = 'pattern-timeline-canvas';
     canvas.className = 'pattern-timeline-canvas';
-    canvas.width = 600;
-    canvas.height = 200;
+    canvas.width = PATTERN_CANVAS_WIDTH;
+    canvas.height = PATTERN_CANVAS_HEIGHT;
     section.appendChild(canvas);
 
     // Stats
@@ -228,8 +229,8 @@ export class PatternInspector {
 
       if (inspection.noteRange.lowest !== null) {
         output += `Note Range:\n`;
-        output += `  Lowest:  ${this.midiToNote(inspection.noteRange.lowest)}\n`;
-        output += `  Highest: ${this.midiToNote(inspection.noteRange.highest!)}\n`;
+        output += `  Lowest:  ${Note.midiToNoteName(inspection.noteRange.lowest)}\n`;
+        output += `  Highest: ${Note.midiToNoteName(inspection.noteRange.highest!)}\n`;
         output += `  Span:    ${inspection.noteRange.span} semitones\n\n`;
       }
 
@@ -331,8 +332,8 @@ export class PatternInspector {
 
     if (rangeEl) {
       if (inspection.noteRange.lowest !== null) {
-        const low = this.midiToNote(inspection.noteRange.lowest);
-        const high = this.midiToNote(inspection.noteRange.highest!);
+        const low = Note.midiToNoteName(inspection.noteRange.lowest);
+        const high = Note.midiToNoteName(inspection.noteRange.highest!);
         rangeEl.textContent = `${low} - ${high}`;
       } else {
         rangeEl.textContent = '-';
@@ -379,27 +380,4 @@ export class PatternInspector {
     });
   }
 
-  private noteToMidi(note: string): number {
-    // Simple note to MIDI conversion
-    const noteMap: { [key: string]: number } = {
-      'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-      'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-      'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-    };
-
-    const match = note.match(/^([A-G][#b]?)(\d+)$/);
-    if (!match) return 60; // Default to C4
-
-    const noteName = match[1];
-    const octave = parseInt(match[2]);
-
-    return (octave + 1) * 12 + (noteMap[noteName] || 0);
-  }
-
-  private midiToNote(midi: number): string {
-    const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-    const octave = Math.floor(midi / 12) - 1;
-    const note = notes[midi % 12];
-    return `${note}${octave}`;
-  }
 }
