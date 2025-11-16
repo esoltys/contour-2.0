@@ -150,7 +150,47 @@ class PlaygroundApplication {
     this.state.patternPlayground = new PatternPlayground({
       onAddToGrid: (code: string, patternInstance: Pattern) => {
         console.log('[Contour] Adding pattern from playground to grid');
-        alert('Pattern added! (Grid integration coming soon)');
+
+        // Find the first inactive pad to assign the pattern
+        let targetPad: PadState | null = null;
+        for (const [_id, padState] of this.state.pads) {
+          if (!padState.isActive && !padState.pattern) {
+            targetPad = padState;
+            break;
+          }
+        }
+
+        if (!targetPad) {
+          // All pads are in use, try to find any inactive pad
+          for (const [_id, padState] of this.state.pads) {
+            if (!padState.isActive) {
+              targetPad = padState;
+              break;
+            }
+          }
+        }
+
+        if (targetPad) {
+          // Update the pad with the new pattern
+          targetPad.pattern = patternInstance;
+          targetPad.code = code;
+
+          // Update the UI to reflect the new pattern
+          const padElement = document.getElementById(targetPad.id);
+          if (padElement) {
+            const nameElement = padElement.querySelector('.pad-name');
+            if (nameElement) {
+              nameElement.textContent = 'Custom Pattern';
+            }
+            padElement.classList.add('has-custom-pattern');
+          }
+
+          console.log(`[Contour] Pattern assigned to ${targetPad.id}`);
+          alert(`Pattern assigned to pad ${targetPad.id.replace('pad-', '')}! Click the pad to play it.`);
+        } else {
+          console.warn('[Contour] No available pads to assign pattern');
+          alert('All pads are currently active. Stop a pad first to assign a new pattern.');
+        }
       },
       onClose: () => console.log('[Contour] Playground closed')
     });

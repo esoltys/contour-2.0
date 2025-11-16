@@ -126,6 +126,25 @@ export class InstrumentSelector {
     content.appendChild(this.createSearchBar());
     content.appendChild(this.createLibrarySelector());
     content.appendChild(this.createCategoryTabs());
+
+    // Error notification area
+    const errorNotification = div({
+      className: 'instrument-selector-error',
+      id: 'instrument-selector-error',
+      styles: {
+        display: 'none',
+        background: '#ff4444',
+        color: 'white',
+        padding: '10px 15px',
+        borderRadius: '4px',
+        margin: '10px 0',
+        alignItems: 'center',
+        gap: '10px',
+        fontSize: '14px'
+      }
+    });
+    content.appendChild(errorNotification);
+
     content.appendChild(div({ className: 'instrument-list', id: 'instrument-list' }));
     content.appendChild(this.createFooter());
 
@@ -430,13 +449,90 @@ export class InstrumentSelector {
       const previewBtn = this.modal?.querySelector(
         `[data-instrument="${instrument}"] .btn-preview`
       ) as HTMLButtonElement;
+
+      // Determine error type and provide helpful message
+      let errorMessage = 'Failed to preview instrument.';
+      if (error instanceof Error) {
+        if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = 'Network error: Unable to load instrument samples. Check your internet connection.';
+        } else if (error.message.includes('AudioContext') || error.message.includes('audio')) {
+          errorMessage = 'Audio error: Unable to play instrument. Try clicking the page first to enable audio.';
+        } else if (error.message.includes('not found') || error.message.includes('404')) {
+          errorMessage = `Instrument "${instrument}" not found in the selected library.`;
+        } else {
+          errorMessage = `Preview failed: ${error.message}`;
+        }
+      }
+
+      // Show error notification with retry option
+      this.showError(errorMessage, () => this.previewInstrument(instrument));
+
       if (previewBtn) {
         previewBtn.disabled = false;
-        previewBtn.textContent = 'Error';
+        previewBtn.textContent = 'Retry';
         setTimeout(() => {
           previewBtn.textContent = 'Preview';
         }, ERROR_RESET_TIMEOUT_MS);
       }
+    }
+  }
+
+  private showError(message: string, retryCallback?: () => void): void {
+    const errorEl = this.modal?.querySelector('#instrument-selector-error') as HTMLDivElement;
+    if (!errorEl) return;
+
+    // Create error message content
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    messageSpan.style.flex = '1';
+
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.className = 'error-close-btn';
+    closeBtn.style.cssText = `
+      background: transparent;
+      border: none;
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 5px;
+    `;
+    closeBtn.addEventListener('click', () => this.hideError());
+
+    errorEl.innerHTML = '';
+    errorEl.appendChild(messageSpan);
+
+    if (retryCallback) {
+      const retryBtn = document.createElement('button');
+      retryBtn.textContent = 'Retry';
+      retryBtn.className = 'error-retry-btn';
+      retryBtn.style.cssText = `
+        background: rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+      `;
+      retryBtn.addEventListener('click', () => {
+        this.hideError();
+        retryCallback();
+      });
+      errorEl.appendChild(retryBtn);
+    }
+
+    errorEl.appendChild(closeBtn);
+    errorEl.style.display = 'flex';
+
+    // Auto-hide after 8 seconds
+    setTimeout(() => this.hideError(), 8000);
+  }
+
+  private hideError(): void {
+    const errorEl = this.modal?.querySelector('#instrument-selector-error') as HTMLDivElement;
+    if (errorEl) {
+      errorEl.style.display = 'none';
     }
   }
 

@@ -1,11 +1,12 @@
 import type { InstrumentAdapter } from './InstrumentAdapter.js';
+import type { SoundfontInstrument } from '../samples/types.js';
 
 /**
  * Adapter for soundfont-player instruments.
  * Wraps the soundfont-player API to match the InstrumentAdapter interface.
  */
 export class SampleAdapter implements InstrumentAdapter {
-  private instrument: any; // soundfont-player instrument (no TS types available)
+  private instrument: SoundfontInstrument;
   private audioContext: AudioContext;
 
   /**
@@ -14,7 +15,7 @@ export class SampleAdapter implements InstrumentAdapter {
    * @param instrument - soundfont-player instrument instance
    * @param audioContext - Web Audio API context
    */
-  constructor(instrument: any, audioContext: AudioContext) {
+  constructor(instrument: SoundfontInstrument, audioContext: AudioContext) {
     this.instrument = instrument;
     this.audioContext = audioContext;
   }
@@ -44,7 +45,7 @@ export class SampleAdapter implements InstrumentAdapter {
     }
   }
 
-  getInstrument(): any {
+  getInstrument(): SoundfontInstrument {
     return this.instrument;
   }
 }

@@ -379,5 +379,4 @@ export class PatternInspector {
       alert('Failed to copy to clipboard');
     });
   }
-
 }

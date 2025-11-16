@@ -25,12 +25,52 @@ export class Note {
 
   /**
    * Get enharmonic equivalent (e.g., C# <-> Db).
-   * For now, returns the same note as enharmonic handling is complex.
-   * TODO: Implement proper enharmonic respelling
+   * Returns the alternate spelling of the same pitch.
+   * - Sharp notes become flat (C# -> Db)
+   * - Flat notes become sharp (Db -> C#)
+   * - Natural notes return themselves (no alternate spelling)
    */
   enharmonic(): Note {
-    // Simplified implementation - just return this note for now
-    // Full implementation would require music theory context
+    const match = this.name.match(/^([A-G])([#b]?)(-?\d+)$/);
+    if (!match) return this;
+
+    const [, letter, accidental, octaveStr] = match;
+    const octave = parseInt(octaveStr, 10);
+
+    // Enharmonic equivalents map
+    // Note: B#/Cb and E#/Fb are special cases that involve natural notes
+    // B# = C natural, Cb = B natural, E# = F natural, Fb = E natural
+    const sharpToFlat: Record<string, { letter: NoteLetter; octave: number }> = {
+      'C#': { letter: 'D', octave: 0 },
+      'D#': { letter: 'E', octave: 0 },
+      'F#': { letter: 'G', octave: 0 },
+      'G#': { letter: 'A', octave: 0 },
+      'A#': { letter: 'B', octave: 0 },
+    };
+
+    const flatToSharp: Record<string, { letter: NoteLetter; octave: number }> = {
+      'Db': { letter: 'C', octave: 0 },
+      'Eb': { letter: 'D', octave: 0 },
+      'Gb': { letter: 'F', octave: 0 },
+      'Ab': { letter: 'G', octave: 0 },
+      'Bb': { letter: 'A', octave: 0 },
+    };
+
+    const noteWithAccidental = `${letter}${accidental}`;
+
+    if (accidental === '#' && sharpToFlat[noteWithAccidental]) {
+      const enharmonic = sharpToFlat[noteWithAccidental];
+      const newOctave = octave + enharmonic.octave;
+      return new Note(`${enharmonic.letter}b${newOctave}` as NoteName);
+    }
+
+    if (accidental === 'b' && flatToSharp[noteWithAccidental]) {
+      const enharmonic = flatToSharp[noteWithAccidental];
+      const newOctave = octave + enharmonic.octave;
+      return new Note(`${enharmonic.letter}#${newOctave}` as NoteName);
+    }
+
+    // Natural notes - no enharmonic equivalent (could return E#/Fb for F/E, but that's rare)
     return this;
   }
 
