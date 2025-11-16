@@ -12,6 +12,7 @@ export class LoadingProgress {
   private container: HTMLDivElement | null = null;
   private progressBar: HTMLDivElement | null = null;
   private statusText: HTMLSpanElement | null = null;
+  private continueButton: HTMLButtonElement | null = null;
 
   constructor() {
     this.initialize();
@@ -47,8 +48,17 @@ export class LoadingProgress {
 
     progressBarOuter.appendChild(this.progressBar);
 
+    // Continue button (hidden by default)
+    this.continueButton = document.createElement('button');
+    this.continueButton.className = 'btn btn-primary';
+    this.continueButton.textContent = 'Continue';
+    this.continueButton.style.display = 'none';
+    this.continueButton.style.marginTop = '1.5rem';
+    this.continueButton.addEventListener('click', () => this.hide());
+
     progressContainer.appendChild(statusText);
     progressContainer.appendChild(progressBarOuter);
+    progressContainer.appendChild(this.continueButton);
 
     overlay.appendChild(progressContainer);
 
@@ -64,6 +74,11 @@ export class LoadingProgress {
       this.container.style.display = 'flex';
       this.container.classList.remove('error', 'success');
       this.updateProgress(0, 100);
+
+      // Hide continue button when starting fresh
+      if (this.continueButton) {
+        this.continueButton.style.display = 'none';
+      }
     }
   }
 
@@ -71,8 +86,9 @@ export class LoadingProgress {
    * Update progress bar.
    * @param loaded - Number of items loaded
    * @param total - Total number of items
+   * @param currentItem - Optional: name of current item being loaded
    */
-  updateProgress(loaded: number, total: number): void {
+  updateProgress(loaded: number, total: number, currentItem?: string): void {
     if (!this.progressBar || !this.statusText) return;
 
     const percent = total > 0 ? (loaded / total) * 100 : 0;
@@ -80,7 +96,11 @@ export class LoadingProgress {
 
     // Update text if showing loading
     if (this.container && !this.container.classList.contains('error')) {
-      this.statusText.textContent = `Loading: ${loaded}/${total} instruments (${Math.round(percent)}%)`;
+      if (currentItem) {
+        this.statusText.textContent = `Loading ${currentItem}... (${loaded}/${total})`;
+      } else {
+        this.statusText.textContent = `Loading: ${loaded}/${total} instruments (${Math.round(percent)}%)`;
+      }
     }
   }
 
@@ -102,6 +122,11 @@ export class LoadingProgress {
       this.container.classList.add('error');
       this.container.classList.remove('success');
       this.statusText.textContent = `Error: ${message}`;
+
+      // Show continue button so user can dismiss the error
+      if (this.continueButton) {
+        this.continueButton.style.display = 'inline-block';
+      }
     }
   }
 
