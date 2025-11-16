@@ -7,6 +7,7 @@ import type { NoteName } from '../types/music.js';
 import { Seconds, Velocity, Duration } from '../types/brands.js';
 import { Durations } from '../types/music.js';
 import { parseMiniNotationWithDefaults } from './MiniNotation.js';
+import type { ScaleLike } from '../types/interfaces.js';
 
 /**
  * Fluent builder for constructing patterns.
@@ -16,7 +17,7 @@ export class PatternBuilder {
   private currentTime: Seconds = Seconds(0);
   private defaultDuration: Duration = Durations.quarter;
   private defaultVelocity: Velocity = Velocity(80);
-  private activeScale?: any; // Scale type (avoid circular dependency)
+  private activeScale?: ScaleLike;
 
   /**
    * Add a single note.
@@ -275,7 +276,7 @@ export class PatternBuilder {
    *   .build();
    * ```
    */
-  withScale(scale: any): this {
+  withScale(scale: ScaleLike): this {
     this.activeScale = scale;
     return this;
   }
@@ -309,7 +310,8 @@ export class PatternBuilder {
     }
 
     degrees.forEach((deg, i) => {
-      const note = this.activeScale.degree(deg);
+      // Cast to Note since we know ScaleLike.degree() returns a Note in practice
+      const note = this.activeScale!.degree(deg) as Note;
 
       // Handle durations: single value or array
       let duration: Duration | undefined;

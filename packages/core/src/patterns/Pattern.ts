@@ -4,6 +4,7 @@ import type { Event, NoteEvent, ChordEvent } from '../primitives/Event.js';
 import { Seconds, MIDINote, Duration, Velocity } from '../types/brands.js';
 import { Note } from '../primitives/Note.js';
 import { PatternInspector, type PatternInspection } from '../debug/PatternInspector.js';
+import type { ScaleLike, NoteLike } from '../types/interfaces.js';
 
 /**
  * Immutable pattern of musical events.
@@ -319,8 +320,7 @@ export class Pattern {
    * // C#4 becomes D4, D#4 becomes E4
    * ```
    */
-  inScale(scale: any): Pattern {
-    // Import Scale type dynamically to avoid circular dependency
+  inScale(scale: ScaleLike): Pattern {
     const scaleNotes = scale.getNotes();
 
     return this.map((event) => {
@@ -339,9 +339,10 @@ export class Pattern {
           }
         }
 
+        // Cast to Note since we know ScaleLike.getNotes() returns Note[] in practice
         return {
           ...event,
-          note: nearestNote,
+          note: nearestNote as Note,
           pitch: nearestNote.pitch,
         };
       }
@@ -362,7 +363,8 @@ export class Pattern {
             }
           }
 
-          return nearestNote;
+          // Cast to Note since we know ScaleLike.getNotes() returns Note[] in practice
+          return nearestNote as Note;
         });
 
         return {

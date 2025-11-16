@@ -11,6 +11,7 @@ import type { ScaleName, ChordQuality } from '../types/theory.js';
 import { Interval as IntervalConstructor } from '../types/brands.js';
 import { Note } from '../primitives/Note.js';
 import { PatternBuilder } from '../patterns/PatternBuilder.js';
+import type { PatternLike } from '../types/interfaces.js';
 
 /**
  * Immutable scale representation.
@@ -109,7 +110,7 @@ export class Scale {
    * );
    * ```
    */
-  pattern(degrees: number[], durations?: Duration | Duration[]): any {
+  pattern(degrees: number[], durations?: Duration | Duration[]): PatternLike {
     const builder = new PatternBuilder().withScale(this);
     return builder.degrees(degrees, durations).build();
   }
