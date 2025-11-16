@@ -624,8 +624,9 @@
     }
 
     .carousel-slide {
+      width: 100%;
       min-width: 100%;
-      flex-shrink: 0;
+      flex: 0 0 100%;
     }
 
     .carousel-slide img {
@@ -1095,7 +1096,9 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
 
       function goToSlide(index) {
         currentSlide = index;
-        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        // Track is 3 slides wide (300%), so each slide is 33.333% of track
+        const slidePercentage = 100 / totalSlides;
+        track.style.transform = `translateX(-${currentSlide * slidePercentage}%)`;
 
         // Update indicators
         indicators.forEach((indicator, i) => {
