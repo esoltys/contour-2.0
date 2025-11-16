@@ -113,6 +113,7 @@ const elements = {
   clearAllBtn: document.getElementById('clearAllBtn') as HTMLButtonElement,
   demoBtn: document.getElementById('demoBtn') as HTMLButtonElement,
   toggleSamplesBtn: document.getElementById('toggleSamplesBtn') as HTMLButtonElement,
+  debugPanelBtn: document.getElementById('debugPanelBtn') as HTMLButtonElement,
 
   // Grid
   performanceGrid: document.getElementById('performanceGrid') as HTMLDivElement,
@@ -365,18 +366,47 @@ async function loadSampleInstruments(): Promise<void> {
     console.log('[Contour] Loading instruments:', validInstrumentNames);
 
     // Load instruments one at a time to show progress
-    const total = validInstrumentNames.length;
+    // +1 for drum kit
+    const total = validInstrumentNames.length + 1;
     let loaded = 0;
+    let failed = 0;
+    const failedInstruments: string[] = [];
 
+    // Load melodic instruments
     for (const name of validInstrumentNames) {
-      state.loadingProgress?.updateProgress(loaded, total);
-      await state.sampleLibraryManager!.loadInstrument({ instrument: name });
-      loaded++;
+      state.loadingProgress?.updateProgress(loaded, total, name);
+      try {
+        await state.sampleLibraryManager!.loadInstrument({ instrument: name });
+        loaded++;
+      } catch (error) {
+        failed++;
+        failedInstruments.push(name);
+        console.error(`[Contour] Failed to load instrument ${name}:`, error);
+      }
     }
 
-    // Update progress to 100% and show success
-    state.loadingProgress?.updateProgress(total, total);
-    state.loadingProgress?.showSuccess('All instruments loaded!');
+    // Load drum kit
+    state.loadingProgress?.updateProgress(loaded, total, 'CR78 drum kit');
+    try {
+      const drumAdapter = new DrumAdapter('CR78');
+      await drumAdapter.waitForLoad();
+      // Store for reuse - avoid creating new instances for each drum pad
+      (state as any).drumAdapter = drumAdapter;
+      loaded++;
+    } catch (error) {
+      failed++;
+      failedInstruments.push('CR78 drum kit');
+      console.error('[Contour] Failed to load CR78 drum kit:', error);
+    }
+
+    // Update progress to show final count
+    state.loadingProgress?.updateProgress(loaded, total);
+
+    if (failed > 0) {
+      state.loadingProgress?.showError(`Loaded ${loaded}/${total} instruments. Failed: ${failedInstruments.join(', ')}`);
+    } else {
+      state.loadingProgress?.showSuccess(`All ${total} instruments loaded!`);
+    }
 
     console.log('[Contour] Sample instruments loaded');
 
@@ -492,8 +522,13 @@ async function togglePad(padId: string) {
     if (state.useSamples) {
       // Use samples - either drums or melodic instruments
       if (pad.preset.category === 'drums') {
-        // Use drum samples (CR78 kit)
-        instrument = new DrumAdapter('CR78');
+        // Use pre-loaded drum samples (CR78 kit)
+        if ((state as any).drumAdapter) {
+          instrument = (state as any).drumAdapter;
+        } else {
+          // Fallback: create new adapter if not pre-loaded
+          instrument = new DrumAdapter('CR78');
+        }
         console.log(`[Contour] Using CR78 drum samples for ${pad.preset.name}`);
       } else {
         // Use melodic samples for bass, melody, effects
@@ -818,8 +853,21 @@ function startVisualization() {
     // Get current transport position in beats
     const currentBeat = Tone.Transport.seconds * (state.bpm / 60);
 
-    // Draw playhead
-    const playheadX = (currentBeat % beatsToShow) * TIME_SCALE;
+    // Find the longest pattern length among active pads (in beats)
+    let maxPatternLengthBeats = 4; // Default 4 beats
+    state.pads.forEach((pad) => {
+      if (!pad.isActive || !pad.pattern || pad.pattern.events.length === 0) return;
+      const lastEvent = pad.pattern.events[pad.pattern.events.length - 1];
+      const patternEndBeats = (lastEvent.time + lastEvent.duration) * (state.bpm / 60);
+      maxPatternLengthBeats = Math.max(maxPatternLengthBeats, patternEndBeats);
+    });
+
+    // Use the pattern length for both playhead and notes
+    // Scale to fit the pattern in the visible canvas width
+    const pixelsPerBeat = canvas.width / maxPatternLengthBeats;
+
+    // Draw playhead - wraps based on pattern length, not canvas width
+    const playheadX = (currentBeat % maxPatternLengthBeats) * pixelsPerBeat;
     ctx.strokeStyle = '#00fff5';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -842,14 +890,8 @@ function startVisualization() {
       const color = colors[colorIndex % colors.length];
       colorIndex++;
 
-      // Calculate pattern length
-      let patternLength = 4; // Default 4 beats
-      if (pad.pattern.events.length > 0) {
-        const lastEvent = pad.pattern.events[pad.pattern.events.length - 1];
-        patternLength = Math.max(patternLength, lastEvent.time + lastEvent.duration);
-      }
-
-      // Draw notes
+      // Draw notes at their static positions within the pattern
+      // The playhead moves over them, not the other way around
       pad.pattern.events.forEach((event) => {
         if (event.type === 'rest') return;
 
@@ -862,10 +904,13 @@ function startVisualization() {
           const noteIndex = midi - LOWEST_NOTE;
           const y = (TOTAL_NOTES - noteIndex - 1) * NOTE_HEIGHT;
 
-          // Calculate x position considering loop
-          const eventBeat = (currentBeat % patternLength) + event.time;
-          const x = (eventBeat % beatsToShow) * TIME_SCALE;
-          const width = event.duration * TIME_SCALE;
+          // Convert event time (seconds) to beats and position statically
+          const eventStartBeat = event.time * (state.bpm / 60);
+          const eventDurationBeats = event.duration * (state.bpm / 60);
+
+          // Position using the same scale as the playhead
+          const x = eventStartBeat * pixelsPerBeat;
+          const width = eventDurationBeats * pixelsPerBeat;
 
           ctx.fillStyle = color;
           ctx.fillRect(x, y, Math.max(width, 2), NOTE_HEIGHT - 1);
@@ -955,6 +1000,13 @@ function initEventListeners() {
   elements.clearAllBtn.addEventListener('click', clearAll);
   elements.demoBtn.addEventListener('click', playDemoJam);
   elements.toggleSamplesBtn.addEventListener('click', toggleSamples);
+
+  // Debug panel toggle button
+  elements.debugPanelBtn.addEventListener('click', () => {
+    if (state.debugPanel) {
+      state.debugPanel.toggle();
+    }
+  });
 
   // Editor modal
   elements.closeEditorBtn.addEventListener('click', closeEditor);
