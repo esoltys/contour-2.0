@@ -75,13 +75,10 @@ export class PianoRollVisualizer {
     this.clearCanvas();
     this.drawGrid(totalNotes, noteHeight);
 
-    if (!this.state.isPlaying) return;
-
-    const currentBeat = this.getCurrentBeat();
     const maxPatternLengthBeats = this.getMaxPatternLength();
     const pixelsPerBeat = this.canvas.width / maxPatternLengthBeats;
 
-    this.drawPlayhead(currentBeat, maxPatternLengthBeats, pixelsPerBeat);
+    // Always draw notes if there are active patterns (even when paused)
     this.drawNotes(
       lowestNote,
       totalNotes,
@@ -89,6 +86,12 @@ export class PianoRollVisualizer {
       pixelsPerBeat,
       noteColors
     );
+
+    // Only draw playhead when playing
+    if (this.state.isPlaying) {
+      const currentBeat = this.getCurrentBeat();
+      this.drawPlayhead(currentBeat, maxPatternLengthBeats, pixelsPerBeat);
+    }
   };
 
   private clearCanvas(): void {
@@ -173,6 +176,7 @@ export class PianoRollVisualizer {
     if (!this.ctx) return;
 
     let colorIndex = 0;
+    const maxPatternLengthBeats = this.getMaxPatternLength();
 
     this.state.pads.forEach((pad) => {
       if (!pad.isActive || !pad.pattern) return;
@@ -180,28 +184,56 @@ export class PianoRollVisualizer {
       const color = colors[colorIndex % colors.length];
       colorIndex++;
 
-      pad.pattern.events.forEach((event) => {
-        if (event.type === 'rest') return;
+      // Calculate pattern length in beats for this pad
+      const patternLengthSeconds = this.getPatternLengthSeconds(pad.pattern);
+      const patternLengthBeats = patternLengthSeconds * (this.state.bpm / 60);
 
-        const notes = event.type === 'note' ? [event.note] : event.notes;
+      // Calculate how many times the pattern repeats in the visible area
+      const numRepeats = Math.ceil(maxPatternLengthBeats / patternLengthBeats);
 
-        notes.forEach((note) => {
-          const midi = note.pitch;
-          if (midi < lowestNote || midi >= lowestNote + totalNotes) return;
+      // Draw pattern for each repeat
+      for (let repeat = 0; repeat < numRepeats; repeat++) {
+        const repeatOffsetBeats = repeat * patternLengthBeats;
 
-          const noteIndex = midi - lowestNote;
-          const y = (totalNotes - noteIndex - 1) * noteHeight;
+        pad.pattern.events.forEach((event) => {
+          if (event.type === 'rest') return;
 
-          const eventStartBeat = event.time * (this.state.bpm / 60);
-          const eventDurationBeats = event.duration * (this.state.bpm / 60);
+          const notes = event.type === 'note' ? [event.note] : event.notes;
 
-          const x = eventStartBeat * pixelsPerBeat;
-          const width = eventDurationBeats * pixelsPerBeat;
+          notes.forEach((note) => {
+            const midi = note.pitch;
+            if (midi < lowestNote || midi >= lowestNote + totalNotes) return;
 
-          this.ctx!.fillStyle = color;
-          this.ctx!.fillRect(x, y, Math.max(width, 2), noteHeight - 1);
+            const noteIndex = midi - lowestNote;
+            const y = (totalNotes - noteIndex - 1) * noteHeight;
+
+            const eventStartBeat = event.time * (this.state.bpm / 60) + repeatOffsetBeats;
+            const eventDurationBeats = event.duration * (this.state.bpm / 60);
+
+            const x = eventStartBeat * pixelsPerBeat;
+            const width = eventDurationBeats * pixelsPerBeat;
+
+            this.ctx!.fillStyle = color;
+            this.ctx!.fillRect(x, y, Math.max(width, 2), noteHeight - 1);
+          });
         });
-      });
+      }
     });
+  }
+
+  private getPatternLengthSeconds(pattern: {
+    events: Array<{ time: number; duration: number }>;
+  }): number {
+    if (pattern.events.length === 0) return 2; // Default 2 seconds
+
+    let maxTime = 0;
+    pattern.events.forEach((event) => {
+      const eventEnd = event.time + event.duration;
+      if (eventEnd > maxTime) {
+        maxTime = eventEnd;
+      }
+    });
+
+    return maxTime || 2;
   }
 }

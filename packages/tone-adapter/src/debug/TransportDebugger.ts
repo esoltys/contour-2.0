@@ -137,7 +137,16 @@ export class TransportDebugger {
     description?: string
   ): number {
     const id = this.nextEventId++;
-    const callbackName = description || 'unknown';
+    // Ensure description is a string, handle cases where functions might be passed
+    let callbackName: string;
+    if (typeof description === 'string' && description.length > 0) {
+      callbackName = description;
+    } else if (typeof description === 'function') {
+      // Handle legacy case where functions were passed
+      callbackName = (description as { name?: string }).name || 'anonymous';
+    } else {
+      callbackName = 'unknown';
+    }
 
     this.scheduledEvents.set(id, {
       id,

@@ -40,9 +40,10 @@ export class PatternManager {
     const pad = this.state.getPad(padId);
     if (!pad) return;
 
-    this.state.setPadActive(padId, !pad.isActive);
+    const wasActive = pad.isActive;
+    this.state.setPadActive(padId, !wasActive);
 
-    if (!pad.isActive) {
+    if (!wasActive) {
       // Was inactive, now activating
       await this.activatePad(pad);
     } else {

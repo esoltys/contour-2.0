@@ -72,19 +72,18 @@ describe('TransportDebugger', () => {
       expect(events[0].state).toBe('scheduled');
     });
 
-    it('should capture callback name', () => {
-      function myCallback() {}
-      dbg.trackScheduledEvent('0:0:0', myCallback);
+    it('should capture description string', () => {
+      dbg.trackScheduledEvent('0:0:0', 'C4');
 
       const events = dbg.getScheduledEvents();
-      expect(events[0].callback).toBe('myCallback');
+      expect(events[0].callback).toBe('C4');
     });
 
-    it('should handle anonymous functions', () => {
-      dbg.trackScheduledEvent('0:0:0', () => {});
+    it('should handle missing description', () => {
+      dbg.trackScheduledEvent('0:0:0');
 
       const events = dbg.getScheduledEvents();
-      expect(events[0].callback).toBe('anonymous');
+      expect(events[0].callback).toBe('unknown');
     });
 
     it('should assign unique IDs', () => {
