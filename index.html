@@ -624,8 +624,9 @@
     }
 
     .carousel-slide {
+      width: 100%;
       min-width: 100%;
-      flex-shrink: 0;
+      flex: 0 0 100%;
     }
 
     .carousel-slide img {
@@ -1095,7 +1096,9 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
 
       function goToSlide(index) {
         currentSlide = index;
-        track.style.transform = `translateX(-${currentSlide * 100}%)`;
+        // Calculate pixel offset based on slide width
+        const slideWidth = track.querySelector('.carousel-slide').offsetWidth;
+        track.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
 
         // Update indicators
         indicators.forEach((indicator, i) => {
