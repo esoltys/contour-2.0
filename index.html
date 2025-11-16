@@ -1096,9 +1096,9 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
 
       function goToSlide(index) {
         currentSlide = index;
-        // Track is 3 slides wide (300%), so each slide is 33.333% of track
-        const slidePercentage = 100 / totalSlides;
-        track.style.transform = `translateX(-${currentSlide * slidePercentage}%)`;
+        // Calculate pixel offset based on slide width
+        const slideWidth = track.querySelector('.carousel-slide').offsetWidth;
+        track.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
 
         // Update indicators
         indicators.forEach((indicator, i) => {
