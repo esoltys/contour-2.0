@@ -5,6 +5,7 @@
 export * from './types/brands';
 export * from './types/music';
 export * from './types/theory';
+export * from './types/interfaces';
 
 // Primitives
 export * from './primitives/Note';

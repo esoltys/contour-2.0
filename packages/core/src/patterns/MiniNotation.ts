@@ -6,6 +6,7 @@ import { Durations } from '../types/music.js';
 import { Duration, Velocity, Seconds } from '../types/brands.js';
 import type { Event, NoteEvent, RestEvent, ChordEvent } from '../primitives/Event.js';
 import { parseChord } from './chordParser.js';
+import type { ScaleLike, NoteLike } from '../types/interfaces.js';
 
 /**
  * Token types for mini-notation lexer.
@@ -362,7 +363,7 @@ interface GenerationContext {
   defaultDuration: Duration;
   defaultVelocity: Velocity;
   currentTime: Seconds;
-  scale?: any; // Scale for degree notation (avoid circular dependency)
+  scale?: ScaleLike;
 }
 
 /**
@@ -506,8 +507,9 @@ class EventGenerator {
       );
     }
 
-    // Get note from scale
-    const note = this.context.scale.degree(degree);
+    // Get note from scale (cast to Note since we know ScaleLike.degree() returns a Note in practice)
+    const noteLike = this.context.scale.degree(degree);
+    const note = noteLike as Note;
 
     const event: NoteEvent = {
       type: 'note',
@@ -589,7 +591,7 @@ export function parseMiniNotationWithDefaults(
     defaultOctave?: string;
     defaultDuration?: Duration;
     defaultVelocity?: Velocity;
-    scale?: any; // Scale for degree notation (avoid circular dependency)
+    scale?: ScaleLike;
   } = {}
 ): Event[] {
   if (!notation || notation.trim().length === 0) {
