@@ -1404,7 +1404,7 @@
         </a>
         <nav class="nav-links">
           <a href="/">← Home</a>
-          <a href="/performance.html" class="active">Contour Live</a>
+          <a href="/playground.html" class="active">Contour Live</a>
           <a href="/prototype-samples.html">Sample Library</a>
         </nav>
       </div>
@@ -1456,6 +1456,9 @@
       <div class="section-header">
         <h2 class="section-title">Pattern Matrix</h2>
         <div style="display: flex; gap: 1rem;">
+          <button id="debugPanelBtn" class="btn">
+            🔧 Debug
+          </button>
           <button id="toggleSamplesBtn" class="btn" disabled>
             🎹 Use Synths
           </button>
@@ -1473,6 +1476,13 @@
       <div class="panel">
         <h3>Keyboard Shortcuts</h3>
         <div class="shortcuts-list">
+          <div class="shortcut-item">
+            <span class="shortcut-desc">Debug Panel</span>
+            <div class="shortcut-keys">
+              <span class="key-badge">Ctrl</span>
+              <span class="key-badge">D</span>
+            </div>
+          </div>
           <div class="shortcut-item">
             <span class="shortcut-desc">Play/Pause</span>
             <div class="shortcut-keys">
@@ -1538,6 +1548,6 @@
     </div>
   </div>
 
-  <script type="module" src="/src/performance.ts"></script>
+  <script type="module" src="/src/playground.ts"></script>
 </body>
 </html>

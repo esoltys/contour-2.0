@@ -105,7 +105,7 @@ pnpm test --filter @contour/core
 pnpm dev
 
 # Opens http://localhost:3000
-# Navigate to /performance.html for interactive pattern grid
+# Navigate to /playground.html for interactive pattern grid
 ```
 
 #### Development Shortcuts (in browser)

@@ -33,7 +33,7 @@ Vite caches transformed modules for performance. When you make changes to worksp
 
 ### Performance Grid Not Showing
 
-If `/performance.html` shows a blank page or no grid buttons:
+If `/playground.html` shows a blank page or no grid buttons:
 
 1. Check browser console for errors
 2. Try the module export fix above

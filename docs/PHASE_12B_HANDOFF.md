@@ -47,7 +47,7 @@ This document provides complete context for implementing **Phase 12B: Sample Lib
 1. **`packages/playground/src/main.ts`** → `index.html`
    - Simple demo with basic playback
 
-2. **`packages/playground/src/performance.ts`** → `performance.html`
+2. **`packages/playground/src/performance.ts`** → `playground.html`
    - Interactive 4×4 grid with 16 pattern presets
    - **Already has partial sample support!** (lines 243-329)
    - Toggle button exists: "🎻 Use Samples" ↔ "🎹 Use Synths"
@@ -154,7 +154,7 @@ export class ComponentName {
 
 ### Design System
 
-**CSS Variables (from `performance.html`):**
+**CSS Variables (from `playground.html`):**
 ```css
 --bg-void: #0a0a0b;        /* Darkest background */
 --bg-panel: #16161a;       /* Panel background */
@@ -431,7 +431,7 @@ export class SampleLibraryPanel {
 
 **Files to Modify:**
 - `packages/playground/src/performance.ts`
-- `packages/playground/performance.html` (add CSS)
+- `packages/playground/playground.html` (add CSS)
 
 **Features:**
 - Replace text-only loading with visual progress bar
@@ -605,7 +605,7 @@ function handlePadFocus(padId: string): void {
 ### Task 5: Visual Indicators
 
 **Files to Modify:**
-- `packages/playground/performance.html` (CSS)
+- `packages/playground/playground.html` (CSS)
 - `packages/playground/src/performance.ts` (add badge logic)
 
 **Features:**
@@ -829,7 +829,7 @@ packages/playground/
 │       ├── SampleLibraryPanel.ts       # NEW - Task 2
 │       └── index.ts                    # Export all components
 ├── index.html                           # Simple demo page
-└── performance.html                     # Performance grid page (MODIFY CSS)
+└── playground.html                     # Performance grid page (MODIFY CSS)
 ```
 
 ---
@@ -972,7 +972,7 @@ async function previewInstrument(instrumentName: string): Promise<void> {
 - **Musical Sampler:** `packages/tone-adapter/src/wrappers/MusicalSampler.ts`
 
 ### Design System
-- **Colors & Styles:** `packages/playground/performance.html` (CSS variables)
+- **Colors & Styles:** `packages/playground/playground.html` (CSS variables)
 - **Component Patterns:** All files in `packages/playground/src/ui/`
 
 ---

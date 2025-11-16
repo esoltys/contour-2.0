@@ -128,14 +128,16 @@ export class TransportDebugger {
    *
    * Call this when scheduling events on Tone.Transport.
    *
+   * @param time - The scheduled time (seconds or transport time string)
+   * @param description - Description of what will be played (note name, chord, etc.)
    * @returns Event ID for tracking
    */
   trackScheduledEvent(
     time: string | number,
-    callback?: Function
+    description?: string
   ): number {
     const id = this.nextEventId++;
-    const callbackName = callback?.name || 'anonymous';
+    const callbackName = description || 'unknown';
 
     this.scheduledEvents.set(id, {
       id,

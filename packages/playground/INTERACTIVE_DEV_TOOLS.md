@@ -117,7 +117,7 @@ packages/playground/src/ui/
 
 ### Integration Points
 
-The debug UI is integrated into `performance.ts`:
+The debug UI is integrated into `playground.ts`:
 
 ```typescript
 // Initialize debug components
@@ -253,7 +253,7 @@ When the debug panel is hidden, updates are paused to minimize overhead.
 - Try refreshing the page
 
 ### CSS Styles Not Applied
-- Verify `debug-panel.css` is imported in `performance.ts`
+- Verify `debug-panel.css` is imported in `playground.ts`
 - Check build output includes CSS bundle
 - Clear browser cache and reload
 

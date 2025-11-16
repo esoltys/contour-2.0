@@ -43,6 +43,7 @@ export class DrumAdapter implements InstrumentAdapter {
   private sampler: Tone.Sampler;
   private kit: DrumKit;
   private isLoaded = false;
+  private loadError: string | null = null;
 
   /**
    * Create a DrumAdapter with a specific drum kit
@@ -59,18 +60,41 @@ export class DrumAdapter implements InstrumentAdapter {
       urls[note] = `${filename}.mp3`;
     });
 
+    console.log(`[Contour] Creating ${kit} drum kit with samples from ${baseUrl}`);
+    console.log(`[Contour] Sample URLs:`, urls);
+
     // Create sampler with drum samples
     this.sampler = new Tone.Sampler({
       urls,
       baseUrl,
       onload: () => {
         this.isLoaded = true;
-        console.log(`[Contour] Loaded ${kit} drum kit`);
+        console.log(`[Contour] Loaded ${kit} drum kit with samples: ${Object.keys(urls).join(', ')}`);
       },
-      onerror: (error) => {
-        console.warn(`[Contour] Some samples failed to load for ${kit} drum kit:`, error);
-        // Still mark as loaded even if some samples fail
-        // The ones that loaded will still work
+      onerror: (error: unknown) => {
+        // Tone.js error objects are sometimes empty or non-standard
+        console.error(`[Contour] Raw error object:`, error);
+        console.error(`[Contour] Error type:`, typeof error);
+        console.error(`[Contour] Error constructor:`, error?.constructor?.name);
+
+        let errorMessage = 'Unknown error';
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        } else if (error && typeof error === 'object') {
+          const errObj = error as Record<string, unknown>;
+          // Try to extract any useful info from the error object
+          errorMessage = (errObj.message as string) ||
+                        (errObj.statusText as string) ||
+                        (errObj.type as string) ||
+                        (typeof errObj.toString === 'function' && errObj.toString() !== '[object Object]'
+                          ? errObj.toString()
+                          : `Failed to fetch samples from ${baseUrl}`);
+        }
+        this.loadError = errorMessage;
+        console.error(`[Contour] Error loading ${kit} drum kit: ${errorMessage}`);
+        // Set isLoaded so waitForLoad() can detect the error and throw
         this.isLoaded = true;
       }
     }).toDestination();
@@ -162,16 +186,24 @@ export class DrumAdapter implements InstrumentAdapter {
   /**
    * Wait for samples to finish loading
    * Returns a promise that resolves when all samples are loaded
+   * Throws if there was a loading error
    */
   async waitForLoad(): Promise<void> {
     if (this.isLoaded) {
+      if (this.loadError) {
+        throw new Error(`${this.kit} drum kit loaded with errors: ${this.loadError}`);
+      }
       return Promise.resolve();
     }
 
     return new Promise((resolve, reject) => {
       const checkLoaded = () => {
         if (this.isLoaded) {
-          resolve();
+          if (this.loadError) {
+            reject(new Error(`${this.kit} drum kit loaded with errors: ${this.loadError}`));
+          } else {
+            resolve();
+          }
         } else {
           setTimeout(checkLoaded, 100);
         }
@@ -187,5 +219,19 @@ export class DrumAdapter implements InstrumentAdapter {
         }
       }, 10000);
     });
+  }
+
+  /**
+   * Check if there were loading errors
+   */
+  hasLoadError(): boolean {
+    return this.loadError !== null;
+  }
+
+  /**
+   * Get the load error message if any
+   */
+  getLoadError(): string | null {
+    return this.loadError;
   }
 }

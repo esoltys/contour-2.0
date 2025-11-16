@@ -343,7 +343,7 @@
 
 .pattern-selector {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.75rem 2rem 0.75rem 0.75rem;
   background: rgba(31, 31, 36, 0.8);
   border: 2px solid rgba(255, 255, 255, 0.15);
   color: var(--text-primary, #e7e7ea);
@@ -541,7 +541,7 @@
 }
 
 .console-filter-select {
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
   background: rgba(31, 31, 36, 0.8);
   border: 2px solid rgba(255, 255, 255, 0.15);
   color: var(--text-primary, #e7e7ea);
@@ -603,7 +603,8 @@
 }
 
 .console-log-entry {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
   gap: 0.75rem;
   padding: 0.375rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -617,17 +618,16 @@
 
 .console-log-timestamp {
   color: var(--text-tertiary, #5a5a62);
-  flex-shrink: 0;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .console-log-level {
-  flex-shrink: 0;
   font-weight: 500;
   text-transform: uppercase;
   font-size: 0.625rem;
-  width: 50px;
   letter-spacing: 0.05em;
+  white-space: nowrap;
 }
 
 .console-log-info .console-log-level {
@@ -648,14 +648,13 @@
 
 .console-log-category {
   color: var(--text-secondary, #94949a);
-  flex-shrink: 0;
-  min-width: 100px;
+  white-space: nowrap;
 }
 
 .console-log-message {
   color: var(--text-primary, #e7e7ea);
-  flex: 1;
   word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ==========================================================================
