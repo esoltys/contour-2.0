@@ -985,7 +985,7 @@ The performance grid lets you trigger patterns live:
 ```bash
 cd packages/playground
 pnpm dev
-# Open http://localhost:3000/performance.html
+# Open http://localhost:3000/playground.html
 ```
 
 Features:
