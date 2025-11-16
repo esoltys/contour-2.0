@@ -145,6 +145,9 @@ export class DebugPanel {
   }
 
   private switchTab(tabId: DebugPanelTab): void {
+    // Stop updates for previous tab
+    this.stopUpdates();
+
     this.currentTab = tabId;
 
     // Update tab buttons
@@ -178,6 +181,11 @@ export class DebugPanel {
     }
 
     this.contentContainer.appendChild(component.render());
+
+    // Start updates for new tab (if panel is visible)
+    if (this.isVisible) {
+      this.startUpdates();
+    }
 
     // Save to localStorage
     this.saveSettings();
