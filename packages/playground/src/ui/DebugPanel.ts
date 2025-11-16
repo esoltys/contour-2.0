@@ -258,14 +258,50 @@ export class DebugPanel {
     if (stored) {
       try {
         const settings = JSON.parse(stored);
-        this.isVisible = settings.visible || false;
-        this.position = settings.position || 'bottom';
-        this.currentTab = settings.currentTab || 'transport';
-        this.container.className = `debug-panel debug-panel-${this.position}`;
+
+        // Validate and apply settings with type guards
+        if (this.isValidSettings(settings)) {
+          this.isVisible = settings.visible;
+          this.position = settings.position;
+          this.currentTab = settings.currentTab;
+          this.container.className = `debug-panel debug-panel-${this.position}`;
+        } else {
+          console.warn('[DebugPanel] Invalid settings format, using defaults');
+        }
       } catch (e) {
         console.error('[DebugPanel] Failed to load settings:', e);
       }
     }
+  }
+
+  private isValidSettings(settings: unknown): settings is {
+    visible: boolean;
+    position: 'bottom' | 'right';
+    currentTab: DebugPanelTab;
+  } {
+    if (typeof settings !== 'object' || settings === null) {
+      return false;
+    }
+
+    const obj = settings as Record<string, unknown>;
+
+    // Validate visible
+    if (typeof obj.visible !== 'boolean') {
+      return false;
+    }
+
+    // Validate position
+    if (obj.position !== 'bottom' && obj.position !== 'right') {
+      return false;
+    }
+
+    // Validate currentTab
+    const validTabs: DebugPanelTab[] = ['transport', 'patterns', 'performance', 'console'];
+    if (typeof obj.currentTab !== 'string' || !validTabs.includes(obj.currentTab as DebugPanelTab)) {
+      return false;
+    }
+
+    return true;
   }
 
   /**

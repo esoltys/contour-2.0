@@ -379,23 +379,6 @@ export class PatternInspector {
     });
   }
 
-  private noteToMidi(note: string): number {
-    // Simple note to MIDI conversion
-    const noteMap: { [key: string]: number } = {
-      'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-      'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-      'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-    };
-
-    const match = note.match(/^([A-G][#b]?)(\d+)$/);
-    if (!match) return 60; // Default to C4
-
-    const noteName = match[1];
-    const octave = parseInt(match[2]);
-
-    return (octave + 1) * 12 + (noteMap[noteName] || 0);
-  }
-
   private midiToNote(midi: number): string {
     const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const octave = Math.floor(midi / 12) - 1;

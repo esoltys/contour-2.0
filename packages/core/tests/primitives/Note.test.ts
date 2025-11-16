@@ -329,4 +329,138 @@ describe('Note', () => {
       expect(c4.name).toBe(originalName);
     });
   });
+
+  describe('enharmonic', () => {
+    it('converts C# to Db', () => {
+      const cSharp = new Note('C#4');
+      const enharmonic = cSharp.enharmonic();
+      expect(enharmonic.name).toBe('Db4');
+      expect(enharmonic.pitch).toBe(cSharp.pitch);
+    });
+
+    it('converts Db to C#', () => {
+      const dFlat = new Note('Db4');
+      const enharmonic = dFlat.enharmonic();
+      expect(enharmonic.name).toBe('C#4');
+      expect(enharmonic.pitch).toBe(dFlat.pitch);
+    });
+
+    it('converts D# to Eb', () => {
+      const dSharp = new Note('D#4');
+      const enharmonic = dSharp.enharmonic();
+      expect(enharmonic.name).toBe('Eb4');
+      expect(enharmonic.pitch).toBe(dSharp.pitch);
+    });
+
+    it('converts Eb to D#', () => {
+      const eFlat = new Note('Eb4');
+      const enharmonic = eFlat.enharmonic();
+      expect(enharmonic.name).toBe('D#4');
+      expect(enharmonic.pitch).toBe(eFlat.pitch);
+    });
+
+    it('converts F# to Gb', () => {
+      const fSharp = new Note('F#4');
+      const enharmonic = fSharp.enharmonic();
+      expect(enharmonic.name).toBe('Gb4');
+      expect(enharmonic.pitch).toBe(fSharp.pitch);
+    });
+
+    it('converts Gb to F#', () => {
+      const gFlat = new Note('Gb4');
+      const enharmonic = gFlat.enharmonic();
+      expect(enharmonic.name).toBe('F#4');
+      expect(enharmonic.pitch).toBe(gFlat.pitch);
+    });
+
+    it('converts G# to Ab', () => {
+      const gSharp = new Note('G#4');
+      const enharmonic = gSharp.enharmonic();
+      expect(enharmonic.name).toBe('Ab4');
+      expect(enharmonic.pitch).toBe(gSharp.pitch);
+    });
+
+    it('converts Ab to G#', () => {
+      const aFlat = new Note('Ab4');
+      const enharmonic = aFlat.enharmonic();
+      expect(enharmonic.name).toBe('G#4');
+      expect(enharmonic.pitch).toBe(aFlat.pitch);
+    });
+
+    it('converts A# to Bb', () => {
+      const aSharp = new Note('A#4');
+      const enharmonic = aSharp.enharmonic();
+      expect(enharmonic.name).toBe('Bb4');
+      expect(enharmonic.pitch).toBe(aSharp.pitch);
+    });
+
+    it('converts Bb to A#', () => {
+      const bFlat = new Note('Bb4');
+      const enharmonic = bFlat.enharmonic();
+      expect(enharmonic.name).toBe('A#4');
+      expect(enharmonic.pitch).toBe(bFlat.pitch);
+    });
+
+    it('returns self for B# (no standard flat equivalent)', () => {
+      // B# = C natural, which is not a flat note
+      const bSharp = new Note('B#4');
+      const enharmonic = bSharp.enharmonic();
+      expect(enharmonic.name).toBe('B#4');
+      expect(enharmonic.pitch).toBe(bSharp.pitch);
+    });
+
+    it('returns self for Cb (no standard sharp equivalent)', () => {
+      // Cb = B natural, which is not a sharp note
+      const cFlat = new Note('Cb5');
+      const enharmonic = cFlat.enharmonic();
+      expect(enharmonic.name).toBe('Cb5');
+      expect(enharmonic.pitch).toBe(cFlat.pitch);
+    });
+
+    it('returns self for E# (no standard flat equivalent)', () => {
+      // E# = F natural, which is not a flat note
+      const eSharp = new Note('E#4');
+      const enharmonic = eSharp.enharmonic();
+      expect(enharmonic.name).toBe('E#4');
+      expect(enharmonic.pitch).toBe(eSharp.pitch);
+    });
+
+    it('returns self for Fb (no standard sharp equivalent)', () => {
+      // Fb = E natural, which is not a sharp note
+      const fFlat = new Note('Fb4');
+      const enharmonic = fFlat.enharmonic();
+      expect(enharmonic.name).toBe('Fb4');
+      expect(enharmonic.pitch).toBe(fFlat.pitch);
+    });
+
+    it('returns same note for natural notes', () => {
+      const c4 = new Note('C4');
+      const enharmonic = c4.enharmonic();
+      expect(enharmonic.name).toBe('C4');
+      expect(enharmonic.pitch).toBe(c4.pitch);
+    });
+
+    it('returns same note for E natural', () => {
+      const e4 = new Note('E4');
+      const enharmonic = e4.enharmonic();
+      expect(enharmonic.name).toBe('E4');
+      expect(enharmonic.pitch).toBe(e4.pitch);
+    });
+
+    it('preserves pitch after double enharmonic conversion', () => {
+      const cSharp = new Note('C#4');
+      const doubleEnharmonic = cSharp.enharmonic().enharmonic();
+      expect(doubleEnharmonic.pitch).toBe(cSharp.pitch);
+      expect(doubleEnharmonic.name).toBe('C#4'); // Back to original
+    });
+
+    it('maintains immutability', () => {
+      const original = new Note('C#4');
+      const enharmonic = original.enharmonic();
+
+      expect(original.name).toBe('C#4');
+      expect(enharmonic.name).toBe('Db4');
+      expect(original).not.toBe(enharmonic);
+    });
+  });
 });
