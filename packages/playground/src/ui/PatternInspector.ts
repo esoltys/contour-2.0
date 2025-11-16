@@ -58,10 +58,14 @@ export class PatternInspector {
       this.selectPattern((e.target as HTMLSelectElement).value);
     });
 
-    // Add default option
+    // Add default option with helpful text
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
-    defaultOption.textContent = '-- Select a pattern --';
+    if (this.patterns.size === 0) {
+      defaultOption.textContent = '-- Activate a pad to see patterns --';
+    } else {
+      defaultOption.textContent = '-- Select a pattern --';
+    }
     select.appendChild(defaultOption);
 
     // Populate with any already-registered patterns
@@ -74,6 +78,15 @@ export class PatternInspector {
 
     section.appendChild(label);
     section.appendChild(select);
+
+    // Add info text if no patterns
+    if (this.patterns.size === 0) {
+      const infoText = document.createElement('div');
+      infoText.className = 'pattern-info-text';
+      infoText.style.cssText = 'color: #888; font-size: 0.85rem; margin-top: 0.5rem;';
+      infoText.textContent = 'Click on pads in the grid to activate patterns. Active patterns will appear here for inspection.';
+      section.appendChild(infoText);
+    }
 
     return section;
   }
