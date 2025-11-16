@@ -3,6 +3,7 @@ import type { Pattern, Event, NoteEvent, ChordEvent, RestEvent } from '@contour/
 import { Seconds } from '@contour/core';
 import type { InstrumentAdapter } from '../wrappers/InstrumentAdapter.js';
 import { SynthAdapter } from '../wrappers/SynthAdapter.js';
+import { getTransportDebugger } from '../debug/TransportDebugger.js';
 
 /**
  * Schedules Pattern events to Tone.Transport.
@@ -15,6 +16,7 @@ import { SynthAdapter } from '../wrappers/SynthAdapter.js';
 export class PatternScheduler {
   private scheduledEvents: number[] = [];
   private instrument: InstrumentAdapter;
+  private isDisposed = false;
 
   /**
    * Create a PatternScheduler with optional custom instrument.
@@ -47,6 +49,10 @@ export class PatternScheduler {
    * @param startTime - When to start playing (in seconds from now)
    */
   schedule(pattern: Pattern, startTime: Seconds = Seconds(0)): void {
+    if (this.isDisposed) {
+      throw new Error('Scheduler has been disposed');
+    }
+
     if (!this.instrument) {
       throw new Error('No instrument configured');
     }
@@ -93,6 +99,10 @@ export class PatternScheduler {
     }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
+
+    // Track event in debugger with note name as description
+    const debugger_ = getTransportDebugger();
+    debugger_.trackScheduledEvent(startTime + event.time, event.note.name);
   }
 
   /**
@@ -112,6 +122,11 @@ export class PatternScheduler {
     }, loopLength, startTime + event.time);
 
     this.scheduledEvents.push(id);
+
+    // Track event in debugger with chord name as description
+    const debugger_ = getTransportDebugger();
+    const chordName = event.notes.map(n => n.name).join('+');
+    debugger_.trackScheduledEvent(startTime + event.time, chordName);
   }
 
   /**
@@ -123,6 +138,10 @@ export class PatternScheduler {
       Tone.Transport.clear(id);
     });
     this.scheduledEvents = [];
+
+    // Note: Don't clear TransportDebugger events here as multiple schedulers
+    // share the same singleton debugger. Events will be cleaned up when
+    // the debugger is explicitly reset or when new events are tracked.
   }
 
   /**
@@ -171,5 +190,7 @@ export class PatternScheduler {
     if (this.instrument) {
       this.instrument.dispose();
     }
+
+    this.isDisposed = true;
   }
 }
