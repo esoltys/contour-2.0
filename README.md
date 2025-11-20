@@ -214,11 +214,17 @@ fs.writeFileSync('output.mid', result.data);
 
 ## Documentation
 
-**New to Contour?** Start with the [Tutorial](docs/TUTORIAL.md) for a complete walkthrough from beginner to advanced topics.
+**New to Contour?** Start with the [Tutorial](docs/TUTORIAL.md) - a complete guide split into 6 focused parts:
+1. [Basics](docs/tutorials/01-basics.md) - Hello World and core concepts
+2. [Mini-Notation](docs/tutorials/02-notation.md) - Concise pattern syntax
+3. [Transformations](docs/tutorials/03-transformations.md) - Pattern operations and algorithms
+4. [Compositions](docs/tutorials/04-composition.md) - Multi-track music and exporting
+5. [Advanced](docs/tutorials/05-advanced.md) - Effects and techniques
+6. [Reference](docs/tutorials/06-reference.md) - Quick reference and comparisons
 
-**Additional documentation:**
-- [Architecture Guide](docs/ARCHITECTURE_GUIDE.md) - Design patterns and lessons learned
-- [Claude Development Guide](CLAUDE.md) - AI pair programming guide
+**Additional resources:**
+- [FAQ](docs/FAQ.md) - Frequently asked questions
+- [Claude Development Guide](CLAUDE.md) - AI pair programming guide for contributors
 
 ## Technology Stack
 
