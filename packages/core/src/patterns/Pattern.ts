@@ -373,6 +373,548 @@ export class Pattern {
 
     return nearestNote;
   }
+
+  // ============================================================================
+  // ADVANCED EFFECTS & ARTICULATIONS
+  // ============================================================================
+
+  /**
+   * Apply staccato articulation - shorten note durations.
+   *
+   * Creates detached, separated notes by reducing duration while maintaining spacing.
+   * The gap between notes creates a crisp, articulated feel.
+   *
+   * @param factor - Duration multiplier (0-1). Default 0.5 (50% duration)
+   * @returns New Pattern with shortened note durations
+   *
+   * @example
+   * ```typescript
+   * // Shorten notes to 50% of their original duration
+   * const staccato = pattern().fromNotation('C4 E4 G4 C5').build().staccato();
+   *
+   * // Very short, percussive (25% duration)
+   * const veryStaccato = pattern.staccato(0.25);
+   * ```
+   */
+  staccato(factor: number = 0.5): Pattern {
+    if (factor <= 0 || factor > 1) {
+      throw new RangeError(`staccato factor must be between 0 and 1, got ${factor}`);
+    }
+
+    return this.map((event) => ({
+      ...event,
+      duration: Duration(event.duration * factor),
+    }));
+  }
+
+  /**
+   * Apply legato articulation - extend note durations to overlap.
+   *
+   * Creates smooth, connected notes by extending durations to reach or overlap
+   * the next note. Produces a flowing, singing quality.
+   *
+   * @param overlap - Amount of overlap in beats. Default 0.1 (slight overlap)
+   * @returns New Pattern with extended, overlapping note durations
+   *
+   * @example
+   * ```typescript
+   * // Smooth, connected notes
+   * const legato = pattern().fromNotation('C4 E4 G4 C5').build().legato();
+   *
+   * // Strong overlap for very smooth transitions
+   * const veryLegato = pattern.legato(0.2);
+   * ```
+   */
+  legato(overlap: number = 0.1): Pattern {
+    if (overlap < 0) {
+      throw new RangeError(`legato overlap cannot be negative, got ${overlap}`);
+    }
+
+    const newEvents = this.events.map((event, i) => {
+      // Find the next event's start time (as a number for calculation)
+      let nextTime: number = this.duration;
+      for (let j = i + 1; j < this.events.length; j++) {
+        if (this.events[j].time > event.time) {
+          nextTime = this.events[j].time;
+          break;
+        }
+      }
+
+      // Extend duration to reach next note plus overlap
+      const newDuration = Duration(nextTime - event.time + overlap);
+
+      return {
+        ...event,
+        duration: newDuration,
+      };
+    });
+
+    return new Pattern(newEvents);
+  }
+
+  /**
+   * Apply crescendo - gradual increase in velocity (volume).
+   *
+   * Creates a smooth ramp from quiet to loud across the pattern.
+   * If no velocities specified, defaults from current range to maximum.
+   *
+   * @param fromVelocity - Starting velocity (default: pattern's minimum)
+   * @param toVelocity - Ending velocity (default: 127)
+   * @returns New Pattern with increasing velocities
+   *
+   * @example
+   * ```typescript
+   * // Gradual crescendo from pp to ff
+   * const crescendo = pattern().fromNotation('C4 E4 G4 C5').build()
+   *   .crescendo(Velocity(40), Velocity(110));
+   *
+   * // Natural crescendo from current velocities to maximum
+   * const natural = pattern.crescendo();
+   * ```
+   */
+  crescendo(fromVelocity?: Velocity, toVelocity: Velocity = Velocity(127)): Pattern {
+    const noteEvents = this.events.filter(e => e.type === 'note' || e.type === 'chord');
+    if (noteEvents.length === 0) return this;
+
+    // Use pattern's minimum velocity if not specified
+    const startVel = fromVelocity ??
+      Velocity(Math.min(...noteEvents.map(e => e.velocity)));
+
+    const velocityRange = toVelocity - startVel;
+
+    // Track which note event we're processing
+    let noteIndex = 0;
+
+    return this.map((event) => {
+      if (event.type === 'rest') return event;
+
+      // Linear interpolation based on position among note/chord events
+      const progress = noteEvents.length > 1 ? noteIndex / (noteEvents.length - 1) : 0;
+      const newVelocity = Velocity(Math.round(startVel + velocityRange * progress));
+
+      noteIndex++;
+
+      return {
+        ...event,
+        velocity: newVelocity,
+      };
+    });
+  }
+
+  /**
+   * Apply diminuendo (decrescendo) - gradual decrease in velocity (volume).
+   *
+   * Creates a smooth ramp from loud to quiet across the pattern.
+   * If no velocities specified, defaults from maximum to current range.
+   *
+   * @param fromVelocity - Starting velocity (default: 127)
+   * @param toVelocity - Ending velocity (default: pattern's minimum)
+   * @returns New Pattern with decreasing velocities
+   *
+   * @example
+   * ```typescript
+   * // Gradual fade from ff to pp
+   * const diminuendo = pattern().fromNotation('C4 E4 G4 C5').build()
+   *   .diminuendo(Velocity(110), Velocity(40));
+   *
+   * // Natural fade to silence
+   * const fade = pattern.diminuendo(Velocity(100), Velocity(20));
+   * ```
+   */
+  diminuendo(fromVelocity: Velocity = Velocity(127), toVelocity?: Velocity): Pattern {
+    const noteEvents = this.events.filter(e => e.type === 'note' || e.type === 'chord');
+    if (noteEvents.length === 0) return this;
+
+    // Use pattern's minimum velocity if not specified
+    const endVel = toVelocity ??
+      Velocity(Math.min(...noteEvents.map(e => e.velocity)));
+
+    const velocityRange = fromVelocity - endVel;
+
+    // Track which note event we're processing
+    let noteIndex = 0;
+
+    return this.map((event) => {
+      if (event.type === 'rest') return event;
+
+      // Linear interpolation based on position among note/chord events
+      const progress = noteEvents.length > 1 ? noteIndex / (noteEvents.length - 1) : 0;
+      const newVelocity = Velocity(Math.round(fromVelocity - velocityRange * progress));
+
+      noteIndex++;
+
+      return {
+        ...event,
+        velocity: newVelocity,
+      };
+    });
+  }
+
+  /**
+   * Apply accent to specific beats or notes.
+   *
+   * Emphasizes selected notes by increasing their velocity.
+   * Useful for creating rhythmic emphasis and syncopation.
+   *
+   * @param beats - Array of beat indices to accent, or predicate function
+   * @param amount - Velocity increase (default: 20)
+   * @returns New Pattern with accented notes
+   *
+   * @example
+   * ```typescript
+   * // Accent beats 1 and 3 (downbeats)
+   * const accented = pattern().fromNotation('C4*8').build()
+   *   .accent([0, 2]);
+   *
+   * // Accent every 4th note
+   * const syncopated = pattern.accent((i) => i % 4 === 0);
+   *
+   * // Strong accents
+   * const strong = pattern.accent([0, 4], 40);
+   * ```
+   */
+  accent(
+    beats: number[] | ((index: number) => boolean),
+    amount: number = 20
+  ): Pattern {
+    const shouldAccent = Array.isArray(beats)
+      ? (index: number) => beats.includes(index)
+      : beats;
+
+    return this.map((event, index) => {
+      if (event.type === 'rest' || !shouldAccent(index)) {
+        return event;
+      }
+
+      const newVelocity = Velocity(
+        Math.min(127, event.velocity + amount)
+      );
+
+      return {
+        ...event,
+        velocity: newVelocity,
+      };
+    });
+  }
+
+  /**
+   * Humanize timing and velocity - add natural performance variations.
+   *
+   * Introduces subtle randomness to timing and velocity to simulate
+   * human performance. Makes mechanical patterns feel more organic.
+   *
+   * @param options - Humanization parameters
+   * @param options.timing - Max timing deviation in beats (default: 0.02)
+   * @param options.velocity - Max velocity deviation (default: 10)
+   * @param options.seed - Random seed for reproducibility (optional)
+   * @returns New Pattern with humanized timing and velocity
+   *
+   * @example
+   * ```typescript
+   * // Subtle humanization (default)
+   * const human = pattern().fromNotation('C4*8').build().humanize();
+   *
+   * // More pronounced variations
+   * const veryHuman = pattern.humanize({ timing: 0.05, velocity: 20 });
+   *
+   * // Reproducible randomness
+   * const seeded = pattern.humanize({ seed: 12345 });
+   * ```
+   */
+  humanize(options: {
+    timing?: number;
+    velocity?: number;
+    seed?: number;
+  } = {}): Pattern {
+    const {
+      timing = 0.02,    // ±0.02 beats (subtle)
+      velocity = 10,    // ±10 velocity units
+      seed,
+    } = options;
+
+    // Simple seeded random number generator (if seed provided)
+    let randomState = seed ?? Math.random() * 2147483647;
+    const random = (): number => {
+      randomState = (randomState * 1103515245 + 12345) & 0x7fffffff;
+      return randomState / 0x7fffffff;
+    };
+
+    const newEvents = this.events.map((event) => {
+      if (event.type === 'rest') return event;
+
+      // Random timing offset (centered around 0)
+      const timingOffset = (random() - 0.5) * 2 * timing;
+      const newTime = Seconds(Math.max(0, event.time + timingOffset));
+
+      // Random velocity variation
+      const velocityOffset = Math.round((random() - 0.5) * 2 * velocity);
+      const newVelocity = Velocity(
+        Math.max(1, Math.min(127, event.velocity + velocityOffset))
+      );
+
+      return {
+        ...event,
+        time: newTime,
+        velocity: newVelocity,
+      };
+    });
+
+    return new Pattern(newEvents);
+  }
+
+  /**
+   * Apply swing timing - create a shuffle/swing rhythmic feel.
+   *
+   * Delays alternating notes to create a triplet-based groove.
+   * Common in jazz, blues, and swing music.
+   *
+   * @param amount - Swing amount 0-1 (0=straight, 0.5=triplet swing, 1=extreme)
+   * @param subdivision - Subdivision to swing (default: 2 = 8th notes)
+   * @returns New Pattern with swing timing
+   *
+   * @example
+   * ```typescript
+   * // Classic jazz swing (triplet feel)
+   * const swung = pattern().fromNotation('C4*8').build().swing(0.5);
+   *
+   * // Subtle shuffle
+   * const shuffle = pattern.swing(0.3);
+   *
+   * // Extreme swing
+   * const extreme = pattern.swing(0.8);
+   *
+   * // Swing 16th notes instead of 8ths
+   * const sixteenthSwing = pattern.swing(0.5, 4);
+   * ```
+   */
+  swing(amount: number = 0.5, subdivision: number = 2): Pattern {
+    if (amount < 0 || amount > 1) {
+      throw new RangeError(`swing amount must be between 0 and 1, got ${amount}`);
+    }
+
+    const beatDuration = 1 / subdivision;
+
+    const newEvents = this.events.map((event, index) => {
+      // Only swing alternating subdivisions (every other 8th note, etc.)
+      const beatPosition = event.time / beatDuration;
+      const isOffBeat = Math.round(beatPosition) % 2 === 1;
+
+      if (!isOffBeat) {
+        return event;
+      }
+
+      // Swing amount: 0.5 = triplet feel (2:1 ratio becomes 2.67:1.33)
+      // Formula: delay = amount * beatDuration / 2
+      const delay = amount * beatDuration / 2;
+      const newTime = Seconds(event.time + delay);
+
+      return {
+        ...event,
+        time: newTime,
+      };
+    });
+
+    return new Pattern(newEvents);
+  }
+
+  /**
+   * Apply tremolo - rapid repetition of notes.
+   *
+   * Repeats each note rapidly at a specified rate.
+   * Creates a trembling, vibrating effect.
+   *
+   * @param rate - Repetitions per beat (e.g., 4 = 16th notes, 8 = 32nd notes)
+   * @param beats - Duration in beats to repeat over (default: original note duration)
+   * @returns New Pattern with tremolo repetitions
+   *
+   * @example
+   * ```typescript
+   * // 16th note tremolo
+   * const tremolo = pattern().fromNotation('C4 E4 G4').build().tremolo(4);
+   *
+   * // Fast 32nd note tremolo
+   * const fast = pattern.tremolo(8);
+   *
+   * // Tremolo for 2 beats regardless of original duration
+   * const measured = pattern.tremolo(4, 2);
+   * ```
+   */
+  tremolo(rate: number, beats?: number): Pattern {
+    if (rate <= 0) {
+      throw new RangeError(`tremolo rate must be positive, got ${rate}`);
+    }
+
+    const newEvents: Event[] = [];
+
+    for (const event of this.events) {
+      if (event.type === 'rest') {
+        newEvents.push(event);
+        continue;
+      }
+
+      // Duration to repeat over
+      const repeatDuration = beats ?? event.duration;
+      const noteDuration = Duration(1 / rate);
+      const repetitions = Math.floor(repeatDuration * rate);
+
+      // Create rapid repetitions
+      for (let i = 0; i < repetitions; i++) {
+        const newTime = Seconds(event.time + i * noteDuration);
+        newEvents.push({
+          ...event,
+          time: newTime,
+          duration: noteDuration,
+        });
+      }
+    }
+
+    return new Pattern(newEvents);
+  }
+
+  /**
+   * Arpeggiate chords - break chords into melodic sequences.
+   *
+   * Converts chord events into sequences of individual notes.
+   * Useful for creating arpeggiated accompaniment patterns.
+   *
+   * @param direction - Arpeggio direction ('up', 'down', 'updown', 'downup', 'random')
+   * @returns New Pattern with arpeggiated chords
+   *
+   * @example
+   * ```typescript
+   * // Ascending arpeggio
+   * const ascending = pattern().fromNotation('Cmaj7 Fmaj7').build()
+   *   .arpeggiate('up');
+   *
+   * // Descending arpeggio
+   * const descending = pattern.arpeggiate('down');
+   *
+   * // Up then down (like a harp)
+   * const harp = pattern.arpeggiate('updown');
+   *
+   * // Random order (for generative patterns)
+   * const random = pattern.arpeggiate('random');
+   * ```
+   */
+  arpeggiate(
+    direction: 'up' | 'down' | 'updown' | 'downup' | 'random' = 'up'
+  ): Pattern {
+    const newEvents: Event[] = [];
+
+    for (const event of this.events) {
+      // Pass through non-chord events
+      if (event.type !== 'chord') {
+        newEvents.push(event);
+        continue;
+      }
+
+      const chordEvent = event as ChordEvent;
+      let notes = [...chordEvent.notes];
+
+      // Sort by pitch for ordered arpeggios
+      if (direction !== 'random') {
+        notes.sort((a, b) => a.pitch - b.pitch);
+      }
+
+      // Apply direction
+      let arpNotes: Note[];
+      switch (direction) {
+        case 'down':
+          arpNotes = notes.reverse();
+          break;
+        case 'updown':
+          arpNotes = [...notes, ...notes.slice(0, -1).reverse()];
+          break;
+        case 'downup':
+          arpNotes = [...notes.reverse(), ...notes.slice(1)];
+          break;
+        case 'random':
+          arpNotes = notes.sort(() => Math.random() - 0.5);
+          break;
+        case 'up':
+        default:
+          arpNotes = notes;
+      }
+
+      // Create note events
+      const noteDuration = Duration(chordEvent.duration / arpNotes.length);
+      arpNotes.forEach((note, i) => {
+        newEvents.push({
+          type: 'note',
+          time: Seconds(chordEvent.time + i * noteDuration),
+          duration: noteDuration,
+          velocity: chordEvent.velocity,
+          pitch: note.pitch,
+          note,
+        } as Event);
+      });
+    }
+
+    return new Pattern(newEvents);
+  }
+
+  /**
+   * Apply delay/echo effect - create rhythmic repetitions with decay.
+   *
+   * Repeats the pattern with decreasing velocity to simulate echo.
+   * Creates space and depth in the composition.
+   *
+   * @param time - Delay time in beats
+   * @param feedback - Feedback amount 0-1 (how much the echo decays)
+   * @param mix - Dry/wet mix 0-1 (default: 0.5)
+   * @returns New Pattern with delay repetitions
+   *
+   * @example
+   * ```typescript
+   * // Quarter note delay with 50% feedback
+   * const delayed = pattern().fromNotation('C4 E4 G4').build()
+   *   .delay(Duration(1), 0.5);
+   *
+   * // Eighth note delay, quick decay
+   * const slapback = pattern.delay(Duration(0.5), 0.3);
+   *
+   * // Long, spacey delay
+   * const ambient = pattern.delay(Duration(2), 0.7, 0.7);
+   * ```
+   */
+  delay(
+    time: Duration,
+    feedback: number,
+    mix: number = 0.5
+  ): Pattern {
+    if (feedback < 0 || feedback > 1) {
+      throw new RangeError(`delay feedback must be between 0 and 1, got ${feedback}`);
+    }
+    if (mix < 0 || mix > 1) {
+      throw new RangeError(`delay mix must be between 0 and 1, got ${mix}`);
+    }
+
+    const delayedEvents: Event[] = [...this.events];
+    const maxRepetitions = 10; // Prevent infinite loops
+
+    // Generate delay taps
+    for (let rep = 1; rep <= maxRepetitions; rep++) {
+      const attenuation = Math.pow(feedback, rep);
+      if (attenuation < 0.01) break; // Stop when echo becomes inaudible
+
+      for (const event of this.events) {
+        if (event.type === 'rest') continue;
+
+        const delayedTime = Seconds(event.time + time * rep);
+        const delayedVelocity = Velocity(
+          Math.round(event.velocity * attenuation * mix)
+        );
+
+        delayedEvents.push({
+          ...event,
+          time: delayedTime,
+          velocity: delayedVelocity,
+        });
+      }
+    }
+
+    return new Pattern(delayedEvents);
+  }
 }
 
 /**

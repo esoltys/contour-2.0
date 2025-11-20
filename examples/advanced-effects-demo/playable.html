@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CONTOUR // ADVANCED EFFECTS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-void: #0a0a0b;
+      --bg-panel: #16161a;
+      --bg-surface: #1f1f24;
+      --bg-elevated: #28282e;
+      --neon-cyan: #00fff5;
+      --neon-magenta: #ff00ff;
+      --neon-yellow: #ffff00;
+      --neon-green: #00ff41;
+      --text-primary: #e7e7ea;
+      --text-secondary: #94949a;
+      --text-tertiary: #5a5a62;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.15);
+    }
+
+    body {
+      font-family: 'DM Mono', monospace;
+      background: var(--bg-void);
+      color: var(--text-primary);
+      padding: 2rem;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--border-subtle) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+      background-size: 50px 50px;
+      opacity: 0.1;
+      pointer-events: none;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav {
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 2px solid var(--border-strong);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-strong);
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav a:hover {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 255, 245, 0.2);
+    }
+
+    .nav a.active {
+      color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
+      background: rgba(0, 255, 245, 0.05);
+    }
+
+    h1 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+
+    .warning {
+      background: rgba(255, 193, 7, 0.1);
+      border: 2px solid var(--neon-yellow);
+      padding: 1rem;
+      margin-bottom: 2rem;
+      color: var(--neon-yellow);
+      font-size: 0.85rem;
+    }
+
+    .section {
+      background: var(--bg-panel);
+      border: 2px solid var(--border-strong);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+
+    .section::before {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--neon-cyan);
+      border-right: none;
+      border-bottom: none;
+    }
+
+    .section h2 {
+      color: var(--neon-cyan);
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 500;
+    }
+
+    .section p {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+      line-height: 1.6;
+      font-size: 0.85rem;
+    }
+
+    .controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 2px solid var(--border-strong);
+      padding: 0.65rem 1.25rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-family: 'DM Mono', monospace;
+    }
+
+    button:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+      box-shadow: 0 0 15px rgba(0, 255, 245, 0.2);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      border-color: var(--neon-magenta);
+    }
+
+    button.secondary:hover {
+      border-color: var(--neon-magenta);
+      color: var(--neon-magenta);
+      box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+    }
+
+    .playing {
+      border-color: var(--neon-green) !important;
+      color: var(--neon-green) !important;
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.3) !important;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      color: #6c63ff;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+      border: 1px solid;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status.ready {
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .status.playing {
+      border-color: var(--neon-magenta);
+      color: var(--neon-magenta);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav">
+      <a href="/../../packages/playground/">← Home</a>
+      <a href="/../../packages/playground/playground.html">Contour Live</a>
+      <a href="/../../packages/playground/prototype-samples.html">Sample Library</a>
+      <a href="/playable.html" class="active">Advanced Effects</a>
+    </nav>
+
+    <h1>ADVANCED EFFECTS</h1>
+    <p class="subtitle">Interactive Audio Demonstrations</p>
+
+    <div class="warning">
+      ⚠️ <strong>Audio Notice:</strong> Click "Start Audio Context" to enable playback. Your browser may require user interaction before playing audio.
+    </div>
+
+    <div class="section">
+      <h2>Audio Controls</h2>
+      <div class="controls">
+        <button id="startAudio">Start Audio Context</button>
+        <button id="stopAll" class="secondary">Stop All</button>
+        <span id="audioStatus" class="status">Not Ready</span>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Staccato vs Legato -->
+      <div class="section">
+        <h2>1. Staccato vs Legato</h2>
+        <p>Compare short, detached notes with smooth, connected phrasing.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="original">Original</button>
+          <button class="play-btn" data-example="staccato">Staccato</button>
+          <button class="play-btn" data-example="legato">Legato</button>
+        </div>
+      </div>
+
+      <!-- Dynamics -->
+      <div class="section">
+        <h2>2. Dynamics</h2>
+        <p>Gradual volume changes shape musical phrases.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="crescendo">Crescendo (pp→ff)</button>
+          <button class="play-btn" data-example="diminuendo">Diminuendo (ff→pp)</button>
+        </div>
+      </div>
+
+      <!-- Accent -->
+      <div class="section">
+        <h2>3. Accent</h2>
+        <p>Emphasize specific beats for rhythmic emphasis.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="noAccent">No Accent</button>
+          <button class="play-btn" data-example="accent">Accented Beats</button>
+        </div>
+      </div>
+
+      <!-- Humanize -->
+      <div class="section">
+        <h2>4. Humanize</h2>
+        <p>Add natural timing and velocity variations.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="mechanical">Mechanical</button>
+          <button class="play-btn" data-example="humanized">Humanized</button>
+        </div>
+      </div>
+
+      <!-- Swing -->
+      <div class="section">
+        <h2>5. Swing</h2>
+        <p>Create a jazz shuffle feel.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="straight">Straight</button>
+          <button class="play-btn" data-example="swing">Swing</button>
+        </div>
+      </div>
+
+      <!-- Tremolo -->
+      <div class="section">
+        <h2>6. Tremolo</h2>
+        <p>Rapid note repetition creates a trembling effect.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="sustained">Sustained</button>
+          <button class="play-btn" data-example="tremolo">Tremolo</button>
+        </div>
+      </div>
+
+      <!-- Arpeggiate -->
+      <div class="section">
+        <h2>7. Arpeggiate</h2>
+        <p>Break chords into melodic sequences.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="chord">Chord</button>
+          <button class="play-btn" data-example="arpeggioUp">Arpeggio Up</button>
+          <button class="play-btn" data-example="arpeggioDown">Arpeggio Down</button>
+        </div>
+      </div>
+
+      <!-- Delay -->
+      <div class="section">
+        <h2>8. Delay</h2>
+        <p>Rhythmic echo adds space and depth.</p>
+        <div class="controls">
+          <button class="play-btn" data-example="dry">Dry</button>
+          <button class="play-btn" data-example="delay">With Delay</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Complex Example: All Effects Combined</h2>
+      <p>Hear multiple effects working together for expressive piano phrasing.</p>
+      <div class="controls">
+        <button class="play-btn" data-example="pianoSimple">Simple Piano</button>
+        <button class="play-btn" data-example="pianoExpressive">Expressive Piano</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as Tone from 'https://cdn.jsdelivr.net/npm/tone@15.0.4/+esm';
+    import { PatternBuilder, Pattern, Duration, Velocity } from '/packages/core/dist/index.js';
+
+    let currentPlaying = null;
+
+    // Start audio context
+    document.getElementById('startAudio').addEventListener('click', async () => {
+      await Tone.start();
+      document.getElementById('audioStatus').textContent = 'Ready';
+      document.getElementById('audioStatus').className = 'status ready';
+      document.getElementById('startAudio').disabled = true;
+      console.log('Audio context started');
+    });
+
+    // Stop all audio
+    document.getElementById('stopAll').addEventListener('click', () => {
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+      if (currentPlaying) {
+        currentPlaying.classList.remove('playing');
+        currentPlaying = null;
+      }
+      document.getElementById('audioStatus').textContent = 'Ready';
+      document.getElementById('audioStatus').className = 'status ready';
+    });
+
+    // Play pattern function
+    async function playPattern(pattern, tempo = 120) {
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+      Tone.Transport.bpm.value = tempo;
+
+      const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+      pattern.events.forEach(event => {
+        if (event.type === 'note') {
+          Tone.Transport.schedule((time) => {
+            synth.triggerAttackRelease(
+              Tone.Frequency(event.pitch, 'midi').toNote(),
+              event.duration,
+              time,
+              event.velocity / 127
+            );
+          }, event.time);
+        } else if (event.type === 'chord') {
+          Tone.Transport.schedule((time) => {
+            const notes = event.notes.map(n => Tone.Frequency(n.pitch, 'midi').toNote());
+            synth.triggerAttackRelease(notes, event.duration, time, event.velocity / 127);
+          }, event.time);
+        }
+      });
+
+      Tone.Transport.start();
+
+      // Auto-stop after pattern duration + 1 second
+      setTimeout(() => {
+        Tone.Transport.stop();
+        Tone.Transport.cancel();
+        if (currentPlaying) {
+          currentPlaying.classList.remove('playing');
+          currentPlaying = null;
+        }
+        document.getElementById('audioStatus').textContent = 'Ready';
+        document.getElementById('audioStatus').className = 'status ready';
+      }, (pattern.duration + 1) * (60 / tempo) * 1000);
+    }
+
+    // Example patterns
+    const examples = {
+      // Staccato vs Legato
+      original: () => new PatternBuilder()
+        .note('C4', Duration(0.5))
+        .note('E4', Duration(0.5))
+        .note('G4', Duration(0.5))
+        .note('C5', Duration(0.5))
+        .build(),
+
+      staccato: () => examples.original().staccato(0.3),
+      legato: () => examples.original().legato(0.15),
+
+      // Dynamics
+      crescendo: () => new PatternBuilder()
+        .note('C4', Duration(0.5), Velocity(40))
+        .note('D4', Duration(0.5), Velocity(40))
+        .note('E4', Duration(0.5), Velocity(40))
+        .note('F4', Duration(0.5), Velocity(40))
+        .note('G4', Duration(0.5), Velocity(40))
+        .build()
+        .crescendo(Velocity(40), Velocity(100)),
+
+      diminuendo: () => new PatternBuilder()
+        .note('G4', Duration(0.5), Velocity(100))
+        .note('F4', Duration(0.5), Velocity(100))
+        .note('E4', Duration(0.5), Velocity(100))
+        .note('D4', Duration(0.5), Velocity(100))
+        .note('C4', Duration(0.5), Velocity(100))
+        .build()
+        .diminuendo(Velocity(100), Velocity(40)),
+
+      // Accent
+      noAccent: () => new PatternBuilder()
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .note('C4', Duration(0.25), Velocity(70))
+        .build(),
+
+      accent: () => examples.noAccent().accent([0, 2, 4, 6], 30),
+
+      // Humanize
+      mechanical: () => new PatternBuilder()
+        .note('C4', Duration(0.25), Velocity(80))
+        .note('E4', Duration(0.25), Velocity(80))
+        .note('G4', Duration(0.25), Velocity(80))
+        .note('C5', Duration(0.25), Velocity(80))
+        .note('G4', Duration(0.25), Velocity(80))
+        .note('E4', Duration(0.25), Velocity(80))
+        .note('C4', Duration(0.25), Velocity(80))
+        .build(),
+
+      humanized: () => examples.mechanical().humanize({ timing: 0.03, velocity: 15, seed: 42 }),
+
+      // Swing
+      straight: () => new PatternBuilder()
+        .note('C4', Duration(0.5))
+        .note('E4', Duration(0.5))
+        .note('G4', Duration(0.5))
+        .note('C5', Duration(0.5))
+        .note('G4', Duration(0.5))
+        .note('E4', Duration(0.5))
+        .note('C4', Duration(0.5))
+        .build(),
+
+      swing: () => examples.straight().swing(0.55),
+
+      // Tremolo
+      sustained: () => new PatternBuilder()
+        .note('C5', Duration(2.0))
+        .build(),
+
+      tremolo: () => examples.sustained().tremolo(8),
+
+      // Arpeggiate
+      chord: () => new PatternBuilder()
+        .chord(['C4', 'E4', 'G4', 'C5'], Duration(2.0))
+        .build(),
+
+      arpeggioUp: () => examples.chord().arpeggiate('up'),
+      arpeggioDown: () => examples.chord().arpeggiate('down'),
+
+      // Delay
+      dry: () => new PatternBuilder()
+        .note('C5', Duration(0.25), Velocity(100))
+        .rest(Duration(0.75))
+        .note('E5', Duration(0.25), Velocity(100))
+        .rest(Duration(0.75))
+        .build(),
+
+      delay: () => examples.dry().delay(Duration(0.5), 0.6, 0.7),
+
+      // Complex
+      pianoSimple: () => new PatternBuilder()
+        .note('C4', Duration(0.5))
+        .note('D4', Duration(0.5))
+        .note('E4', Duration(0.5))
+        .note('F4', Duration(0.5))
+        .note('G4', Duration(1.0))
+        .rest(Duration(0.5))
+        .note('G4', Duration(0.5))
+        .note('F4', Duration(0.5))
+        .note('E4', Duration(0.5))
+        .note('D4', Duration(0.5))
+        .note('C4', Duration(1.0))
+        .build(),
+
+      pianoExpressive: () => examples.pianoSimple()
+        .legato(0.12)
+        .crescendo(Velocity(55), Velocity(95))
+        .accent([0, 4, 6], 18)
+        .humanize({ timing: 0.025, velocity: 10, seed: 123 })
+    };
+
+    // Attach event listeners to all play buttons
+    document.querySelectorAll('.play-btn').forEach(button => {
+      button.addEventListener('click', async () => {
+        const exampleName = button.dataset.example;
+
+        if (currentPlaying) {
+          currentPlaying.classList.remove('playing');
+        }
+
+        currentPlaying = button;
+        button.classList.add('playing');
+
+        document.getElementById('audioStatus').textContent = 'Playing';
+        document.getElementById('audioStatus').className = 'status playing';
+
+        const pattern = examples[exampleName]();
+        await playPattern(pattern);
+      });
+    });
+  </script>
+</body>
+</html>

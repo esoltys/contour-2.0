@@ -8,6 +8,7 @@
  * 4. What's the developer experience like?
  */
 
+import { PatternBuilder, Duration, Velocity } from '@contour/core';
 import { SampleLibraryManager, Tone } from '@contour/tone-adapter';
 
 // Debug: Log successful import
@@ -229,32 +230,92 @@ async function playChord() {
 async function playMelody() {
   if (!currentInstrument) return;
 
-  const melody = [
-    { note: 'E4', time: 0, duration: 0.4 },
-    { note: 'E4', time: 0.5, duration: 0.4 },
-    { note: 'F4', time: 1.0, duration: 0.4 },
-    { note: 'G4', time: 1.5, duration: 0.4 },
-    { note: 'G4', time: 2.0, duration: 0.4 },
-    { note: 'F4', time: 2.5, duration: 0.4 },
-    { note: 'E4', time: 3.0, duration: 0.4 },
-    { note: 'D4', time: 3.5, duration: 0.4 },
-    { note: 'C4', time: 4.0, duration: 0.4 },
-    { note: 'C4', time: 4.5, duration: 0.4 },
-    { note: 'D4', time: 5.0, duration: 0.4 },
-    { note: 'E4', time: 5.5, duration: 0.4 },
-    { note: 'E4', time: 6.0, duration: 0.6 },
-    { note: 'D4', time: 6.7, duration: 0.3 },
-    { note: 'D4', time: 7.0, duration: 0.8 },
+  log('Playing improved Ode to Joy with dynamics and expression...');
+
+  // First phrase - building energy with crescendo
+  const phrase1 = new PatternBuilder()
+    .note('E4', Duration(0.4), Velocity(60))
+    .note('E4', Duration(0.4), Velocity(60))
+    .note('F4', Duration(0.4), Velocity(60))
+    .note('G4', Duration(0.4), Velocity(60))
+    .build()
+    .crescendo(Velocity(60), Velocity(85))
+    .humanize({ timing: 0.02, velocity: 5 });
+
+  // Second phrase - descending with diminuendo
+  const phrase2 = new PatternBuilder()
+    .note('G4', Duration(0.4), Velocity(85))
+    .note('F4', Duration(0.4), Velocity(85))
+    .note('E4', Duration(0.4), Velocity(85))
+    .note('D4', Duration(0.4), Velocity(85))
+    .build()
+    .diminuendo(Velocity(85), Velocity(65))
+    .humanize({ timing: 0.02, velocity: 5 });
+
+  // Third phrase - gentle with slight crescendo
+  const phrase3 = new PatternBuilder()
+    .note('C4', Duration(0.4), Velocity(65))
+    .note('C4', Duration(0.4), Velocity(65))
+    .note('D4', Duration(0.4), Velocity(65))
+    .note('E4', Duration(0.4), Velocity(65))
+    .build()
+    .crescendo(Velocity(65), Velocity(80))
+    .humanize({ timing: 0.02, velocity: 5 });
+
+  // Final cadence - with accent on the resolution and slight ritardando
+  const phrase4 = new PatternBuilder()
+    .note('E4', Duration(0.6), Velocity(80))
+    .note('D4', Duration(0.3), Velocity(70))
+    .note('D4', Duration(0.8), Velocity(65))
+    .build()
+    .accent([0], 15) // Accent the first note
+    .humanize({ timing: 0.03, velocity: 5 }); // Slightly more timing variation for ritardando feel
+
+  // Combine all phrases by extracting events and building a new pattern
+  const allEvents = [
+    ...phrase1.events,
+    ...phrase2.events,
+    ...phrase3.events,
+    ...phrase4.events
   ];
 
-  log('Playing Ode to Joy...');
+  // Adjust event times to be sequential
+  let currentTime = 0;
+  const adjustedEvents = allEvents.map(event => {
+    const adjustedEvent = { ...event, time: currentTime };
+    currentTime += event.duration;
+    return adjustedEvent;
+  });
 
-  melody.forEach(({ note, time, duration }) => {
-    setTimeout(() => {
-      currentInstrument.play(note, Tone.now(), { duration });
-      highlightKey(note, duration * 1000);
-      log(`  → ${note} (${duration}s)`);
-    }, time * 1000);
+  // Create the full melody from the adjusted events
+  const builder = new PatternBuilder();
+  adjustedEvents.forEach(event => {
+    if (event.type === 'note') {
+      builder.note(event.note.name, Duration(event.duration), Velocity(event.velocity));
+    } else if (event.type === 'rest') {
+      builder.rest(Duration(event.duration));
+    }
+  });
+  const fullMelody = builder.build();
+
+  log('  • Applied crescendo and diminuendo for dynamics');
+  log('  • Added humanization for natural timing variations');
+  log('  • Accented the final phrase resolution');
+
+  // Schedule and play
+  const events = fullMelody.events;
+  events.forEach((event) => {
+    if (event.type === 'note') {
+      const noteName = event.note.name;
+      setTimeout(() => {
+        currentInstrument.play(noteName, Tone.now(), {
+          duration: event.duration,
+          gain: event.velocity / 127 // Convert velocity to gain
+        });
+        highlightKey(noteName, event.duration * 1000);
+        log(`  → ${noteName} (${event.duration.toFixed(2)}s, vel: ${event.velocity})`);
+      }, event.time * 1000);
+    }
   });
 }
 

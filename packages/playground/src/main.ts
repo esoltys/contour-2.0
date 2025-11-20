@@ -1,8 +1,9 @@
 import { PatternBuilder, Durations, Velocity } from '@contour/core';
-import { PatternScheduler, Tone } from '@contour/tone-adapter';
+import { PatternScheduler } from '@contour/tone-adapter';
 import { DebugPanel } from './ui/DebugPanel.js';
 import { PatternPlayground } from './ui/PatternPlayground.js';
 import { KeyboardShortcuts } from './ui/KeyboardShortcuts.js';
+import { AudioControls } from './ui/AudioControls.js';
 import './ui/debug-panel.css';
 
 // Global scheduler instance
@@ -13,12 +14,10 @@ let isPlaying = false;
 let debugPanel: DebugPanel | null = null;
 let patternPlayground: PatternPlayground | null = null;
 let keyboardShortcuts: KeyboardShortcuts | null = null;
+let audioControls: AudioControls | null = null;
 
 // UI Elements
-const startBtn = document.getElementById('startBtn') as HTMLButtonElement;
 const playBtn = document.getElementById('playBtn') as HTMLButtonElement;
-const stopBtn = document.getElementById('stopBtn') as HTMLButtonElement;
-const status = document.getElementById('status') as HTMLDivElement;
 
 /**
  * Initialize the audio system.
@@ -26,24 +25,18 @@ const status = document.getElementById('status') as HTMLDivElement;
  */
 async function initAudio() {
   try {
-    // Start Tone.js (required before any audio playback)
-    await Tone.start();
-    console.log('[Contour] Audio context started');
+    const Tone = audioControls!.getTone();
 
     // Create scheduler
     scheduler = new PatternScheduler();
     scheduler.setTempo(120);
 
     // Update UI
-    startBtn.disabled = true;
     playBtn.disabled = false;
-    stopBtn.disabled = false;
-    updateStatus('Audio System: Ready');
 
     console.log('[Contour] Scheduler initialized');
   } catch (error) {
     console.error('[Contour] Failed to initialize audio:', error);
-    updateStatus('Error: Failed to start audio');
   }
 }
 
@@ -92,7 +85,9 @@ function playMelody() {
 
   // Update UI
   playBtn.disabled = true;
-  updateStatus('Playing...', true);
+  if (audioControls) {
+    audioControls.setPlaying();
+  }
 
   // Auto-stop after the pattern completes (2 seconds for this melody)
   setTimeout(() => {
@@ -114,26 +109,28 @@ function stopPlayback() {
 
   // Update UI
   playBtn.disabled = false;
-  updateStatus('Audio System: Ready');
+  if (audioControls) {
+    audioControls.setReady();
+  }
 
   console.log('[Contour] Playback stopped');
 }
 
-/**
- * Update status display.
- */
-function updateStatus(message: string, playing: boolean = false) {
-  status.textContent = message;
-  status.className = 'status ' + (playing ? 'playing' : 'stopped');
-}
-
 // Event listeners
-startBtn.addEventListener('click', initAudio);
 playBtn.addEventListener('click', playMelody);
-stopBtn.addEventListener('click', stopPlayback);
 
 // Initialize debug UI components
 function initDebugTools() {
+  // Initialize AudioControls
+  audioControls = new AudioControls('audioControls', {
+    onAudioStarted: () => {
+      initAudio();
+    },
+    onAudioStopped: () => {
+      stopPlayback();
+    }
+  });
+
   debugPanel = new DebugPanel({
     initialTab: 'transport',
     position: 'bottom',
@@ -219,7 +216,7 @@ export async function init() {
   }
 
   // Only reinitialize if audio was already started
-  if (startBtn.disabled) {
+  if (audioControls?.getIsReady()) {
     await initAudio();
   }
 }

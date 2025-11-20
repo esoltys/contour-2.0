@@ -24,6 +24,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'),
         playground: resolve(__dirname, 'playground.html'),
         prototypeSamples: resolve(__dirname, 'prototype-samples.html'),
+        advancedEffects: resolve(__dirname, 'advanced-effects.html'),
       },
     },
   },
