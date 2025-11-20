@@ -32,13 +32,14 @@ export class PatternScheduler {
    * Set a different instrument.
    * Useful for switching between synth and samples dynamically.
    *
+   * NOTE: This does NOT dispose of the old instrument, as instruments may be
+   * shared across multiple schedulers. The caller is responsible for
+   * managing instrument lifecycle.
+   *
    * @param instrument - The new instrument adapter to use
    */
   setInstrument(instrument: InstrumentAdapter): void {
-    // Dispose old instrument
-    if (this.instrument) {
-      this.instrument.dispose();
-    }
+    // Don't dispose old instrument - caller manages instrument lifecycle
     this.instrument = instrument;
   }
 
@@ -182,14 +183,18 @@ export class PatternScheduler {
 
   /**
    * Dispose of all resources.
+   *
+   * NOTE: This does NOT dispose of the instrument, as instruments may be
+   * shared across multiple schedulers. The caller is responsible for
+   * managing instrument lifecycle.
+   *
    * CRITICAL: Always call this to prevent memory leaks!
    */
   dispose(): void {
     this.clear();
 
-    if (this.instrument) {
-      this.instrument.dispose();
-    }
+    // Don't dispose the instrument - it may be shared by other schedulers
+    // The caller is responsible for managing instrument lifecycle
 
     this.isDisposed = true;
   }

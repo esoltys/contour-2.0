@@ -94,11 +94,14 @@
 
     h1 {
       font-family: 'Archivo Black', sans-serif;
-      font-size: 3rem;
+      font-size: clamp(1.5rem, 5vw, 3rem);
       margin-bottom: 0.5rem;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
       text-transform: uppercase;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
@@ -253,7 +256,7 @@
     <h1>ADVANCED EFFECTS</h1>
     <p class="subtitle">Interactive Audio Demonstrations</p>
 
-    <div class="warning">
+    <div id="audioWarning" class="warning">
       ⚠️ <strong>Audio Notice:</strong> Click "Start Audio Context" to enable playback. Your browser may require user interaction before playing audio.
     </div>
 
@@ -372,6 +375,13 @@
       document.getElementById('audioStatus').textContent = 'Ready';
       document.getElementById('audioStatus').className = 'status ready';
       document.getElementById('startAudio').disabled = true;
+
+      // Hide the audio warning
+      const warning = document.getElementById('audioWarning');
+      if (warning) {
+        warning.style.display = 'none';
+      }
+
       console.log('Audio context started');
     });
 

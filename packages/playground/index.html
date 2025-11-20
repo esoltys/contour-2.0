@@ -292,28 +292,57 @@
       transform: none !important;
     }
 
-    .status {
-      text-align: center;
-      padding: 1rem;
+    /* Audio Controls */
+    .audio-controls-section {
+      margin-bottom: 2rem;
       background: var(--bg-surface);
+      border-left: 3px solid var(--neon-cyan);
+      padding: 1.5rem;
+    }
+
+    .audio-controls-section h2 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .audio-controls-buttons {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      padding: 0.5rem 1rem;
+      background: var(--bg-elevated);
       border: 1px solid var(--border-strong);
-      border-left: 3px solid var(--border-strong);
       font-weight: 500;
-      font-size: 0.813rem;
+      font-size: 0.75rem;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       transition: all 0.3s;
+      color: var(--text-secondary);
     }
 
-    .status.playing {
+    .status.ready {
       background: rgba(0, 255, 245, 0.1);
-      border-left-color: var(--neon-cyan);
+      border-color: var(--neon-cyan);
       color: var(--neon-cyan);
     }
 
-    .status.stopped {
+    .status.playing {
+      background: rgba(0, 255, 65, 0.1);
+      border-color: var(--neon-green);
+      color: var(--neon-green);
+    }
+
+    .status.error {
       background: rgba(255, 0, 255, 0.1);
-      border-left-color: var(--neon-magenta);
+      border-color: var(--neon-magenta);
       color: var(--neon-magenta);
     }
 
@@ -411,7 +440,7 @@
       <h2>// System Overview</h2>
       <p>
         This demo validates the Tone.js integration layer with hot-reload support.
-        Click <strong>START AUDIO</strong> to initialize the Web Audio API
+        Click <strong>START AUDIO CONTEXT</strong> to initialize the Web Audio API
         (required by browsers before playing any audio).
       </p>
       <p>
@@ -420,10 +449,10 @@
       </p>
     </div>
 
+    <div id="audioControls"></div>
+
     <div class="controls">
-      <button id="startBtn" class="btn-primary">Start Audio</button>
       <button id="playBtn" class="btn-secondary" disabled>Play Melody</button>
-      <button id="stopBtn" class="btn-danger" disabled>Stop</button>
     </div>
 
     <a href="/playground.html" class="cta-link">
@@ -433,10 +462,6 @@
     <a href="/prototype-samples.html" class="cta-link">
       <span>→ SAMPLE LIBRARY PROTOTYPE</span>
     </a>
-
-    <div id="status" class="status stopped">
-      Audio System: Not Started
-    </div>
   </div>
 
   <script type="module" src="/src/main.ts"></script>

@@ -135,10 +135,17 @@
       max-width: 1800px;
       margin: 0 auto;
       display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .header-top {
+      display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 2rem;
       flex-wrap: wrap;
+      width: 100%;
     }
 
     .logo {
@@ -150,6 +157,24 @@
       display: flex;
       align-items: center;
       gap: 1rem;
+    }
+
+    h1 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: clamp(1.5rem, 5vw, 3rem);
+      text-transform: uppercase;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
     }
 
     .nav-links {
@@ -1395,22 +1420,18 @@
   <!-- Header -->
   <div class="header">
     <div class="header-content">
-      <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-        <a href="/" style="text-decoration: none; color: inherit;">
-          <div class="logo">
-            <span class="logo-text">CONTOUR</span>
-            <span class="logo-badge">LIVE</span>
-          </div>
-        </a>
-        <nav class="nav-links">
-          <a href="/">← Home</a>
-          <a href="/playground.html" class="active">Contour Live</a>
-          <a href="/prototype-samples.html">Sample Library</a>
-          <a href="/advanced-effects.html">Advanced Effects</a>
-        </nav>
-      </div>
+      <nav class="nav-links" style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 2px solid var(--border-strong); width: 100%;">
+        <a href="/">← Home</a>
+        <a href="/playground.html" class="active">Contour Live</a>
+        <a href="/prototype-samples.html">Sample Library</a>
+        <a href="/advanced-effects.html">Advanced Effects</a>
+      </nav>
 
-      <div class="transport-controls">
+      <h1 style="margin: 0 0 0.25rem 0;">Contour Live</h1>
+      <p class="subtitle" style="margin-bottom: 1.5rem;">Interactive pattern performance grid</p>
+
+      <div class="header-top">
+        <div class="transport-controls">
         <button id="demoBtn" class="btn btn-success">
           START PLAYGROUND
         </button>
@@ -1445,6 +1466,7 @@
             disabled
           />
           <span id="volumeValue" class="value-display">0dB</span>
+        </div>
         </div>
       </div>
     </div>

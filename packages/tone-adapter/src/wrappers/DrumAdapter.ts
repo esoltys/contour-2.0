@@ -114,6 +114,12 @@ export class DrumAdapter implements InstrumentAdapter {
       return;
     }
 
+    // Don't play if sampler has been disposed
+    if (!this.sampler || this.sampler.disposed) {
+      console.warn(`[DrumAdapter] Cannot play note ${note}: sampler is disposed`);
+      return;
+    }
+
     // Normalize velocity to 0-1 range
     const gain = velocity / 127;
 
@@ -137,6 +143,12 @@ export class DrumAdapter implements InstrumentAdapter {
   playChord(notes: string[], duration: number, time: number, velocity: number): void {
     // Don't play if samples aren't loaded yet
     if (!this.isLoaded) {
+      return;
+    }
+
+    // Don't play if sampler has been disposed
+    if (!this.sampler || this.sampler.disposed) {
+      console.warn(`[DrumAdapter] Cannot play chord: sampler is disposed`);
       return;
     }
 
