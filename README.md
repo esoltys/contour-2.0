@@ -9,6 +9,8 @@ Build music using functional patterns, explore advanced music theory concepts, a
 - **Functional Composition** - Build music using composable, immutable patterns inspired by TidalCycles
 - **Mini-Notation** - Concise, expressive syntax for rapid pattern creation including scale degree notation (`$1 $3 $5`)
 - **Music Theory Integration** - Comprehensive support for scales (15 types), modes, chord voicings (20+ qualities), and progressions
+- **Advanced Musical Effects** - Staccato, legato, dynamics, humanization, swing, tremolo, arpeggiation, and delay
+- **Sample Library** - 128+ GM instruments with realistic sounds via CDN-hosted soundfonts
 - **Live Coding** - Hot-reload with instant feedback and graceful audio transitions
 - **Euclidean Rhythms** - Generate algorithmically interesting patterns using Bjorklund's algorithm
 - **Type Safety** - Branded types prevent unit mixing (Hz vs BPM) at compile time
@@ -32,13 +34,18 @@ pnpm install
 pnpm test
 ```
 
-### Running the Demo
+### Running the Demos
 
 ```bash
 cd packages/playground
 pnpm dev
 # Open http://localhost:3000
 ```
+
+**Three interactive demos included:**
+- **Contour Live** (`/playground.html`) - 4×4 interactive pattern grid with 16 musical presets
+- **Sample Library** (`/prototype-samples.html`) - 128+ GM instruments with realistic sounds
+- **Advanced Effects** (`/advanced-effects.html`) - 8 interactive musical expression demonstrations
 
 **Keyboard shortcuts:**
 - `Space` - Play/Pause
@@ -137,6 +144,60 @@ const jazzTurnaround = ChordProgression.fromDegrees(
 ).toPattern('arpeggio');
 ```
 
+### Advanced Musical Effects
+
+```typescript
+import { pattern, Velocity } from '@contour/core';
+
+// Expressive piano phrase
+const phrase = pattern()
+  .fromNotation('C4 D4 E4 F4 G4')
+  .legato(0.12)                    // Smooth, connected notes
+  .crescendo(Velocity(55), Velocity(95))  // Gradual volume increase
+  .humanize({                      // Natural timing variations
+    timing: 0.025,
+    velocity: 10,
+    seed: 42
+  })
+  .build();
+
+// Rhythmic effects
+const drums = pattern()
+  .fromNotation('C2 C2 C2 C2')
+  .accent([0, 2], 30)              // Emphasize beats 1 and 3
+  .swing(0.55);                    // Jazz shuffle feel
+
+// Advanced techniques
+const arpeggio = pattern()
+  .chord(['C4', 'E4', 'G4', 'C5'])
+  .arpeggiate('up')                // Break chord into sequence
+  .delay(Duration(0.5), 0.6, 0.7); // Add rhythmic echo
+```
+
+### Sample Library
+
+```typescript
+import { Track, pattern } from '@contour/core';
+
+// Use realistic instrument sounds
+const piano = new Track('piano');
+piano.instrument = 'MuseScore:acoustic_grand_piano';
+piano.pattern = pattern()
+  .fromNotation('Cmaj7 Dm7 G7 Cmaj7')
+  .arpeggiate('up')
+  .build();
+
+// Mix multiple instruments
+const guitar = new Track('guitar');
+guitar.instrument = 'MuseScore:acoustic_guitar_steel';
+
+const drums = new Track('drums');
+drums.instrument = 'MuseScore:standard_kit';
+
+// 128+ GM instruments available:
+// Pianos, Guitars, Strings, Brass, Woodwinds, Synths, Drums, etc.
+```
+
 ### Exporting
 
 ```typescript
@@ -155,10 +216,8 @@ fs.writeFileSync('output.mid', result.data);
 
 **New to Contour?** Start with the [Tutorial](docs/TUTORIAL.md) for a complete walkthrough from beginner to advanced topics.
 
-**Full documentation:**
-- [Product Requirements](docs/PRODUCT_REQUIREMENTS.md) - Vision and goals
+**Additional documentation:**
 - [Architecture Guide](docs/ARCHITECTURE_GUIDE.md) - Design patterns and lessons learned
-- [Technical Spec](docs/TECHNICAL_SPEC.md) - API contracts and implementation details
 - [Claude Development Guide](CLAUDE.md) - AI pair programming guide
 
 ## Technology Stack

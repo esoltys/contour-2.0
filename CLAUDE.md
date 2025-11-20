@@ -16,15 +16,11 @@ Read documents in this order for full context:
 
 ### 1. Foundation Documents (Read First)
 1. **CLAUDE.md** (this file) - Meta-guide and workflow
-2. **docs/PRODUCT_REQUIREMENTS.md** - Vision, goals, user stories, success criteria
-3. **docs/ARCHITECTURE_GUIDE.md** - The comprehensive research document with lessons learned and patterns
+2. **docs/ARCHITECTURE_GUIDE.md** - Design patterns, lessons learned, and architectural insights
+3. **docs/TUTORIAL.md** - Complete user guide from beginner to advanced topics
 
-### 2. Technical Specifications (Implementation Reference)
-4. **docs/TECHNICAL_SPEC.md** - API contracts, type system, architecture layers
-5. **docs/QUICK_START.md** - First implementation steps and priorities
-
-### 3. Living Documents (Update as Code Evolves)
-- **docs/ARCHITECTURE_DECISIONS.md** - Record major decisions with rationale
+### 2. Living Documents (Update as Code Evolves)
+- **README.md** - User-facing overview and quick start
 - **API_CHANGELOG.md** - Track API changes and breaking updates
 
 ## Core Principles
@@ -148,13 +144,9 @@ contour/
 ├── examples/               # Demo compositions
 │   ├── bach-invention-4/   # Primary acceptance test (Bach BWV 775)
 │   └── live-coding-demo/   # Live coding demonstration
-└── docs/                   # Comprehensive documentation
-    ├── PRODUCT_REQUIREMENTS.md
+└── docs/                   # User documentation
     ├── ARCHITECTURE_GUIDE.md
-    ├── TECHNICAL_SPEC.md
-    ├── QUICK_START.md
-    ├── ARCHITECTURE_DECISIONS.md
-    └── PLUGIN_ARCHITECTURE.md
+    └── TUTORIAL.md
 ```
 
 ### TypeScript Patterns
@@ -455,15 +447,20 @@ class PluginRegistry {
 
 ### When to Update Documents
 
-#### docs/TECHNICAL_SPEC.md
-- **When**: Adding new public APIs, changing interfaces
-- **What**: Update API signatures, add examples
-- **Verify**: TypeScript interfaces match spec exactly
+#### README.md
+- **When**: Adding major new features or changing Quick Start
+- **What**: Update features list, examples, installation instructions
+- **Verify**: All examples are executable and tested
 
-#### docs/ARCHITECTURE_DECISIONS.md
-- **When**: Making significant architectural choices
-- **What**: Document decision, alternatives considered, rationale
-- **Format**: Use ADR (Architecture Decision Record) template
+#### docs/TUTORIAL.md
+- **When**: Adding new capabilities that users should learn
+- **What**: Add sections, update examples, maintain progression from beginner to advanced
+- **Verify**: Tutorial examples work with current API
+
+#### docs/ARCHITECTURE_GUIDE.md
+- **When**: Making significant architectural changes or learning important lessons
+- **What**: Document patterns, trade-offs, and insights for future development
+- **Format**: Focus on "why" over "what"
 
 #### API_CHANGELOG.md
 - **When**: Any API change, especially breaking changes
@@ -471,11 +468,11 @@ class PluginRegistry {
 - **Format**: Keep-a-Changelog format
 
 ### Document Synchronization Checklist
-- [ ] TypeScript interfaces match docs/TECHNICAL_SPEC.md
 - [ ] Examples in docs are executable and tested
 - [ ] Breaking changes documented in CHANGELOG
-- [ ] Architecture decisions recorded with rationale
 - [ ] README.md updated with new features
+- [ ] TUTORIAL.md updated if user-facing capabilities changed
+- [ ] ARCHITECTURE_GUIDE.md updated if significant patterns emerged
 
 ## Success Criteria
 
@@ -694,12 +691,10 @@ When working on Contour, focus on:
 - **Phase 10**: Additional plugins (visualizers, notation export)
 - **Phase 11**: Advanced live coding features (pattern morphing, probabilistic patterns)
 - **Phase 12B**: Sample library enhancements (Phase 2+)
-  - Playground UI integration with toggle button
   - Load .sf2 SoundFont files from local paths (not just CDN)
   - Velocity layers and articulations
   - Custom sample pack support
   - Advanced: .sf2 parser for offline use (currently uses CDN-hosted pre-rendered samples)
-  - See [docs/SAMPLE_LIBRARY_SPEC.md](docs/SAMPLE_LIBRARY_SPEC.md) for full specification
 
 ## Quick Start for AI Assistants
 
@@ -707,7 +702,7 @@ When working on Contour, focus on:
 
 1. **Read CLAUDE.md** (this file) - Overview and conventions
 2. **Read docs/ARCHITECTURE_GUIDE.md** - Deep dive into design decisions
-3. **Read docs/TECHNICAL_SPEC.md** - API contracts and type system
+3. **Read docs/TUTORIAL.md** - User-facing guide and examples
 4. **Run tests**: `pnpm test` - Verify everything works
 5. **Start dev server**: `pnpm dev` - See the interactive tools
 
@@ -729,10 +724,11 @@ When working on Contour, focus on:
 ## Questions or Uncertainties?
 
 When encountering ambiguity:
-1. **Check docs/TECHNICAL_SPEC.md** first for API contracts
+1. **Check the TypeScript types** - They are the source of truth for API contracts
 2. **Reference docs/ARCHITECTURE_GUIDE.md** for patterns and lessons learned
-3. **Follow the test-driven approach** - write tests that express the desired behavior
-4. **Maintain immutability** - when in doubt, return new instances
-5. **Keep layers independent** - don't let Layer 4 directly call Tone.js (Layer 1)
+3. **Check docs/TUTORIAL.md** for user-facing examples and usage patterns
+4. **Follow the test-driven approach** - write tests that express the desired behavior
+5. **Maintain immutability** - when in doubt, return new instances
+6. **Keep layers independent** - don't let Layer 4 directly call Tone.js (Layer 1)
 
 Remember: The goal is a tool for music theory exploration and algorithmic composition, not just another MIDI export tool. Embrace the functional programming patterns that make live coding and generative music possible.
