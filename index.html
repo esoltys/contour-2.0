@@ -580,7 +580,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* Screenshots Section */
+    /* Interactive Demos Section */
     .screenshots {
       padding: 8rem 2rem;
     }
@@ -588,113 +588,6 @@
     .screenshots .container {
       max-width: 1400px;
       margin: 0 auto;
-    }
-
-    .screenshot-carousel {
-      position: relative;
-      margin-top: 4rem;
-      background: var(--bg-panel);
-      border: 2px solid var(--border-strong);
-      overflow: hidden;
-    }
-
-    .screenshot-carousel::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg,
-        var(--neon-cyan),
-        transparent
-      );
-      z-index: 1;
-    }
-
-    .carousel-container {
-      position: relative;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .carousel-track {
-      display: flex;
-      transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .carousel-slide {
-      width: 100%;
-      min-width: 100%;
-      flex: 0 0 100%;
-    }
-
-    .carousel-slide img {
-      width: 100%;
-      max-height: 600px;
-      object-fit: contain;
-      display: block;
-      background: var(--bg-void);
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .carousel-slide img:hover {
-      opacity: 0.9;
-    }
-
-    .carousel-controls {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-
-    .carousel-btn {
-      width: 48px;
-      height: 48px;
-      background: rgba(10, 10, 11, 0.9);
-      border: 2px solid var(--border-strong);
-      color: var(--text-primary);
-      cursor: pointer;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(10px);
-    }
-
-    .carousel-btn:hover {
-      background: var(--neon-cyan);
-      border-color: var(--neon-cyan);
-      color: var(--bg-void);
-      transform: scale(1.05);
-    }
-
-    .carousel-indicators {
-      display: flex;
-      justify-content: center;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-    }
-
-    .carousel-indicator {
-      width: 40px;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .carousel-indicator.active {
-      background: var(--neon-cyan);
-      box-shadow: 0 0 10px var(--neon-cyan);
-    }
-
-    .carousel-indicator:hover:not(.active) {
-      background: rgba(0, 255, 245, 0.3);
     }
 
     /* Footer */
@@ -718,6 +611,7 @@
         var(--neon-yellow)
       );
       opacity: 0.7;
+      pointer-events: none;
     }
 
     footer .container {
@@ -728,6 +622,8 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 2rem;
+      position: relative;
+      z-index: 1;
     }
 
     footer .copyright {
@@ -735,6 +631,10 @@
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
+    }
+
+    footer .copyright p {
+      margin: 0;
     }
 
     footer .footer-links {
@@ -947,37 +847,34 @@
         </div>
 
         <div class="code-block">
-          <div class="code-header">Euclidean Rhythms</div>
+          <div class="code-header">Advanced Effects</div>
           <div class="code-content">
-<pre><code><span class="code-comment">// Generate algorithmic rhythms</span>
-<span class="code-keyword">const</span> kick = Pattern
-  .<span class="code-function">euclidean</span>(<span class="code-number">16</span>, <span class="code-number">4</span>)     <span class="code-comment">// 4 hits in 16 steps</span>
-  .transpose(<span class="code-number">36</span>);           <span class="code-comment">// MIDI C2</span>
-
-<span class="code-keyword">const</span> snare = Pattern
-  .<span class="code-function">euclidean</span>(<span class="code-number">16</span>, <span class="code-number">5</span>, <span class="code-number">3</span>)   <span class="code-comment">// Rotated</span>
-  .transpose(<span class="code-number">38</span>);
-
-<span class="code-comment">// Combine patterns</span>
-<span class="code-keyword">const</span> drums = kick.<span class="code-function">stack</span>(snare);
+<pre><code><span class="code-comment">// Musical expression & articulation</span>
+<span class="code-keyword">const</span> phrase = <span class="code-function">pattern</span>()
+  .fromNotation(<span class="code-string">'C4 D4 E4 F4 G4'</span>)
+  .legato(<span class="code-number">0.12</span>)           <span class="code-comment">// Smooth phrasing</span>
+  .crescendo(<span class="code-number">55</span>, <span class="code-number">95</span>)    <span class="code-comment">// Volume swell</span>
+  .humanize({              <span class="code-comment">// Natural timing</span>
+    timing: <span class="code-number">0.025</span>,
+    velocity: <span class="code-number">10</span>
+  })
+  .build();
 </code></pre>
           </div>
         </div>
 
         <div class="code-block">
-          <div class="code-header">Pattern Algebra</div>
+          <div class="code-header">Sample Library</div>
           <div class="code-content">
-<pre><code><span class="code-comment">// Conditional transformations</span>
-<span class="code-keyword">const</span> evolving = <span class="code-function">pattern</span>()
-  .fromNotation(<span class="code-string">'C4 E4 G4'</span>)
-  .<span class="code-function">every</span>(<span class="code-number">4</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">rev</span>())
-  .<span class="code-function">every</span>(<span class="code-number">8</span>, <span class="code-keyword">p</span> => <span class="code-keyword">p</span>.<span class="code-function">transpose</span>(<span class="code-number">7</span>))
-  .build();
+<pre><code><span class="code-comment">// Use real instrument sounds</span>
+<span class="code-keyword">const</span> track = <span class="code-keyword">new</span> <span class="code-function">Track</span>(<span class="code-string">'piano'</span>);
+track.instrument = <span class="code-string">'MuseScore:acoustic_grand_piano'</span>;
 
-<span class="code-comment">// Stack patterns vertically</span>
-<span class="code-keyword">const</span> harmony = melody
-  .<span class="code-function">stack</span>(melody.<span class="code-function">transpose</span>(<span class="code-number">4</span>))
-  .<span class="code-function">stack</span>(melody.<span class="code-function">transpose</span>(<span class="code-number">7</span>));
+<span class="code-comment">// 128+ GM instruments available</span>
+track.pattern = <span class="code-function">pattern</span>()
+  .fromNotation(<span class="code-string">'Cmaj7 Dm7 G7 Cmaj7'</span>)
+  .arpeggiate(<span class="code-string">'up'</span>)
+  .build();
 </code></pre>
           </div>
         </div>
@@ -1031,39 +928,44 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
     </div>
   </section>
 
-  <!-- Screenshots Section -->
+  <!-- Included Demos Section -->
   <section class="screenshots">
     <div class="container">
-      <h2 class="section-title">Live Playground</h2>
+      <h2 class="section-title">Included Demos</h2>
       <p class="section-subtitle">
-        Interactive pattern grid with real-time audio
+        Interactive playgrounds for exploring Contour's capabilities
       </p>
 
-      <div class="screenshot-carousel">
-        <div class="carousel-container">
-          <div class="carousel-track" id="carouselTrack">
-            <div class="carousel-slide">
-              <img src="images/01-playground-grid.png" alt="Contour Live Playground - Interactive 4x4 pattern grid" loading="lazy">
-            </div>
-            <div class="carousel-slide">
-              <img src="images/02-debug-panel.png" alt="Contour Debug Panel - Transport inspector and performance monitoring" loading="lazy">
-            </div>
-            <div class="carousel-slide">
-              <img src="images/03-pattern-editor.png" alt="Contour Pattern Editor - Monaco-based live coding interface" loading="lazy">
-            </div>
-          </div>
+      <div class="feature-grid" style="margin-top: 3rem;">
+        <div class="feature-card">
+          <span class="feature-icon">🎹</span>
+          <h3>Live Performance Grid</h3>
+          <p>
+            4×4 interactive pattern grid with 16 musical presets. Trigger patterns with keyboard shortcuts,
+            adjust BPM in real-time, and create live performances with multiple simultaneous patterns.
+            Includes Monaco-based pattern editor for live coding.
+          </p>
         </div>
-      </div>
 
-      <div class="carousel-indicators">
-        <button class="carousel-indicator active" data-slide="0" aria-label="View slide 1"></button>
-        <button class="carousel-indicator" data-slide="1" aria-label="View slide 2"></button>
-        <button class="carousel-indicator" data-slide="2" aria-label="View slide 3"></button>
-      </div>
+        <div class="feature-card">
+          <span class="feature-icon">🎺</span>
+          <h3>Sample Library</h3>
+          <p>
+            Experience real instrument sounds with 128+ GM soundfonts. Switch between acoustic piano,
+            electric guitar, strings, brass, and drums. Samples are loaded from CDN-hosted libraries
+            with automatic caching for performance.
+          </p>
+        </div>
 
-      <div class="carousel-controls">
-        <button class="carousel-btn" id="prevBtn" aria-label="Previous slide">‹</button>
-        <button class="carousel-btn" id="nextBtn" aria-label="Next slide">›</button>
+        <div class="feature-card">
+          <span class="feature-icon">🎵</span>
+          <h3>Advanced Effects</h3>
+          <p>
+            Musical expression toolkit with 8+ effects: staccato, legato, dynamics (crescendo/diminuendo),
+            accent, humanization, swing timing, tremolo, arpeggiation, and delay. Create expressive,
+            natural-sounding compositions.
+          </p>
+        </div>
       </div>
     </div>
   </section>
@@ -1082,120 +984,5 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
     </div>
   </footer>
 
-  <script>
-    // Carousel functionality
-    (function() {
-      const track = document.getElementById('carouselTrack');
-      const prevBtn = document.getElementById('prevBtn');
-      const nextBtn = document.getElementById('nextBtn');
-      const indicators = document.querySelectorAll('.carousel-indicator');
-
-      let currentSlide = 0;
-      const totalSlides = 3;
-      let autoPlayInterval;
-
-      function goToSlide(index) {
-        currentSlide = index;
-        // Calculate pixel offset based on slide width
-        const slideWidth = track.querySelector('.carousel-slide').offsetWidth;
-        track.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
-
-        // Update indicators
-        indicators.forEach((indicator, i) => {
-          indicator.classList.toggle('active', i === currentSlide);
-        });
-      }
-
-      function nextSlide() {
-        goToSlide((currentSlide + 1) % totalSlides);
-      }
-
-      function prevSlide() {
-        goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
-      }
-
-      function startAutoPlay() {
-        autoPlayInterval = setInterval(nextSlide, 5000); // Auto-advance every 5 seconds
-      }
-
-      function stopAutoPlay() {
-        clearInterval(autoPlayInterval);
-      }
-
-      // Event listeners
-      nextBtn.addEventListener('click', () => {
-        stopAutoPlay();
-        nextSlide();
-        startAutoPlay();
-      });
-
-      prevBtn.addEventListener('click', () => {
-        stopAutoPlay();
-        prevSlide();
-        startAutoPlay();
-      });
-
-      indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-          stopAutoPlay();
-          goToSlide(index);
-          startAutoPlay();
-        });
-      });
-
-      // Pause auto-play on hover
-      const carousel = document.querySelector('.screenshot-carousel');
-      carousel.addEventListener('mouseenter', stopAutoPlay);
-      carousel.addEventListener('mouseleave', startAutoPlay);
-
-      // Keyboard navigation
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'ArrowLeft') {
-          stopAutoPlay();
-          prevSlide();
-          startAutoPlay();
-        } else if (e.key === 'ArrowRight') {
-          stopAutoPlay();
-          nextSlide();
-          startAutoPlay();
-        }
-      });
-
-      // Touch/swipe support
-      let touchStartX = 0;
-      let touchEndX = 0;
-
-      carousel.addEventListener('touchstart', (e) => {
-        touchStartX = e.changedTouches[0].screenX;
-        stopAutoPlay();
-      });
-
-      carousel.addEventListener('touchend', (e) => {
-        touchEndX = e.changedTouches[0].screenX;
-        handleSwipe();
-        startAutoPlay();
-      });
-
-      function handleSwipe() {
-        if (touchEndX < touchStartX - 50) {
-          nextSlide();
-        }
-        if (touchEndX > touchStartX + 50) {
-          prevSlide();
-        }
-      }
-
-      // Click on images to open in new tab
-      const slides = document.querySelectorAll('.carousel-slide img');
-      slides.forEach((img) => {
-        img.addEventListener('click', () => {
-          window.open(img.src, '_blank');
-        });
-      });
-
-      // Start auto-play on load
-      startAutoPlay();
-    })();
-  </script>
 </body>
 </html>
