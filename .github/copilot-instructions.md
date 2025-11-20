@@ -8,8 +8,8 @@ This repository contains Contour 2.0, a TypeScript-first music composition frame
 
 ### Essential Reading (in order)
 1. **[CLAUDE.md](../CLAUDE.md)** - Complete development guide with architecture, patterns, and workflows
-2. **[docs/ARCHITECTURE_GUIDE.md](../docs/ARCHITECTURE_GUIDE.md)** - Deep dive into design decisions and lessons learned
-3. **[docs/TECHNICAL_SPEC.md](../docs/TECHNICAL_SPEC.md)** - API contracts, type system specifications
+2. **[docs/TUTORIAL.md](../docs/TUTORIAL.md)** - User guide with 6 focused tutorial parts
+3. **[README.md](../README.md)** - Features overview and quick start
 
 ### Project Structure
 - **`packages/core/`** - Core musical primitives (ZERO dependencies)
@@ -206,17 +206,17 @@ it('retrograde twice returns original', () => {
 ### Documentation Updates
 
 When making changes, update:
-- **docs/TECHNICAL_SPEC.md** - For API changes
-- **docs/ARCHITECTURE_DECISIONS.md** - For architectural decisions
+- **docs/tutorials/*.md** - For user-facing feature additions
+- **docs/FAQ.md** - For common questions
 - **API_CHANGELOG.md** - For any breaking changes
-- **README.md** - For user-facing features
+- **README.md** - For major features or quick start changes
 
 ### Getting Help
 
-- **Questions about architecture?** → See [docs/ARCHITECTURE_GUIDE.md](../docs/ARCHITECTURE_GUIDE.md)
-- **Questions about APIs?** → See [docs/TECHNICAL_SPEC.md](../docs/TECHNICAL_SPEC.md)
+- **Questions about using Contour?** → See [docs/TUTORIAL.md](../docs/TUTORIAL.md) or [docs/FAQ.md](../docs/FAQ.md)
+- **Questions about APIs?** → Check TypeScript types (source of truth) or [docs/tutorials/](../docs/tutorials/)
 - **Questions about workflow?** → See [CLAUDE.md](../CLAUDE.md)
-- **Unsure about approach?** → Check existing code for similar patterns
+- **Unsure about approach?** → Check existing code and tests for similar patterns
 
 ## Summary
 
