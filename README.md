@@ -216,9 +216,9 @@ fs.writeFileSync('output.mid', result.data);
 
 **New to Contour?** Start with the [Tutorial](docs/TUTORIAL.md) for a complete walkthrough from beginner to advanced topics.
 
-**Additional documentation:**
-- [Architecture Guide](docs/ARCHITECTURE_GUIDE.md) - Design patterns and lessons learned
-- [Claude Development Guide](CLAUDE.md) - AI pair programming guide
+**Additional resources:**
+- [FAQ](docs/FAQ.md) - Frequently asked questions
+- [Claude Development Guide](CLAUDE.md) - AI pair programming guide for contributors
 
 ## Technology Stack
 

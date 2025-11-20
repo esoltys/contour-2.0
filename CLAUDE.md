@@ -16,11 +16,11 @@ Read documents in this order for full context:
 
 ### 1. Foundation Documents (Read First)
 1. **CLAUDE.md** (this file) - Meta-guide and workflow
-2. **docs/ARCHITECTURE_GUIDE.md** - Design patterns, lessons learned, and architectural insights
-3. **docs/TUTORIAL.md** - Complete user guide from beginner to advanced topics
+2. **docs/TUTORIAL.md** - Complete user guide from beginner to advanced topics
+3. **README.md** - User-facing overview, features, and quick start
 
 ### 2. Living Documents (Update as Code Evolves)
-- **README.md** - User-facing overview and quick start
+- **docs/FAQ.md** - Common user questions and answers
 - **API_CHANGELOG.md** - Track API changes and breaking updates
 
 ## Core Principles
@@ -145,7 +145,7 @@ contour/
 │   ├── bach-invention-4/   # Primary acceptance test (Bach BWV 775)
 │   └── live-coding-demo/   # Live coding demonstration
 └── docs/                   # User documentation
-    ├── ARCHITECTURE_GUIDE.md
+    ├── FAQ.md
     └── TUTORIAL.md
 ```
 
@@ -457,10 +457,10 @@ class PluginRegistry {
 - **What**: Add sections, update examples, maintain progression from beginner to advanced
 - **Verify**: Tutorial examples work with current API
 
-#### docs/ARCHITECTURE_GUIDE.md
-- **When**: Making significant architectural changes or learning important lessons
-- **What**: Document patterns, trade-offs, and insights for future development
-- **Format**: Focus on "why" over "what"
+#### docs/FAQ.md
+- **When**: Users ask common questions or feature requests
+- **What**: Add Q&A pairs with clear, concise answers
+- **Format**: Question in bold, answer below
 
 #### API_CHANGELOG.md
 - **When**: Any API change, especially breaking changes
@@ -472,7 +472,7 @@ class PluginRegistry {
 - [ ] Breaking changes documented in CHANGELOG
 - [ ] README.md updated with new features
 - [ ] TUTORIAL.md updated if user-facing capabilities changed
-- [ ] ARCHITECTURE_GUIDE.md updated if significant patterns emerged
+- [ ] FAQ.md updated if common questions arise
 
 ## Success Criteria
 
@@ -701,8 +701,8 @@ When working on Contour, focus on:
 ### First Time Working with Contour?
 
 1. **Read CLAUDE.md** (this file) - Overview and conventions
-2. **Read docs/ARCHITECTURE_GUIDE.md** - Deep dive into design decisions
-3. **Read docs/TUTORIAL.md** - User-facing guide and examples
+2. **Read docs/TUTORIAL.md** - User-facing guide and examples
+3. **Read README.md** - Features overview and quick start
 4. **Run tests**: `pnpm test` - Verify everything works
 5. **Start dev server**: `pnpm dev` - See the interactive tools
 
@@ -725,8 +725,8 @@ When working on Contour, focus on:
 
 When encountering ambiguity:
 1. **Check the TypeScript types** - They are the source of truth for API contracts
-2. **Reference docs/ARCHITECTURE_GUIDE.md** for patterns and lessons learned
-3. **Check docs/TUTORIAL.md** for user-facing examples and usage patterns
+2. **Check docs/TUTORIAL.md** for user-facing examples and usage patterns
+3. **Check test files** - They demonstrate expected behavior and edge cases
 4. **Follow the test-driven approach** - write tests that express the desired behavior
 5. **Maintain immutability** - when in doubt, return new instances
 6. **Keep layers independent** - don't let Layer 4 directly call Tone.js (Layer 1)
