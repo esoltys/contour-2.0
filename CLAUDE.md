@@ -722,7 +722,7 @@ When working on Contour, focus on:
 2. **Write tests first** - Follow TDD approach
 3. **Maintain immutability** - All transformations return new instances
 4. **Use branded types** - Prevent unit mixing (Hz, BPM, Seconds, etc.)
-5. **Update docs** - Keep TECHNICAL_SPEC.md and CHANGELOG in sync
+5. **Update docs** - Keep README, tutorial parts, and CHANGELOG in sync
 
 ### Debugging?
 
