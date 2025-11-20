@@ -900,6 +900,161 @@ await exportComposition(mySong, 'my-composition');
 
 ---
 
+## Advanced Effects & Articulations
+
+Contour includes professional-grade effects for musical expression. All effects are immutable, composable, and type-safe.
+
+### Articulation: Staccato
+
+Shorten note durations for crisp, detached notes:
+
+```typescript
+const melody = pattern().fromNotation('C4 E4 G4 C5').build();
+const staccato = melody.staccato(0.5); // 50% duration (default)
+const veryStaccato = melody.staccato(0.25); // Very short, percussive
+```
+
+### Articulation: Legato
+
+Extend notes to overlap for smooth, connected phrasing:
+
+```typescript
+const smooth = melody.legato(); // Default 0.1 beat overlap
+const verySmooth = melody.legato(0.2); // Pronounced legato
+```
+
+### Dynamics: Crescendo & Diminuendo
+
+Shape volume dynamically across a phrase:
+
+```typescript
+// Gradual increase (pp → ff)
+const crescendo = melody.crescendo(Velocity(40), Velocity(110));
+
+// Gradual decrease (ff → pp)
+const diminuendo = melody.diminuendo(Velocity(110), Velocity(40));
+
+// Use defaults (current range to max/min)
+const natural = melody.crescendo();
+```
+
+### Accent
+
+Emphasize specific beats:
+
+```typescript
+// Accent beats 1 and 3
+const accented = pattern.accent([0, 2], 20); // +20 velocity
+
+// Accent using predicate
+const syncopated = pattern.accent((i) => i % 4 === 0);
+```
+
+### Humanize
+
+Add natural performance variations:
+
+```typescript
+const human = pattern.humanize({
+  timing: 0.03,   // ±0.03 beats timing variation
+  velocity: 12,   // ±12 velocity variation
+  seed: 42        // Optional: reproducible randomness
+});
+```
+
+### Swing
+
+Create jazz/shuffle feel:
+
+```typescript
+const swung = pattern.swing(0.5);  // Triplet swing (default)
+const shuffle = pattern.swing(0.3); // Subtle shuffle
+const extreme = pattern.swing(0.8); // Heavy swing
+```
+
+### Tremolo
+
+Rapid note repetition:
+
+```typescript
+const tremolo = pattern.tremolo(8); // 32nd notes (8 per beat)
+const measured = pattern.tremolo(4, 2); // 16th notes for 2 beats
+```
+
+### Arpeggiate
+
+Break chords into melodic sequences:
+
+```typescript
+const chords = pattern().fromNotation('Cmaj7 Fmaj7').build();
+
+const ascending = chords.arpeggiate('up');
+const descending = chords.arpeggiate('down');
+const harp = chords.arpeggiate('updown'); // Like a harp glissando
+const random = chords.arpeggiate('random'); // Generative
+```
+
+### Delay
+
+Rhythmic echo effect:
+
+```typescript
+const delayed = pattern.delay(
+  Duration(0.5),  // Delay time (beats)
+  0.6,            // Feedback (0-1, how much it decays)
+  0.5             // Mix (0-1, dry/wet balance)
+);
+```
+
+### Combining Effects
+
+Effects are composable - chain them for complex expression:
+
+```typescript
+const expressive = melody
+  .legato(0.1)                           // Smooth
+  .crescendo(Velocity(50), Velocity(100)) // Build intensity
+  .accent([0, 4], 15)                    // Phrase accents
+  .humanize({ timing: 0.02, velocity: 8 }) // Natural feel
+  .delay(Duration(0.75), 0.4, 0.3);      // Ambient space
+```
+
+### Musical Examples
+
+**Expressive Piano:**
+```typescript
+const pianoPhrase = pattern()
+  .fromNotation('C4 D E F G ~ G F E D C')
+  .build()
+  .legato(0.12)                          // Piano-style legato
+  .crescendo(Velocity(55), Velocity(95)) // Dynamic shape
+  .accent([0, 4], 18)                    // Phrase accents
+  .humanize({ timing: 0.025, velocity: 10 });
+```
+
+**Jazz Drums:**
+```typescript
+const jazzHiHat = pattern()
+  .fromNotation('F#4*8') // 8 hi-hat hits
+  .build()
+  .swing(0.55)                    // Jazz swing
+  .accent([0, 4], 12)             // Downbeat accents
+  .accent(i => i % 2 === 1, -8)   // Ghost note upbeats
+  .humanize({ timing: 0.015, velocity: 6 });
+```
+
+**Ambient Soundscape:**
+```typescript
+const ambient = pattern()
+  .fromNotation('C4@4 G3@4 E4@4')
+  .build()
+  .legato(1.0)                        // Very smooth
+  .diminuendo(Velocity(90), Velocity(40)) // Fade
+  .delay(Duration(2.0), 0.7, 0.8);    // Long, spacey delay
+```
+
+---
+
 ## Advanced Topics
 
 ### Live Coding
