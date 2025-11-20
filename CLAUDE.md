@@ -16,10 +16,11 @@ Read documents in this order for full context:
 
 ### 1. Foundation Documents (Read First)
 1. **CLAUDE.md** (this file) - Meta-guide and workflow
-2. **docs/TUTORIAL.md** - Complete user guide from beginner to advanced topics
+2. **docs/TUTORIAL.md** - User guide index (links to 6 focused tutorial parts)
 3. **README.md** - User-facing overview, features, and quick start
 
 ### 2. Living Documents (Update as Code Evolves)
+- **docs/tutorials/*.md** - 6-part tutorial series (basics → advanced → reference)
 - **docs/FAQ.md** - Common user questions and answers
 - **API_CHANGELOG.md** - Track API changes and breaking updates
 
@@ -145,8 +146,15 @@ contour/
 │   ├── bach-invention-4/   # Primary acceptance test (Bach BWV 775)
 │   └── live-coding-demo/   # Live coding demonstration
 └── docs/                   # User documentation
+    ├── TUTORIAL.md            # Tutorial index
     ├── FAQ.md
-    └── TUTORIAL.md
+    └── tutorials/
+        ├── 01-basics.md
+        ├── 02-notation.md
+        ├── 03-transformations.md
+        ├── 04-composition.md
+        ├── 05-advanced.md
+        └── 06-reference.md
 ```
 
 ### TypeScript Patterns
@@ -452,10 +460,11 @@ class PluginRegistry {
 - **What**: Update features list, examples, installation instructions
 - **Verify**: All examples are executable and tested
 
-#### docs/TUTORIAL.md
+#### docs/tutorials/*.md
 - **When**: Adding new capabilities that users should learn
-- **What**: Add sections, update examples, maintain progression from beginner to advanced
+- **What**: Add to appropriate tutorial part, update examples, maintain progression
 - **Verify**: Tutorial examples work with current API
+- **Structure**: Keep each part focused (~300 lines or less)
 
 #### docs/FAQ.md
 - **When**: Users ask common questions or feature requests
@@ -471,8 +480,9 @@ class PluginRegistry {
 - [ ] Examples in docs are executable and tested
 - [ ] Breaking changes documented in CHANGELOG
 - [ ] README.md updated with new features
-- [ ] TUTORIAL.md updated if user-facing capabilities changed
+- [ ] Tutorial parts updated if user-facing capabilities changed
 - [ ] FAQ.md updated if common questions arise
+- [ ] Keep tutorial parts focused and under ~300 lines each
 
 ## Success Criteria
 
@@ -701,7 +711,7 @@ When working on Contour, focus on:
 ### First Time Working with Contour?
 
 1. **Read CLAUDE.md** (this file) - Overview and conventions
-2. **Read docs/TUTORIAL.md** - User-facing guide and examples
+2. **Read docs/tutorials/01-basics.md** - Start with the basics tutorial
 3. **Read README.md** - Features overview and quick start
 4. **Run tests**: `pnpm test` - Verify everything works
 5. **Start dev server**: `pnpm dev` - See the interactive tools
@@ -725,7 +735,7 @@ When working on Contour, focus on:
 
 When encountering ambiguity:
 1. **Check the TypeScript types** - They are the source of truth for API contracts
-2. **Check docs/TUTORIAL.md** for user-facing examples and usage patterns
+2. **Check docs/tutorials/** for user-facing examples and usage patterns
 3. **Check test files** - They demonstrate expected behavior and edge cases
 4. **Follow the test-driven approach** - write tests that express the desired behavior
 5. **Maintain immutability** - when in doubt, return new instances
