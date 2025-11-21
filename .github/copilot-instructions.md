@@ -6,10 +6,8 @@ This repository contains Contour 2.0, a TypeScript-first music composition frame
 
 ## Quick Reference
 
-### Essential Reading (in order)
-1. **[CLAUDE.md](../CLAUDE.md)** - Complete development guide with architecture, patterns, and workflows
-2. **[docs/ARCHITECTURE_GUIDE.md](../docs/ARCHITECTURE_GUIDE.md)** - Deep dive into design decisions and lessons learned
-3. **[docs/TECHNICAL_SPEC.md](../docs/TECHNICAL_SPEC.md)** - API contracts, type system specifications
+### Essential Reading
+**[CLAUDE.md](../CLAUDE.md)** - Complete development guide with architecture, patterns, workflows, and all documentation references
 
 ### Project Structure
 - **`packages/core/`** - Core musical primitives (ZERO dependencies)
@@ -203,20 +201,14 @@ it('retrograde twice returns original', () => {
 4. Advanced pattern transformations
 5. Additional plugins (visualizers, notation)
 
-### Documentation Updates
-
-When making changes, update:
-- **docs/TECHNICAL_SPEC.md** - For API changes
-- **docs/ARCHITECTURE_DECISIONS.md** - For architectural decisions
-- **API_CHANGELOG.md** - For any breaking changes
-- **README.md** - For user-facing features
-
 ### Getting Help
 
-- **Questions about architecture?** → See [docs/ARCHITECTURE_GUIDE.md](../docs/ARCHITECTURE_GUIDE.md)
-- **Questions about APIs?** → See [docs/TECHNICAL_SPEC.md](../docs/TECHNICAL_SPEC.md)
-- **Questions about workflow?** → See [CLAUDE.md](../CLAUDE.md)
-- **Unsure about approach?** → Check existing code for similar patterns
+See **[CLAUDE.md](../CLAUDE.md)** for:
+- Documentation structure and what to update
+- Architecture patterns and conventions
+- Development workflow
+- Testing strategies
+- Common pitfalls and solutions
 
 ## Summary
 
