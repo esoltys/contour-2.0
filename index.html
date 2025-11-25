@@ -715,6 +715,165 @@
         transition-duration: 0.01ms !important;
       }
     }
+
+    /* MCP Tools Section */
+    .mcp-tools {
+      padding: 8rem 2rem;
+      background: var(--bg-panel);
+      position: relative;
+    }
+
+    .mcp-tools::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg,
+        var(--neon-magenta),
+        transparent 50%,
+        var(--neon-cyan)
+      );
+    }
+
+    .mcp-tools .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .mcp-intro {
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto 4rem;
+    }
+
+    .mcp-intro p {
+      color: var(--text-secondary);
+      font-size: 1.125rem;
+      line-height: 1.8;
+    }
+
+    .mcp-intro strong {
+      color: var(--neon-cyan);
+    }
+
+    .mcp-servers {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .mcp-servers .feature-card {
+      text-align: center;
+    }
+
+    .mcp-servers .feature-card h3 {
+      color: var(--neon-cyan);
+      font-size: 1.5rem;
+    }
+
+    .server-desc {
+      color: var(--text-secondary);
+      margin-bottom: 1.5rem;
+      font-size: 0.938rem;
+    }
+
+    .tool-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .tool-list code {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      padding: 0.375rem 0.75rem;
+      font-size: 0.813rem;
+      color: var(--text-primary);
+      transition: all 0.2s;
+    }
+
+    .tool-list code:hover {
+      border-color: var(--neon-cyan);
+      color: var(--neon-cyan);
+    }
+
+    .mcp-examples {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+
+    .mcp-examples h3 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .example-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .example-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-strong);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: all 0.2s;
+    }
+
+    .example-item:hover {
+      border-color: var(--neon-magenta);
+    }
+
+    .example-query {
+      color: var(--text-primary);
+      font-style: italic;
+      font-size: 0.938rem;
+    }
+
+    .example-tool {
+      color: var(--neon-magenta);
+      font-size: 0.813rem;
+      font-weight: 500;
+    }
+
+    .example-tool::before {
+      content: '→ ';
+      color: var(--text-tertiary);
+    }
+
+    .mcp-config {
+      text-align: center;
+    }
+
+    .mcp-config h3 {
+      font-family: 'Archivo Black', sans-serif;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 768px) {
+      .mcp-servers {
+        grid-template-columns: 1fr;
+      }
+
+      .example-grid {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -725,6 +884,7 @@
       <div class="nav-links">
         <a href="#features">Features</a>
         <a href="#examples">Examples</a>
+        <a href="#ai-tools">AI Tools</a>
         <a href="https://github.com/esoltys/contour-2.0/blob/main/docs/TUTORIAL.md" target="_blank">Docs</a>
         <a href="https://github.com/esoltys/contour-2.0" target="_blank">GitHub</a>
       </div>
@@ -970,6 +1130,99 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
             accent, humanization, swing timing, tremolo, arpeggiation, and delay. Create expressive,
             natural-sounding compositions.
           </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MCP Tools Section -->
+  <section id="ai-tools" class="mcp-tools">
+    <div class="container">
+      <h2 class="section-title">AI Integration</h2>
+      <p class="section-subtitle">
+        MCP servers for AI-powered music composition assistance
+      </p>
+
+      <div class="mcp-intro">
+        <p>
+          Contour includes <strong>MCP (Model Context Protocol) servers</strong> that enable
+          AI assistants like Claude and GitHub Copilot to access music theory tools directly.
+          Query scales, chords, progressions, and visualize patterns without writing code.
+        </p>
+      </div>
+
+      <div class="mcp-servers">
+        <div class="feature-card">
+          <span class="feature-icon">🎵</span>
+          <h3>contour-theory</h3>
+          <p class="server-desc">Music theory lookup and calculations</p>
+          <div class="tool-list">
+            <code>get_scale</code>
+            <code>get_chord</code>
+            <code>get_chord_inversions</code>
+            <code>get_progression</code>
+            <code>transpose_note</code>
+            <code>get_interval</code>
+            <code>list_scales</code>
+            <code>list_chords</code>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <span class="feature-icon">📊</span>
+          <h3>contour-pattern</h3>
+          <p class="server-desc">Pattern visualization and transformation</p>
+          <div class="tool-list">
+            <code>parse_mini_notation</code>
+            <code>visualize_pattern</code>
+            <code>inspect_pattern</code>
+            <code>transform_pattern</code>
+            <code>create_scale_pattern</code>
+            <code>compare_patterns</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="mcp-examples">
+        <h3>Example Queries</h3>
+        <div class="example-grid">
+          <div class="example-item">
+            <span class="example-query">"What notes are in D Dorian?"</span>
+            <span class="example-tool">get_scale</span>
+          </div>
+          <div class="example-item">
+            <span class="example-query">"Show me Cmaj7 inversions"</span>
+            <span class="example-tool">get_chord_inversions</span>
+          </div>
+          <div class="example-item">
+            <span class="example-query">"Visualize C4 E4 G4 C5"</span>
+            <span class="example-tool">visualize_pattern</span>
+          </div>
+          <div class="example-item">
+            <span class="example-query">"Give me a ii-V-I in G major"</span>
+            <span class="example-tool">get_progression</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mcp-config">
+        <h3>VS Code Configuration</h3>
+        <div class="code-block" style="max-width: 600px; margin: 1rem auto 0;">
+          <div class="code-header">.vscode/mcp.json</div>
+          <div class="code-content">
+<pre><code>{
+  <span class="code-string">"servers"</span>: {
+    <span class="code-string">"contour-theory"</span>: {
+      <span class="code-string">"command"</span>: <span class="code-string">"npx"</span>,
+      <span class="code-string">"args"</span>: [<span class="code-string">"@contour/mcp-server"</span>, <span class="code-string">"music-theory"</span>]
+    },
+    <span class="code-string">"contour-pattern"</span>: {
+      <span class="code-string">"command"</span>: <span class="code-string">"npx"</span>,
+      <span class="code-string">"args"</span>: [<span class="code-string">"@contour/mcp-server"</span>, <span class="code-string">"pattern"</span>]
+    }
+  }
+}</code></pre>
+          </div>
         </div>
       </div>
     </div>
