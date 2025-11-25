@@ -14,6 +14,7 @@ This repository contains Contour 2.0, a TypeScript-first music composition frame
 - **`packages/tone-adapter/`** - Tone.js integration layer
 - **`packages/plugins/`** - Audio and MIDI renderer plugins
 - **`packages/playground/`** - Interactive development environment with debug tools
+- **`packages/mcp-server/`** - MCP servers for AI assistant integration
 - **`examples/`** - Example compositions including Bach Invention No. 4
 - **`docs/`** - Comprehensive documentation
 
@@ -113,6 +114,25 @@ pnpm dev
 - **`Space`** - Play/Pause
 - **`R`** - Restart from beginning
 - **`S`** - Stop and reset
+
+### MCP Tools (AI Assistant Integration)
+
+This project includes MCP (Model Context Protocol) servers that provide music theory and pattern tools. These are pre-configured in `.vscode/mcp.json`.
+
+**Available Servers:**
+
+| Server | Tools |
+|--------|-------|
+| `contour-theory` | `get_scale`, `get_chord`, `get_progression`, `transpose_note`, `get_interval` |
+| `contour-pattern` | `parse_mini_notation`, `visualize_pattern`, `transform_pattern`, `inspect_pattern` |
+
+**Example Queries:**
+- "What notes are in D Dorian?" → uses `get_scale`
+- "Show me Cmaj7 inversions" → uses `get_chord_inversions`
+- "Visualize C4 E4 G4 C5" → uses `visualize_pattern`
+- "Give me a ii-V-I in G major" → uses `get_progression`
+
+Use these tools to quickly look up music theory information or visualize patterns without writing code.
 
 ### Diagnostic Tools
 
