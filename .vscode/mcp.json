@@ -1,0 +1,12 @@
+{
+  "servers": {
+    "contour-theory": {
+      "command": "npx",
+      "args": ["@contour/mcp-server", "music-theory"]
+    },
+    "contour-pattern": {
+      "command": "npx",
+      "args": ["@contour/mcp-server", "pattern"]
+    }
+  }
+}
