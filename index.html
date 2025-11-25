@@ -853,18 +853,6 @@
       color: var(--text-tertiary);
     }
 
-    .mcp-config {
-      text-align: center;
-    }
-
-    .mcp-config h3 {
-      font-family: 'Archivo Black', sans-serif;
-      font-size: 1.25rem;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
     @media (max-width: 768px) {
       .mcp-servers {
         grid-template-columns: 1fr;
@@ -1205,26 +1193,6 @@ fs.<span class="code-function">writeFileSync</span>(<span class="code-string">'s
         </div>
       </div>
 
-      <div class="mcp-config">
-        <h3>VS Code Configuration</h3>
-        <div class="code-block" style="max-width: 600px; margin: 1rem auto 0;">
-          <div class="code-header">.vscode/mcp.json</div>
-          <div class="code-content">
-<pre><code>{
-  <span class="code-string">"servers"</span>: {
-    <span class="code-string">"contour-theory"</span>: {
-      <span class="code-string">"command"</span>: <span class="code-string">"npx"</span>,
-      <span class="code-string">"args"</span>: [<span class="code-string">"@contour/mcp-server"</span>, <span class="code-string">"music-theory"</span>]
-    },
-    <span class="code-string">"contour-pattern"</span>: {
-      <span class="code-string">"command"</span>: <span class="code-string">"npx"</span>,
-      <span class="code-string">"args"</span>: [<span class="code-string">"@contour/mcp-server"</span>, <span class="code-string">"pattern"</span>]
-    }
-  }
-}</code></pre>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
