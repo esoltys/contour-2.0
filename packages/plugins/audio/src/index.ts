@@ -4,4 +4,5 @@
  * Exports compositions to WAV audio files using offline rendering.
  */
 
-export { AudioRenderer, AudioRendererConfig } from './AudioRenderer';
+export { AudioRenderer } from './AudioRenderer';
+export type { AudioRendererConfig, RenderProgressCallback } from './AudioRenderer';

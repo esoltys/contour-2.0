@@ -12,17 +12,16 @@
 
 // Re-export everything from the mini-notation module
 export {
-  // Types
+  // Enums and classes
   TokenType,
-  Token,
   MiniNotationError,
-  ParsedElement,
-  // Classes
   MiniNotationLexer,
   MiniNotationParser,
   EventGenerator,
-  GenerationContext,
   // Public API functions
   parseMiniNotation,
   parseMiniNotationWithDefaults,
 } from './mini-notation/index.js';
+
+// Re-export types separately for proper ESM handling
+export type { Token, ParsedElement, GenerationContext } from './mini-notation/index.js';
