@@ -4,10 +4,12 @@
  * Provides a TidalCycles-inspired mini-notation syntax for defining musical patterns.
  */
 
-export { TokenType, Token, MiniNotationError, ParsedElement } from './types.js';
+export { TokenType, MiniNotationError } from './types.js';
+export type { Token, ParsedElement } from './types.js';
 export { MiniNotationLexer } from './Lexer.js';
 export { MiniNotationParser } from './Parser.js';
-export { EventGenerator, GenerationContext } from './EventGenerator.js';
+export { EventGenerator } from './EventGenerator.js';
+export type { GenerationContext } from './EventGenerator.js';
 
 import type { Event } from '../../primitives/Event.js';
 import type { Duration, Velocity } from '../../types/brands.js';

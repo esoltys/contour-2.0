@@ -17,6 +17,11 @@ import type {
 import audioBufferToWav from 'audiobuffer-to-wav';
 
 /**
+ * Progress callback for audio rendering.
+ */
+export type RenderProgressCallback = (progress: number, stage: string) => void;
+
+/**
  * Configuration for audio rendering.
  */
 export interface AudioRendererConfig {
@@ -31,6 +36,9 @@ export interface AudioRendererConfig {
 
   /** Master volume in decibels (default: 0) */
   masterVolume?: number;
+
+  /** Progress callback for tracking render progress */
+  onProgress?: RenderProgressCallback;
 }
 
 /**
@@ -94,9 +102,22 @@ export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
    */
   async render(composition: Composition): Promise<RenderResult> {
     const duration = composition.duration;
+    const onProgress = this.config.onProgress;
 
     // Add small buffer to ensure all notes finish
     const renderDuration = duration + 1;
+
+    onProgress?.(0, 'Scheduling events...');
+
+    // Count total events for progress tracking
+    let totalEvents = 0;
+    for (const track of composition.tracks) {
+      for (const voice of track.voices) {
+        totalEvents += voice.pattern.events.length;
+      }
+    }
+
+    let processedEvents = 0;
 
     // Use Tone.Offline to render offline
     const buffer = await Tone.Offline(
@@ -146,8 +167,31 @@ export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
                 }, event.time);
               }
               // Rests don't need scheduling
+
+              // Update progress during scheduling (0-10%)
+              processedEvents++;
+              if (onProgress && processedEvents % 100 === 0) {
+                const scheduleProgress = (processedEvents / totalEvents) * 10;
+                onProgress(scheduleProgress, 'Scheduling events...');
+              }
             }
           }
+        }
+
+        onProgress?.(10, 'Rendering audio...');
+
+        // Track render progress using transport position
+        // Schedule progress updates at regular intervals through the composition
+        const progressIntervalSec = Math.max(renderDuration / 50, 0.5); // ~50 updates or every 0.5s
+        for (let t = progressIntervalSec; t < renderDuration; t += progressIntervalSec) {
+          const progressTime = t;
+          context.transport.schedule(() => {
+            if (onProgress) {
+              // Progress from 10% to 85% during render
+              const renderProgress = (progressTime / renderDuration) * 75;
+              onProgress(10 + renderProgress, 'Rendering audio...');
+            }
+          }, t);
         }
 
         // Start the transport
@@ -158,8 +202,12 @@ export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
       this.config.sampleRate
     );
 
+    onProgress?.(85, 'Encoding WAV...');
+
     // Convert AudioBuffer to WAV
     const wavData = this.encodeToWav(buffer);
+
+    onProgress?.(100, 'Complete!');
 
     return {
       data: wavData,
@@ -183,14 +231,17 @@ export class AudioRenderer implements RendererPlugin<AudioRendererConfig> {
   /**
    * Convert AudioBuffer to WAV format.
    */
-  private encodeToWav(buffer: Tone.ToneAudioBuffer): Buffer {
+  private encodeToWav(buffer: Tone.ToneAudioBuffer): ArrayBuffer | Buffer {
     // Convert Tone.ToneAudioBuffer to standard AudioBuffer
     const audioBuffer = buffer.get() as AudioBuffer;
 
     // Use audiobuffer-to-wav library to encode
     const wavArrayBuffer = audioBufferToWav(audioBuffer);
 
-    // Convert ArrayBuffer to Node.js Buffer
-    return Buffer.from(wavArrayBuffer);
+    // Return ArrayBuffer in browser, Buffer in Node.js
+    if (typeof Buffer !== 'undefined') {
+      return Buffer.from(wavArrayBuffer);
+    }
+    return wavArrayBuffer;
   }
 }

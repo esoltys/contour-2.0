@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "lib": ["ES2020", "DOM"],
+    "moduleResolution": "bundler",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "paths": {
+      "@contour/core": ["../../packages/core/src"],
+      "@contour/tone-adapter": ["../../packages/tone-adapter/src"],
+      "@contour/plugin-audio": ["../../packages/plugins/audio/src"],
+      "@contour/plugin-midi": ["../../packages/plugins/midi/src"]
+    }
+  },
+  "include": ["*.ts", "*.html"]
+}
