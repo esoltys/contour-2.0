@@ -85,10 +85,14 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
    * for each voice in the composition.
    */
   async render(composition: Composition): Promise<RenderResult> {
-    // Create MIDI file with configured ticks per beat
-    const file = new jsmidgen.File({
-      ticks: this.config.ticksPerBeat
-    });
+    // Create MIDI file - jsmidgen uses 128 ticks per beat internally
+    const file = new jsmidgen.File();
+
+    // Create a conductor track (track 0) for tempo and time signature
+    // This is standard practice for MIDI Format 1 files
+    const conductorTrack = new jsmidgen.Track();
+    conductorTrack.setTempo(Math.round(composition.tempo as number));
+    file.addTrack(conductorTrack);
 
     // For each track in the composition
     for (const track of composition.tracks) {
@@ -96,15 +100,7 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
       for (const voice of track.voices) {
         const midiTrack = new jsmidgen.Track();
 
-        // Set tempo and key signature on first track
-        if (file.tracks.length === 0) {
-          midiTrack.setTempo(composition.tempo);
-          // Set key signature: D minor (1 flat, minor mode)
-          // Key signature format: sf = -1 (1 flat), mi = 1 (minor)
-          midiTrack.setKeySignature(-1, 1);
-        }
-
-        // Add track name
+        // Add track name and set instrument
         midiTrack.setInstrument(0, this.getInstrumentNumber(voice.instrument));
 
         // Convert pattern events to MIDI events
@@ -116,12 +112,15 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     }
 
     // Generate MIDI file buffer
-    // toBytes() returns a string, but we need to convert it to raw bytes
-    // using 'binary' encoding to avoid UTF-8 interpretation
-    const midiData = Buffer.from(file.toBytes(), 'binary');
+    // toBytes() returns a string with binary data, convert to Uint8Array
+    const byteString = file.toBytes();
+    const midiData = new Uint8Array(byteString.length);
+    for (let i = 0; i < byteString.length; i++) {
+      midiData[i] = byteString.charCodeAt(i);
+    }
 
     return {
-      data: midiData,
+      data: midiData.buffer,
       format: 'midi',
       metadata: {
         duration: composition.duration,
@@ -139,6 +138,12 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
   private addEventsToTrack(midiTrack: any, voice: Voice, tempo: number): void {
     const pattern = voice.pattern;
 
+    // jsmidgen uses 128 ticks per beat (quarter note)
+    const JSMIDGEN_TICKS_PER_BEAT = 128;
+
+    // The pattern uses beats as the time unit, where 1 beat = 1 quarter note
+    // So we multiply directly by ticks per beat
+
     // Collect all MIDI events (note on/off) with absolute times
     interface MidiNoteEvent {
       time: number;  // Absolute time in ticks
@@ -150,10 +155,12 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     const midiEvents: MidiNoteEvent[] = [];
 
     // Convert pattern events to MIDI note on/off events
+    // Pattern times/durations are in beats (quarter notes)
     for (const event of pattern.events) {
       if (event.type === 'note') {
-        const startTimeTicks = Math.round((event.time as number) * 4 * this.config.ticksPerBeat);
-        const durationTicks = Math.round((event.duration as number) * 4 * this.config.ticksPerBeat);
+        // event.time and event.duration are in beats, convert to ticks
+        const startTimeTicks = Math.round((event.time as number) * JSMIDGEN_TICKS_PER_BEAT);
+        const durationTicks = Math.round((event.duration as number) * JSMIDGEN_TICKS_PER_BEAT);
         const endTimeTicks = startTimeTicks + durationTicks;
 
         midiEvents.push({
@@ -169,8 +176,8 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
           velocity: event.velocity,
         });
       } else if (event.type === 'chord') {
-        const startTimeTicks = Math.round((event.time as number) * 4 * this.config.ticksPerBeat);
-        const durationTicks = Math.round((event.duration as number) * 4 * this.config.ticksPerBeat);
+        const startTimeTicks = Math.round((event.time as number) * JSMIDGEN_TICKS_PER_BEAT);
+        const durationTicks = Math.round((event.duration as number) * JSMIDGEN_TICKS_PER_BEAT);
         const endTimeTicks = startTimeTicks + durationTicks;
 
         for (const note of event.notes) {
