@@ -1,14 +1,14 @@
 # Lo-Fi Chill - Modern Lo-Fi Composition
 
-A modern multi-track, chill lo-fi composition built with Contour, showcasing sampled instruments, effects processing, and multiple export formats.
+A warm, laid-back lo-fi composition built with Contour, showcasing sampled instruments, effects processing, and multiple export formats.
 
 ## Features
 
-- **Duration**: 3+ minutes (197 seconds / ~3:17)
-- **Tempo**: 78 BPM (classic lo-fi speed)
-- **Key**: D minor / F major
-- **Structure**: Intro → A Section → B Section → A Section (repeat) → Outro
-- **Tracks**: 5 multi-layered tracks with sampled and synthesized instruments
+- **Duration**: ~3 minutes (64 bars)
+- **Tempo**: 72 BPM (relaxed lo-fi speed)
+- **Key**: F major (warm, happy key)
+- **Structure**: Intro → Verse 1 → Chorus → Verse 2 → Outro
+- **Tracks**: 5 multi-layered tracks with sampled instruments and drums
 
 ## Composition Structure
 

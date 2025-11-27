@@ -13,7 +13,10 @@ export default defineConfig({
   server: {
     port: 3003,
   },
+  build: {
+    target: 'esnext',
+  },
   optimizeDeps: {
-    exclude: ['@contour/core', '@contour/tone-adapter', '@contour/plugin-audio', '@contour/plugin-midi'],
+    include: ['tone'],
   },
 });

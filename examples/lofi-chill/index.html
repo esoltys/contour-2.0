@@ -4,7 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lo-Fi Chill - Contour Composition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=VT323&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-deep: #1a1412;
+      --bg-warm: #2d2420;
+      --bg-card: #3d322c;
+      --amber: #e8a857;
+      --amber-glow: #f4c068;
+      --amber-dim: #b8864a;
+      --cream: #f5e6d3;
+      --cream-dim: #c4b5a3;
+      --purple-night: #4a3a5c;
+      --purple-soft: #6b5a7a;
+      --rust: #8b5a3c;
+      --green-led: #7cb87c;
+      --red-led: #c45c5c;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -12,268 +31,571 @@
     }
 
     body {
-      font-family: 'Monaco', 'Courier New', monospace;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: #fff;
+      font-family: 'Karla', sans-serif;
+      background: var(--bg-deep);
+      color: var(--cream);
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
+      position: relative;
+      overflow: auto;
     }
 
-    .container {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      border-radius: 20px;
-      padding: 40px;
-      max-width: 600px;
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      height: 100%;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 1000;
+    }
+
+    /* Ambient glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(ellipse, rgba(232, 168, 87, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+      animation: breathe 8s ease-in-out infinite;
+    }
+
+    @keyframes breathe {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    }
+
+    .cassette-player {
+      background: linear-gradient(145deg, var(--bg-warm) 0%, var(--bg-card) 100%);
+      border-radius: 24px;
+      padding: 32px;
+      max-width: 480px;
+      width: 100%;
+      box-shadow:
+        0 2px 0 rgba(255,255,255,0.05) inset,
+        0 -2px 0 rgba(0,0,0,0.3) inset,
+        0 20px 60px rgba(0,0,0,0.5),
+        0 0 0 1px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    /* Screw details */
+    .cassette-player::before,
+    .cassette-player::after {
+      content: '';
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: radial-gradient(circle at 30% 30%, #5a4a40 0%, #3a2a20 100%);
+      border-radius: 50%;
+      box-shadow:
+        inset 1px 1px 2px rgba(0,0,0,0.5),
+        inset -1px -1px 1px rgba(255,255,255,0.1);
+    }
+    .cassette-player::before { top: 16px; left: 16px; }
+    .cassette-player::after { top: 16px; right: 16px; }
+
+    .brand {
+      font-family: 'Permanent Marker', cursive;
+      font-size: 0.9rem;
+      color: var(--amber-dim);
+      text-align: right;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+
+    .title-section {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(232, 168, 87, 0.15);
     }
 
     h1 {
+      font-family: 'Permanent Marker', cursive;
       font-size: 2.5rem;
-      margin-bottom: 10px;
-      text-align: center;
-      background: linear-gradient(45deg, #fff, #a78bfa);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1;
+      margin-bottom: 4px;
+      text-shadow: 0 2px 10px rgba(232, 168, 87, 0.3);
     }
 
     .subtitle {
-      text-align: center;
-      opacity: 0.8;
-      margin-bottom: 30px;
-      font-size: 0.9rem;
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      color: var(--amber-dim);
+      letter-spacing: 3px;
+      text-transform: uppercase;
     }
 
-    .info {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+    /* Cassette window */
+    .cassette-window {
+      background: linear-gradient(180deg, #1a1510 0%, #252018 100%);
+      border-radius: 12px;
       padding: 20px;
       margin-bottom: 20px;
+      position: relative;
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.5),
+        0 1px 0 rgba(255,255,255,0.05);
     }
 
-    .info-row {
+    .tape-reels {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 10px;
-      font-size: 0.9rem;
-    }
-
-    .info-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .label {
-      opacity: 0.7;
-    }
-
-    .value {
-      font-weight: bold;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-
-    button {
-      flex: 1;
-      padding: 15px 20px;
-      border: none;
-      border-radius: 10px;
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      background: linear-gradient(45deg, #667eea, #764ba2);
-      color: white;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    }
-
-    button:active {
-      transform: translateY(0);
-    }
-
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    button.stop {
-      background: linear-gradient(45deg, #f093fb, #f5576c);
-    }
-
-    button.export {
-      background: linear-gradient(45deg, #4facfe, #00f2fe);
-    }
-
-    .status {
-      text-align: center;
-      padding: 15px;
-      border-radius: 10px;
-      background: rgba(255, 255, 255, 0.1);
-      margin-bottom: 20px;
-      min-height: 50px;
-      display: flex;
       align-items: center;
-      justify-content: center;
+      margin-bottom: 16px;
     }
 
-    .status.loading {
-      background: rgba(255, 193, 7, 0.2);
+    .reel {
+      width: 72px;
+      height: 72px;
+      background: conic-gradient(from 0deg, #2a2520 0deg, #1a1510 30deg, #2a2520 60deg, #1a1510 90deg, #2a2520 120deg, #1a1510 150deg, #2a2520 180deg, #1a1510 210deg, #2a2520 240deg, #1a1510 270deg, #2a2520 300deg, #1a1510 330deg, #2a2520 360deg);
+      border-radius: 50%;
+      position: relative;
+      box-shadow:
+        inset 0 0 20px rgba(0,0,0,0.8),
+        0 0 0 3px #3a3530,
+        0 0 0 4px #1a1510;
     }
 
-    .status.playing {
-      background: rgba(76, 175, 80, 0.2);
+    .reel::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 20px;
+      height: 20px;
+      background: radial-gradient(circle, #4a4540 0%, #2a2520 100%);
+      border-radius: 50%;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
     }
 
-    .status.error {
-      background: rgba(244, 67, 54, 0.2);
+    .reel.spinning {
+      animation: spin 3s linear infinite;
     }
 
-    .progress {
-      width: 100%;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 2px;
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .tape-label {
+      background: linear-gradient(135deg, var(--cream) 0%, #e8dcc8 100%);
+      color: var(--bg-deep);
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-family: 'Permanent Marker', cursive;
+      font-size: 0.9rem;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      max-width: 120px;
+    }
+
+    .tape-label span {
+      display: block;
+      font-family: 'VT323', monospace;
+      font-size: 0.75rem;
+      color: var(--rust);
+      margin-top: 2px;
+    }
+
+    /* LCD Display */
+    .lcd-display {
+      background: #1a2a1a;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-family: 'VT323', monospace;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      box-shadow:
+        inset 0 2px 8px rgba(0,0,0,0.5),
+        0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .lcd-status {
+      color: var(--green-led);
+      font-size: 1.2rem;
+      text-shadow: 0 0 10px rgba(124, 184, 124, 0.5);
+      white-space: nowrap;
       overflow: hidden;
-      margin-bottom: 20px;
+    }
+
+    .lcd-status.loading { color: var(--amber); text-shadow: 0 0 10px rgba(232, 168, 87, 0.5); }
+    .lcd-status.error { color: var(--red-led); text-shadow: 0 0 10px rgba(196, 92, 92, 0.5); }
+
+    .lcd-time {
+      color: var(--green-led);
+      font-size: 1.2rem;
+      text-shadow: 0 0 10px rgba(124, 184, 124, 0.5);
+      text-align: right;
+    }
+
+    /* Progress bar */
+    .progress-track {
+      background: rgba(0,0,0,0.4);
+      height: 6px;
+      border-radius: 3px;
+      margin: 16px 0;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.5);
     }
 
     .progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #667eea, #764ba2);
+      background: linear-gradient(90deg, var(--amber-dim), var(--amber-glow));
       width: 0%;
       transition: width 0.1s linear;
+      border-radius: 3px;
+      box-shadow: 0 0 8px rgba(232, 168, 87, 0.4);
     }
 
-    .tracks {
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 20px;
-    }
-
-    .tracks h3 {
-      margin-bottom: 15px;
-      font-size: 1.2rem;
-      opacity: 0.9;
-    }
-
-    .track {
+    /* Transport controls */
+    .transport-controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px;
-      margin-bottom: 8px;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 5px;
-      font-size: 0.85rem;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
-    .track:last-child {
-      margin-bottom: 0;
+    .transport-btn {
+      width: 56px;
+      height: 56px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #4a4038 0%, #3a3028 100%);
+      color: var(--cream);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+
+    .transport-btn:hover:not(:disabled) {
+      background: linear-gradient(145deg, #5a5048 0%, #4a4038 100%);
+      transform: translateY(-1px);
+    }
+
+    .transport-btn:active:not(:disabled) {
+      transform: translateY(1px);
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        0 1px 0 rgba(255,255,255,0.1) inset;
+    }
+
+    .transport-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .transport-btn.play-btn {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(145deg, var(--amber) 0%, var(--amber-dim) 100%);
+      color: var(--bg-deep);
+      font-size: 1.8rem;
+    }
+
+    .transport-btn.play-btn:hover:not(:disabled) {
+      background: linear-gradient(145deg, var(--amber-glow) 0%, var(--amber) 100%);
+      box-shadow:
+        0 4px 8px rgba(0,0,0,0.4),
+        0 0 20px rgba(232, 168, 87, 0.3),
+        0 1px 0 rgba(255,255,255,0.2) inset;
+    }
+
+    /* Export buttons */
+    .export-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .export-btn {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid rgba(232, 168, 87, 0.3);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--amber);
+      font-family: 'VT323', monospace;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .export-btn:hover:not(:disabled) {
+      background: rgba(232, 168, 87, 0.1);
+      border-color: var(--amber);
+      box-shadow: 0 0 15px rgba(232, 168, 87, 0.2);
+    }
+
+    .export-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Track list */
+    .track-list {
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .track-list-header {
+      font-family: 'VT323', monospace;
+      font-size: 1rem;
+      color: var(--amber-dim);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(232, 168, 87, 0.1);
+    }
+
+    .track-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+
+    .track-item:last-child {
+      border-bottom: none;
+    }
+
+    .track-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber-dim);
+      box-shadow: 0 0 6px rgba(232, 168, 87, 0.3);
+    }
+
+    .track-indicator.active {
+      background: var(--green-led);
+      box-shadow: 0 0 8px rgba(124, 184, 124, 0.5);
+      animation: pulse-led 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse-led {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .track-info {
+      flex: 1;
     }
 
     .track-name {
-      font-weight: bold;
+      font-family: 'Karla', sans-serif;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--cream);
     }
 
-    .track-instrument {
-      opacity: 0.7;
-      font-size: 0.8rem;
+    .track-desc {
+      font-family: 'VT323', monospace;
+      font-size: 0.85rem;
+      color: var(--cream-dim);
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+    /* Info badges */
+    .info-strip {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(232, 168, 87, 0.1);
     }
 
-    .loading-text {
-      animation: pulse 1.5s ease-in-out infinite;
+    .info-badge {
+      text-align: center;
+    }
+
+    .info-badge-value {
+      font-family: 'VT323', monospace;
+      font-size: 1.3rem;
+      color: var(--amber);
+    }
+
+    .info-badge-label {
+      font-family: 'Karla', sans-serif;
+      font-size: 0.7rem;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* VHS scanline effect (subtle) */
+    @keyframes scanline {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100vh); }
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎵 Lo-Fi Chill</h1>
-    <p class="subtitle">A modern lo-fi composition built with Contour</p>
+  <div class="scanlines"></div>
 
-    <div class="info">
-      <div class="info-row">
-        <span class="label">Tempo:</span>
-        <span class="value">78 BPM</span>
+  <div class="cassette-player">
+    <div class="brand">CONTOUR</div>
+
+    <div class="title-section">
+      <h1>Lo-Fi Chill</h1>
+      <div class="subtitle">Late Night Sessions</div>
+    </div>
+
+    <div class="cassette-window">
+      <div class="tape-reels">
+        <div class="reel" id="reelLeft"></div>
+        <div class="tape-label">
+          Side A
+          <span>F Major</span>
+        </div>
+        <div class="reel" id="reelRight"></div>
       </div>
-      <div class="info-row">
-        <span class="label">Key:</span>
-        <span class="value">D minor / F major</span>
+
+      <div class="lcd-display">
+        <div class="lcd-status" id="status">READY</div>
+        <div class="lcd-time" id="timeDisplay">00:00</div>
       </div>
-      <div class="info-row">
-        <span class="label">Duration:</span>
-        <span class="value" id="duration">~3:17</span>
-      </div>
-      <div class="info-row">
-        <span class="label">Tracks:</span>
-        <span class="value">5</span>
+
+      <div class="progress-track">
+        <div class="progress-bar" id="progress"></div>
       </div>
     </div>
 
-    <div class="status" id="status">
-      Ready to play
+    <div class="transport-controls">
+      <button class="transport-btn" id="stopBtn" onclick="stop()" disabled title="Stop">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="6" y="6" width="12" height="12" rx="1"/>
+        </svg>
+      </button>
+      <button class="transport-btn play-btn" id="playBtn" onclick="play()" title="Play">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </button>
     </div>
 
-    <div class="progress">
-      <div class="progress-bar" id="progress"></div>
+    <div class="export-section">
+      <button class="export-btn" id="exportMidiBtn" onclick="exportMIDI()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        MIDI (fast)
+      </button>
+      <button class="export-btn" id="exportWavBtn" onclick="exportWAV()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        WAV (slow)
+      </button>
     </div>
 
-    <div class="controls">
-      <button id="playBtn" onclick="play()">▶ Play</button>
-      <button id="stopBtn" onclick="stop()" class="stop" disabled>⏹ Stop</button>
+    <div class="track-list">
+      <div class="track-list-header">Tracks</div>
+      <div class="track-item">
+        <div class="track-indicator" id="ind1"></div>
+        <div class="track-info">
+          <div class="track-name">Rhodes Piano</div>
+          <div class="track-desc">Warm 9th Chords</div>
+        </div>
+      </div>
+      <div class="track-item">
+        <div class="track-indicator" id="ind2"></div>
+        <div class="track-info">
+          <div class="track-name">Acoustic Bass</div>
+          <div class="track-desc">Smooth Walking Lines</div>
+        </div>
+      </div>
+      <div class="track-item">
+        <div class="track-indicator" id="ind3"></div>
+        <div class="track-info">
+          <div class="track-name">Lo-Fi Drums</div>
+          <div class="track-desc">Swing Groove + Fills</div>
+        </div>
+      </div>
+      <div class="track-item">
+        <div class="track-indicator" id="ind4"></div>
+        <div class="track-info">
+          <div class="track-name">Kalimba</div>
+          <div class="track-desc">Dreamy Melody</div>
+        </div>
+      </div>
+      <div class="track-item">
+        <div class="track-indicator" id="ind5"></div>
+        <div class="track-info">
+          <div class="track-name">String Pad</div>
+          <div class="track-desc">Warm Atmosphere</div>
+        </div>
+      </div>
     </div>
 
-    <div class="controls">
-      <button id="exportMidiBtn" onclick="exportMIDI()" class="export">💾 Export MIDI</button>
-      <button id="exportWavBtn" onclick="exportWAV()" class="export">💾 Export WAV</button>
-    </div>
-
-    <div class="tracks">
-      <h3>Tracks</h3>
-      <div class="track">
-        <span class="track-name">Electric Piano (Rhodes)</span>
-        <span class="track-instrument">Jazzy chord progressions</span>
+    <div class="info-strip">
+      <div class="info-badge">
+        <div class="info-badge-value">72</div>
+        <div class="info-badge-label">BPM</div>
       </div>
-      <div class="track">
-        <span class="track-name">Electric Bass (Finger)</span>
-        <span class="track-instrument">Smooth bass line</span>
+      <div class="info-badge">
+        <div class="info-badge-value" id="duration">4:16</div>
+        <div class="info-badge-label">Duration</div>
       </div>
-      <div class="track">
-        <span class="track-name">Lo-Fi Drums</span>
-        <span class="track-instrument">Laid-back groove</span>
-      </div>
-      <div class="track">
-        <span class="track-name">Vibraphone</span>
-        <span class="track-instrument">Ambient melody</span>
-      </div>
-      <div class="track">
-        <span class="track-name">Synth Pad</span>
-        <span class="track-instrument">Atmospheric texture</span>
+      <div class="info-badge">
+        <div class="info-badge-value">5</div>
+        <div class="info-badge-label">Tracks</div>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { playLoFiComposition, exportLoFiToMIDI, exportLoFiToWAV } from './lofi-composition.js';
+    import { playLoFiComposition, exportLoFiToMIDI, exportLoFiToWAV, stopPlayback } from './lofi-composition.ts';
 
     let isPlaying = false;
     let startTime = 0;
@@ -283,7 +605,13 @@
     function setStatus(message, type = 'info') {
       const status = document.getElementById('status');
       status.textContent = message;
-      status.className = 'status ' + type;
+      status.className = 'lcd-status ' + type;
+    }
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
     function updateProgress() {
@@ -292,9 +620,33 @@
       const elapsed = (Date.now() - startTime) / 1000;
       const progress = Math.min((elapsed / duration) * 100, 100);
       document.getElementById('progress').style.width = progress + '%';
+      document.getElementById('timeDisplay').textContent = formatTime(elapsed);
 
       if (progress >= 100) {
         stop();
+      }
+    }
+
+    function setTrackIndicators(active) {
+      for (let i = 1; i <= 5; i++) {
+        const ind = document.getElementById('ind' + i);
+        if (active) {
+          ind.classList.add('active');
+        } else {
+          ind.classList.remove('active');
+        }
+      }
+    }
+
+    function setReelsSpinning(spinning) {
+      const reelLeft = document.getElementById('reelLeft');
+      const reelRight = document.getElementById('reelRight');
+      if (spinning) {
+        reelLeft.classList.add('spinning');
+        reelRight.classList.add('spinning');
+      } else {
+        reelLeft.classList.remove('spinning');
+        reelRight.classList.remove('spinning');
       }
     }
 
@@ -302,22 +654,29 @@
       try {
         document.getElementById('playBtn').disabled = true;
         document.getElementById('stopBtn').disabled = false;
-        setStatus('Loading instruments...', 'loading');
+        setStatus('LOADING...', 'loading');
 
         const result = await playLoFiComposition();
         duration = result.duration;
         startTime = Date.now();
         isPlaying = true;
 
-        setStatus('Playing... 🎵', 'playing');
+        // Update duration display
+        document.getElementById('duration').textContent = formatTime(duration);
+
+        setStatus('PLAYING', 'playing');
+        setTrackIndicators(true);
+        setReelsSpinning(true);
 
         progressInterval = setInterval(updateProgress, 100);
 
       } catch (error) {
         console.error('Playback error:', error);
-        setStatus('Error: ' + error.message, 'error');
+        setStatus('ERROR', 'error');
         document.getElementById('playBtn').disabled = false;
         document.getElementById('stopBtn').disabled = true;
+        setReelsSpinning(false);
+        setTrackIndicators(false);
       }
     };
 
@@ -328,24 +687,24 @@
         progressInterval = null;
       }
       document.getElementById('progress').style.width = '0%';
+      document.getElementById('timeDisplay').textContent = '00:00';
       document.getElementById('playBtn').disabled = false;
       document.getElementById('stopBtn').disabled = true;
-      setStatus('Stopped', 'info');
+      setStatus('STOPPED', 'info');
+      setTrackIndicators(false);
+      setReelsSpinning(false);
 
-      // Stop audio
-      if (window.Tone) {
-        window.Tone.Transport.stop();
-      }
+      // Stop audio using proper cleanup function
+      stopPlayback();
     };
 
     window.exportMIDI = async function() {
       try {
         document.getElementById('exportMidiBtn').disabled = true;
-        setStatus('Exporting to MIDI...', 'loading');
+        setStatus('EXPORTING MIDI...', 'loading');
 
         const blob = await exportLoFiToMIDI();
 
-        // Create download link
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -353,12 +712,12 @@
         a.click();
         URL.revokeObjectURL(url);
 
-        setStatus('MIDI exported successfully! ✓', 'playing');
-        setTimeout(() => setStatus('Ready to play', 'info'), 3000);
+        setStatus('MIDI EXPORTED', 'playing');
+        setTimeout(() => setStatus('READY', 'info'), 3000);
 
       } catch (error) {
         console.error('MIDI export error:', error);
-        setStatus('Error: ' + error.message, 'error');
+        setStatus('EXPORT ERROR', 'error');
       } finally {
         document.getElementById('exportMidiBtn').disabled = false;
       }
@@ -367,11 +726,18 @@
     window.exportWAV = async function() {
       try {
         document.getElementById('exportWavBtn').disabled = true;
-        setStatus('Rendering to WAV... (this may take a minute)', 'loading');
+        document.getElementById('exportMidiBtn').disabled = true;
+        setReelsSpinning(true);
 
-        const blob = await exportLoFiToWAV();
+        // Progress callback to update UI
+        const onProgress = (progress, stage) => {
+          setStatus(stage.toUpperCase(), 'loading');
+          document.getElementById('progress').style.width = progress + '%';
+          document.getElementById('timeDisplay').textContent = Math.round(progress) + '%';
+        };
 
-        // Create download link
+        const blob = await exportLoFiToWAV(onProgress);
+
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -379,14 +745,20 @@
         a.click();
         URL.revokeObjectURL(url);
 
-        setStatus('WAV exported successfully! ✓', 'playing');
-        setTimeout(() => setStatus('Ready to play', 'info'), 3000);
+        setStatus('WAV EXPORTED', 'playing');
+        document.getElementById('progress').style.width = '0%';
+        document.getElementById('timeDisplay').textContent = '00:00';
+        setTimeout(() => setStatus('READY', 'info'), 3000);
 
       } catch (error) {
         console.error('WAV export error:', error);
-        setStatus('Error: ' + error.message, 'error');
+        setStatus('EXPORT ERROR', 'error');
+        document.getElementById('progress').style.width = '0%';
+        document.getElementById('timeDisplay').textContent = '00:00';
       } finally {
         document.getElementById('exportWavBtn').disabled = false;
+        document.getElementById('exportMidiBtn').disabled = false;
+        setReelsSpinning(false);
       }
     };
   </script>
