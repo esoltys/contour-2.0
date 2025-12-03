@@ -20,12 +20,12 @@ does not provide an export named 'getTransportDebugger'
    ```
 3. Rebuild packages:
    ```bash
-   pnpm --filter @contour/core build
-   pnpm --filter @contour/tone-adapter build
+   bun run build:core
+   bun run build:tone
    ```
 4. Restart dev server:
    ```bash
-   pnpm dev
+   bun run dev:playground
    ```
 
 **Why this happens:**
@@ -46,10 +46,10 @@ If TypeScript shows errors after pulling changes:
 
 ```bash
 # Rebuild all packages
-pnpm build
+bun run build
 
 # Or rebuild specific package
-pnpm --filter @contour/core build
+bun run build:core
 ```
 
 ## Common Development Issues
@@ -89,5 +89,5 @@ If you encounter an issue not covered here:
 2. Create a new issue with:
    - Error message (full stack trace)
    - Steps to reproduce
-   - Your OS and Node.js version
-   - Output of `pnpm list` from project root
+   - Your OS and bun version (run `bun --version`)
+   - Output of `bun pm ls` from project root

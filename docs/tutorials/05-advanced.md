@@ -173,7 +173,7 @@ Contour is designed for live coding - writing and modifying music in real-time. 
 1. Start the dev server:
    ```bash
    cd packages/playground
-   pnpm dev
+   bun run dev
    ```
 
 2. Create a composition file that exports patterns
@@ -246,7 +246,7 @@ The performance grid lets you trigger patterns live:
 
 ```bash
 cd packages/playground
-pnpm dev
+bun run dev
 # Open http://localhost:3000/playground.html
 ```
 
