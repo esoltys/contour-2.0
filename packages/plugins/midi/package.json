@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@contour/core": "workspace:*",
+    "@contour/core": "*",
     "jsmidgen": "^0.1.7"
   },
   "devDependencies": {
