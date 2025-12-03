@@ -1,6 +1,8 @@
 # Dependencies
 node_modules/
-pnpm-lock.yaml
+bun.lock
+bun.lockb
+.bun/
 
 # Build outputs
 dist/
@@ -25,7 +27,6 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-pnpm-debug.log*
 
 # Testing
 coverage/
