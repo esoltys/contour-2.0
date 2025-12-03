@@ -94,6 +94,9 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
     conductorTrack.setTempo(Math.round(composition.tempo as number));
     file.addTrack(conductorTrack);
 
+    // Count the number of voice tracks (not including conductor track)
+    let voiceTrackCount = 0;
+
     // For each track in the composition
     for (const track of composition.tracks) {
       // For each voice in the track, create a separate MIDI track
@@ -108,25 +111,29 @@ export class MIDIRenderer implements RendererPlugin<MIDIRendererConfig> {
 
         // Add track to file
         file.addTrack(midiTrack);
+        voiceTrackCount++;
       }
     }
 
     // Generate MIDI file buffer
-    // toBytes() returns a string with binary data, convert to Uint8Array
+    // toBytes() returns a string with binary data, convert to Node.js Buffer
     const byteString = file.toBytes();
     const midiData = new Uint8Array(byteString.length);
     for (let i = 0; i < byteString.length; i++) {
       midiData[i] = byteString.charCodeAt(i);
     }
 
+    // Convert Uint8Array to Node.js Buffer for cross-runtime compatibility
+    const buffer = Buffer.from(midiData);
+
     return {
-      data: midiData.buffer,
+      data: buffer,
       format: 'midi',
       metadata: {
         duration: composition.duration,
         format: this.config.format,
         ticksPerBeat: this.config.ticksPerBeat,
-        trackCount: file.tracks.length,
+        trackCount: voiceTrackCount,
         tempo: composition.tempo,
       },
     };
