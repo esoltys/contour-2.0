@@ -17,8 +17,8 @@ This example demonstrates Contour's **Phase 1 Sample Library Integration**, whic
 ```bash
 # From the root of the repository
 cd examples/sample-library-demo
-pnpm install
-pnpm play
+bun install
+bun run play
 ```
 
 ### What You'll Hear

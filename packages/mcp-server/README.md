@@ -6,10 +6,10 @@ MCP (Model Context Protocol) servers for the Contour music composition system. T
 
 ```bash
 # From the Contour monorepo
-pnpm install
+bun install
 
 # Or install globally
-npm install -g @contour/mcp-server
+bun install -g @contour/mcp-server
 ```
 
 ## Quick Start
@@ -22,12 +22,12 @@ Add to your Claude Code settings (`~/.claude/settings.json` or project `.claude/
 {
   "mcpServers": {
     "contour-theory": {
-      "command": "npx",
-      "args": ["@contour/mcp-server", "music-theory"]
+      "command": "bun",
+      "args": ["x", "@contour/mcp-server", "music-theory"]
     },
     "contour-pattern": {
-      "command": "npx",
-      "args": ["@contour/mcp-server", "pattern"]
+      "command": "bun",
+      "args": ["x", "@contour/mcp-server", "pattern"]
     }
   }
 }
@@ -37,13 +37,13 @@ Add to your Claude Code settings (`~/.claude/settings.json` or project `.claude/
 
 ```bash
 # Run music theory server
-npx @contour/mcp-server music-theory
+bun x @contour/mcp-server music-theory
 
 # Run pattern visualization server
-npx @contour/mcp-server pattern
+bun x @contour/mcp-server pattern
 
 # Show help
-npx @contour/mcp-server --help
+bun x @contour/mcp-server --help
 ```
 
 ## Available Servers
@@ -158,13 +158,13 @@ The pattern server supports Contour's mini-notation:
 
 ```bash
 # Build
-pnpm build
+bun run build
 
 # Run tests
-pnpm test
+bun run test
 
 # Type check
-pnpm type-check
+bun run type-check
 ```
 
 ## Architecture
