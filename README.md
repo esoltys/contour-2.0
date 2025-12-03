@@ -28,17 +28,17 @@ git clone https://github.com/esoltys/contour-2.0.git
 cd contour-2.0
 
 # Install dependencies
-pnpm install
+bun install
 
 # Run tests
-pnpm test
+bun run test
 ```
 
 ### Running the Demos
 
 ```bash
 cd packages/playground
-pnpm dev
+bun run dev
 # Open http://localhost:3000
 ```
 

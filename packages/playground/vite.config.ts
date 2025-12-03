@@ -33,8 +33,8 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   optimizeDeps: {
-    include: ['monaco-editor', 'soundfont-player'],
-    exclude: ['@contour/core', '@contour/tone-adapter'],
+    include: ['monaco-editor'],
+    exclude: ['@contour/core', '@contour/tone-adapter', 'soundfont-player'],
     esbuildOptions: {
       // Needed for soundfont-player CommonJS compatibility
       platform: 'browser',

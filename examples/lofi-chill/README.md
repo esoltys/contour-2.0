@@ -92,7 +92,7 @@ You can import the MIDI file and map it to your preferred instruments while main
 1. **Start the dev server:**
    ```bash
    cd examples/lofi-chill
-   pnpm dev
+   bun run dev
    ```
 
 2. **Open in browser:**

@@ -21,9 +21,9 @@ First, make sure you have the project running:
 
 ```bash
 cd contour-2.0
-pnpm install
+bun install
 cd packages/playground
-pnpm dev
+bun run dev
 ```
 
 Open http://localhost:3000 in your browser.

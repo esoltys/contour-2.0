@@ -6,6 +6,7 @@
     "lib": ["ES2022", "DOM"],
     "moduleResolution": "bundler",
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

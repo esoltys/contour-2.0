@@ -31,12 +31,12 @@ For Claude Code integration, add to your settings:
   {
     "mcpServers": {
       "contour-theory": {
-        "command": "npx",
-        "args": ["contour-mcp", "music-theory"]
+        "command": "bun",
+        "args": ["x", "contour-mcp", "music-theory"]
       },
       "contour-pattern": {
-        "command": "npx",
-        "args": ["contour-mcp", "pattern"]
+        "command": "bun",
+        "args": ["x", "contour-mcp", "pattern"]
       }
     }
   }

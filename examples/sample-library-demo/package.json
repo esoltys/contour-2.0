@@ -5,14 +5,13 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "play": "tsx simple-melody.ts",
-    "dev": "tsx watch simple-melody.ts"
+    "play": "bun --run simple-melody.ts",
+    "dev": "bun --run --watch simple-melody.ts"
   },
   "dependencies": {
-    "@contour/core": "workspace:*",
-    "@contour/tone-adapter": "workspace:*"
+    "@contour/core": "*",
+    "@contour/tone-adapter": "*"
   },
   "devDependencies": {
-    "tsx": "^4.7.0"
   }
 }

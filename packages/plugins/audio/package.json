@@ -11,8 +11,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@contour/core": "workspace:*",
-    "@contour/tone-adapter": "workspace:*",
+    "@contour/core": "*",
+    "@contour/tone-adapter": "*",
     "audiobuffer-to-wav": "^1.0.0",
     "tone": "^15.0.0"
   },

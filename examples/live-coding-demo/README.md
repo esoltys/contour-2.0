@@ -112,7 +112,7 @@ pnpm export
 
 ## Live Coding Experience
 
-With hot-reload enabled (`pnpm dev`), you can modify patterns in `index.ts` and see results instantly. Try changing:
+With hot-reload enabled (`bun run dev`), you can modify patterns in `index.ts` and see results instantly. Try changing:
 
 - Euclidean rhythm parameters
 - Transpose values

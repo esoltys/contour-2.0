@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@contour/core": "workspace:*",
-    "@contour/tone-adapter": "workspace:*",
+    "@contour/core": "*",
+    "@contour/tone-adapter": "*",
     "@monaco-editor/loader": "^1.6.1",
     "automation-events": "^7.1.13",
     "monaco-editor": "^0.54.0",

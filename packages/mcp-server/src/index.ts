@@ -19,8 +19,8 @@
  * @example
  * ```bash
  * # CLI usage
- * npx contour-mcp music-theory
- * npx contour-mcp pattern
+ * bun x contour-mcp music-theory
+ * bun x contour-mcp pattern
  * ```
  */
 
