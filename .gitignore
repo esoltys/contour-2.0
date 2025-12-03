@@ -15,6 +15,7 @@ dist/
 # IDE
 .vscode/
 !.vscode/mcp.json
+!.vscode/settings.json
 .idea/
 *.swp
 *.swo
