@@ -5,15 +5,14 @@
   "private": true,
   "scripts": {
     "test": "vitest run",
-    "export": "tsx export-midi.ts"
+    "export": "bun --run export-midi.ts"
   },
   "dependencies": {
-    "@contour/core": "workspace:*",
-    "@contour/plugin-midi": "workspace:*",
-    "@contour/tone-adapter": "workspace:*"
+    "@contour/core": "*",
+    "@contour/plugin-midi": "*",
+    "@contour/tone-adapter": "*"
   },
   "devDependencies": {
-    "vitest": "^1.0.0",
-    "tsx": "^4.0.0"
+    "vitest": "^1.0.0"
   }
 }
