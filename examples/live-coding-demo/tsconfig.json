@@ -8,6 +8,7 @@
     "outDir": "./dist",
     "esModuleInterop": true,
     "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "declaration": true
