@@ -36,6 +36,7 @@ interface InstrumentInstance {
 export class CompositionScheduler {
   private scheduledEvents: number[] = [];
   private instruments = new Map<string, InstrumentInstance>();
+  private instrumentLoaders = new Map<string, Promise<InstrumentInstance>>();
   private sampleLibraryManager: SampleLibraryManager | null = null;
 
   /**
@@ -50,9 +51,9 @@ export class CompositionScheduler {
     Tone.Transport.bpm.value = composition.tempo;
 
     // Schedule each track (await to ensure instruments are loaded)
-    for (const track of composition.tracks) {
-      await this.scheduleTrack(track, startTime);
-    }
+    await Promise.all(
+      composition.tracks.map(track => this.scheduleTrack(track, startTime))
+    );
   }
 
   /**
@@ -64,9 +65,9 @@ export class CompositionScheduler {
    */
   async scheduleTrack(track: Track, startTime: Seconds = Seconds(0)): Promise<void> {
     // Schedule each voice in the track (await to ensure instruments are loaded)
-    for (const voice of track.voices) {
-      await this.scheduleVoice(voice, startTime);
-    }
+    await Promise.all(
+      track.voices.map(voice => this.scheduleVoice(voice, startTime))
+    );
   }
 
   /**
@@ -126,52 +127,74 @@ export class CompositionScheduler {
   private async getOrCreateInstrument(
     instrumentName: string
   ): Promise<Tone.PolySynth | MusicalSampler> {
-    let instance = this.instruments.get(instrumentName);
-
-    if (!instance) {
-      // Check if it's a qualified sample library reference (contains ':')
-      if (isQualifiedName(instrumentName)) {
-        // Sampled instrument: 'LibraryName:InstrumentName'
-        if (!this.sampleLibraryManager) {
-          throw new Error(
-            `Sample library manager not configured. ` +
-            `Call setSampleLibraryManager() before using sampled instruments like '${instrumentName}'.`
-          );
-        }
-
-        console.log(`[CompositionScheduler] Loading sampled instrument: ${instrumentName}`);
-
-        // Load instrument via SampleLibraryManager
-        const sfInstrument = await this.sampleLibraryManager.getInstrumentByQualifiedName(
-          instrumentName as any
-        );
-
-        // Wrap in MusicalSampler for Tone.js integration
-        const sampler = new MusicalSampler(sfInstrument);
-        sampler.toDestination();
-
-        instance = {
-          name: instrumentName,
-          instrument: sampler,
-          type: 'sampler',
-        };
-      } else {
-        // Default Tone.js synth
-        console.log(`[CompositionScheduler] Creating Tone.js synth: ${instrumentName}`);
-
-        const synth = new Tone.PolySynth(Tone.Synth).toDestination();
-
-        instance = {
-          name: instrumentName,
-          instrument: synth,
-          type: 'synth',
-        };
-      }
-
-      this.instruments.set(instrumentName, instance);
+    // Fast path: already loaded
+    const existing = this.instruments.get(instrumentName);
+    if (existing) {
+      return existing.instrument;
     }
 
-    return instance.instrument;
+    // Check if already being loaded
+    let loader = this.instrumentLoaders.get(instrumentName);
+    if (!loader) {
+      // Create new loader
+      loader = this.createInstrumentInstance(instrumentName);
+      this.instrumentLoaders.set(instrumentName, loader);
+    }
+
+    try {
+      const instance = await loader;
+      // Make sure we didn't double-set
+      if (!this.instruments.has(instrumentName)) {
+        this.instruments.set(instrumentName, instance);
+      }
+      return instance.instrument;
+    } finally {
+      this.instrumentLoaders.delete(instrumentName);
+    }
+  }
+
+  /**
+   * Helper to create an instrument instance.
+   */
+  private async createInstrumentInstance(instrumentName: string): Promise<InstrumentInstance> {
+    // Check if it's a qualified sample library reference (contains ':')
+    if (isQualifiedName(instrumentName)) {
+      // Sampled instrument: 'LibraryName:InstrumentName'
+      if (!this.sampleLibraryManager) {
+        throw new Error(
+          `Sample library manager not configured. ` +
+          `Call setSampleLibraryManager() before using sampled instruments like '${instrumentName}'.`
+        );
+      }
+
+      console.log(`[CompositionScheduler] Loading sampled instrument: ${instrumentName}`);
+
+      // Load instrument via SampleLibraryManager
+      const sfInstrument = await this.sampleLibraryManager.getInstrumentByQualifiedName(
+        instrumentName as any
+      );
+
+      // Wrap in MusicalSampler for Tone.js integration
+      const sampler = new MusicalSampler(sfInstrument);
+      sampler.toDestination();
+
+      return {
+        name: instrumentName,
+        instrument: sampler,
+        type: 'sampler',
+      };
+    } else {
+      // Default Tone.js synth
+      console.log(`[CompositionScheduler] Creating Tone.js synth: ${instrumentName}`);
+
+      const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+
+      return {
+        name: instrumentName,
+        instrument: synth,
+        type: 'synth',
+      };
+    }
   }
 
   /**
