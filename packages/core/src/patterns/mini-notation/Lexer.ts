@@ -4,6 +4,13 @@
 
 import { TokenType, Token, MiniNotationError } from './types.js';
 
+// Pre-compiled regex patterns to avoid reallocation
+const NOTE_LETTER_PATTERN = /[A-Ga-g]/;
+const NUMBER_PATTERN = /[0-9.]/;
+const NOTE_PATTERN = /^[A-Ga-g][#b]?[0-6]$/;
+const CHORD_PATTERN = /^[A-Ga-g][#b]?(maj|min|dim|aug|sus|add|alt|m|M|\d)/;
+const ACCIDENTAL_SUFFIX_PATTERN = /[#b]$/;
+
 /**
  * Lexer for mini-notation strings.
  */
@@ -69,12 +76,12 @@ export class MiniNotationLexer {
   }
 
   private isNoteLetter(char: string): boolean {
-    return /[A-Ga-g]/.test(char);
+    return NOTE_LETTER_PATTERN.test(char);
   }
 
   private readNumber(): string {
     const start = this.current;
-    while (this.current < this.input.length && /[0-9.]/.test(this.input[this.current])) {
+    while (this.current < this.input.length && NUMBER_PATTERN.test(this.input[this.current])) {
       this.current++;
     }
     if (start === this.current) {
@@ -125,22 +132,20 @@ export class MiniNotationLexer {
     // A note has format: Letter + optional accidental + octave number (0-6)
     // We limit to 0-6 because octaves 7-8 are rare, and G7/C7/etc are common chords
     // Examples: C4, F#5, Bb3
-    const notePattern = /^[A-Ga-g][#b]?[0-6]$/;
-    if (notePattern.test(str)) {
+    if (NOTE_PATTERN.test(str)) {
       return false; // It's a note
     }
 
     // A chord has format: Letter + optional accidental + chord quality
     // Chord qualities include: maj, min, m, M, dim, aug, sus, numbers (7, 9, 11, 13), etc.
     // Examples: Cmaj7, Dm7, G7, Asus4, C13
-    const chordPattern = /^[A-Ga-g][#b]?(maj|min|dim|aug|sus|add|alt|m|M|\d)/;
-    if (chordPattern.test(str)) {
+    if (CHORD_PATTERN.test(str)) {
       return true; // It's a chord
     }
 
     // If it has more characters after the note letter and accidental, assume chord
     // (This catches cases like "C13", "Eb9", etc.)
-    if (str.length > 2 || (str.length > 1 && !/[#b]$/.test(str))) {
+    if (str.length > 2 || (str.length > 1 && !ACCIDENTAL_SUFFIX_PATTERN.test(str))) {
       return true;
     }
 

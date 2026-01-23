@@ -1,45 +1,64 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { CompositionScheduler } from '../../src/scheduling/CompositionScheduler';
 import { SampleLibraryManager } from '../../src/samples/SampleLibraryManager';
-import { Voice, Track, Composition, PatternBuilder, Durations } from '@contour/core';
+import { Seconds } from '@contour/core';
+import * as Tone from 'tone';
 
-// Mock Tone.js to avoid real audio context issues
+// Mock SampleLibraryManager
+vi.mock('../../src/samples/SampleLibraryManager', () => {
+  return {
+    SampleLibraryManager: vi.fn().mockImplementation(() => {
+      return {
+        initialize: vi.fn(),
+        getInstrumentByQualifiedName: vi.fn().mockImplementation(async (name) => {
+          await new Promise(resolve => setTimeout(resolve, 100)); // Simulate 100ms delay
+          return {
+              triggerAttackRelease: vi.fn(),
+              triggerAttackReleaseChord: vi.fn(),
+              dispose: vi.fn(),
+              toDestination: vi.fn(),
+          };
+        }),
+        getInstrument: vi.fn(),
+        isLoaded: vi.fn().mockReturnValue(false),
+      };
+    })
+  };
+});
+
+// Mock MusicalSampler
+vi.mock('../../src/wrappers/MusicalSampler', () => {
+  return {
+    MusicalSampler: vi.fn().mockImplementation(() => ({
+      toDestination: vi.fn().mockReturnThis(),
+      triggerAttackRelease: vi.fn(),
+      triggerAttackReleaseChord: vi.fn(),
+      dispose: vi.fn(),
+      volume: { value: 0 }
+    }))
+  };
+});
+
+// Mock Tone.js
 vi.mock('tone', async () => {
   const actual = await vi.importActual('tone');
   return {
     ...actual,
     Transport: {
       ...actual.Transport,
-      schedule: vi.fn(),
+      schedule: vi.fn().mockReturnValue(1),
       bpm: { value: 120 },
       start: vi.fn(),
       stop: vi.fn(),
-      pause: vi.fn(),
       clear: vi.fn(),
-      state: 'stopped',
-      seconds: 0,
     },
-    start: vi.fn().mockResolvedValue(undefined),
-    PolySynth: class {
-      toDestination() { return this; }
-      triggerAttackRelease() {}
-      dispose() {}
-      volume = { value: 0 }
-    },
-    Gain: class {
-      constructor() {
-        this.gain = { value: 1, rampTo: vi.fn() };
-        this.input = {};
-      }
-      toDestination() { return this; }
-      connect() { return this; }
-      disconnect() { return this; }
-      dispose() {}
-    },
-    getContext: () => ({
-        currentTime: 0,
-        rawContext: {}
-    }),
+    PolySynth: vi.fn().mockImplementation(() => ({
+      toDestination: vi.fn().mockReturnThis(),
+      triggerAttackRelease: vi.fn(),
+      dispose: vi.fn(),
+      volume: { value: 0 }
+    })),
+    start: vi.fn(),
   };
 });
 
@@ -47,115 +66,87 @@ describe('CompositionScheduler Performance', () => {
   let scheduler: CompositionScheduler;
   let mockManager: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     scheduler = new CompositionScheduler();
-
-    // Create a mock SampleLibraryManager
-    mockManager = {
-      initialize: vi.fn(),
-      getInstrumentByQualifiedName: vi.fn().mockImplementation(async () => {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 50));
-        return {
-           stop: vi.fn(),
-           play: vi.fn(),
-           out: {
-             connect: vi.fn(),
-           }
-        };
-      }),
-      isLoaded: vi.fn().mockReturnValue(false),
-      loadInstrumentByQualifiedName: vi.fn(),
-      getInstrument: vi.fn(),
-      dispose: vi.fn(),
-    };
-
-    scheduler.setSampleLibraryManager(mockManager as unknown as SampleLibraryManager);
+    mockManager = new SampleLibraryManager();
+    scheduler.setSampleLibraryManager(mockManager);
   });
 
   afterEach(() => {
     scheduler.dispose();
+    vi.clearAllMocks();
   });
 
-  it('measures scheduling time for multiple voices', async () => {
-    const numVoices = 10;
-    const delay = 50;
-
-    // Create multiple voices using DIFFERENT sampled instruments to force sequential loading
-    const voices: Voice[] = [];
-    for (let i = 0; i < numVoices; i++) {
-      voices.push({
-        name: `Voice ${i}`,
-        instrument: `MusyngKite:instrument_${i}`, // Qualified name to trigger sample loading
-        pattern: new PatternBuilder().note('C4', Durations.quarter).build(),
-      });
-    }
-
-    const track: Track = {
-      name: 'Piano Track',
-      voices: voices,
-    };
-
-    const composition: Composition = {
-      title: 'Perf Test',
+  it('measures scheduleComposition execution time', async () => {
+    const composition = {
       tempo: 120,
-      tracks: [track],
+      tracks: [
+        {
+          voices: [
+            {
+              instrument: 'Library:Inst1',
+              pattern: { events: [] }
+            }
+          ]
+        },
+        {
+          voices: [
+            {
+              instrument: 'Library:Inst2',
+              pattern: { events: [] }
+            }
+          ]
+        },
+        {
+          voices: [
+            {
+              instrument: 'Library:Inst3',
+              pattern: { events: [] }
+            }
+          ]
+        }
+      ]
     };
 
     const startTime = performance.now();
-    await scheduler.scheduleComposition(composition);
+    await scheduler.scheduleComposition(composition as any);
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    console.log(`Scheduling took ${duration.toFixed(2)}ms for ${numVoices} voices with ${delay}ms delay each.`);
+    console.log(`scheduleComposition took ${duration.toFixed(2)}ms`);
 
-    // OPTIMIZED ASSERTION:
-    // Parallel loading: max(50ms) + overhead = ~50-60ms
-    // We expect it to be less than 150ms (giving generous buffer)
+    // With 3 tracks * 100ms delay:
+    // Sequential: ~300ms
+    // Parallel: ~100ms
+
+    // We expect it to be fast now (Parallel)
+    // 3 tracks * 100ms delay in parallel = ~100ms + overhead
     expect(duration).toBeLessThan(150);
-    // And definitely much faster than sequential
-    expect(duration).toBeLessThan(numVoices * delay * 0.5);
   });
 
-  it('deduplicates simultaneous load requests for the same instrument', async () => {
-    const numVoices = 5;
-    const delay = 50;
-
-    // Create multiple voices using the SAME instrument
-    const voices: Voice[] = [];
-    for (let i = 0; i < numVoices; i++) {
-      voices.push({
-        name: `Voice ${i}`,
-        instrument: 'MusyngKite:shared_piano',
-        pattern: new PatternBuilder().note('C4', Durations.quarter).build(),
-      });
-    }
-
-    const track: Track = {
-      name: 'Shared Instrument Track',
-      voices: voices,
-    };
-
-    const composition: Composition = {
-      title: 'Dedupe Test',
+  it('coalesces requests for the same instrument', async () => {
+    const composition = {
       tempo: 120,
-      tracks: [track],
+      tracks: [
+        {
+          voices: [
+            { instrument: 'Library:SharedInst', pattern: { events: [] } }
+          ]
+        },
+        {
+          voices: [
+            { instrument: 'Library:SharedInst', pattern: { events: [] } }
+          ]
+        }
+      ]
     };
 
-    const startTime = performance.now();
-    await scheduler.scheduleComposition(composition);
-    const endTime = performance.now();
+    const spy = vi.spyOn(mockManager, 'getInstrumentByQualifiedName');
 
-    // Should be fast (~50ms)
-    expect(endTime - startTime).toBeLessThan(150);
+    await scheduler.scheduleComposition(composition as any);
 
-    // Verify only ONE load call was made
-    expect(mockManager.getInstrumentByQualifiedName).toHaveBeenCalledWith(
-       expect.stringMatching(/shared_piano/)
-    );
-    // Count calls specifically for shared_piano
-    const calls = mockManager.getInstrumentByQualifiedName.mock.calls;
-    const sharedPianoCalls = calls.filter((args: any[]) => args[0] === 'MusyngKite:shared_piano');
-    expect(sharedPianoCalls.length).toBe(1);
+    // Should be called only once despite multiple tracks using it concurrently
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith('Library:SharedInst');
   });
 });
