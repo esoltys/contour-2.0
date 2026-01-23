@@ -36,6 +36,7 @@ interface InstrumentInstance {
 export class CompositionScheduler {
   private scheduledEvents: number[] = [];
   private instruments = new Map<string, InstrumentInstance>();
+  private pendingLoads = new Map<string, Promise<InstrumentInstance>>();
   private sampleLibraryManager: SampleLibraryManager | null = null;
 
   /**
@@ -63,10 +64,8 @@ export class CompositionScheduler {
    * @returns Promise that resolves when all voices are scheduled
    */
   async scheduleTrack(track: Track, startTime: Seconds = Seconds(0)): Promise<void> {
-    // Schedule each voice in the track (await to ensure instruments are loaded)
-    for (const voice of track.voices) {
-      await this.scheduleVoice(voice, startTime);
-    }
+    // Schedule each voice in the track (parallelized)
+    await Promise.all(track.voices.map(voice => this.scheduleVoice(voice, startTime)));
   }
 
   /**
@@ -126,9 +125,19 @@ export class CompositionScheduler {
   private async getOrCreateInstrument(
     instrumentName: string
   ): Promise<Tone.PolySynth | MusicalSampler> {
+    // 1. Check if already loaded
     let instance = this.instruments.get(instrumentName);
+    if (instance) return instance.instrument;
 
-    if (!instance) {
+    // 2. Check if currently loading (deduplication)
+    let loadPromise = this.pendingLoads.get(instrumentName);
+    if (loadPromise) {
+      instance = await loadPromise;
+      return instance.instrument;
+    }
+
+    // 3. Start loading
+    loadPromise = (async () => {
       // Check if it's a qualified sample library reference (contains ':')
       if (isQualifiedName(instrumentName)) {
         // Sampled instrument: 'LibraryName:InstrumentName'
@@ -150,25 +159,32 @@ export class CompositionScheduler {
         const sampler = new MusicalSampler(sfInstrument);
         sampler.toDestination();
 
-        instance = {
+        return {
           name: instrumentName,
           instrument: sampler,
           type: 'sampler',
-        };
+        } as InstrumentInstance;
       } else {
         // Default Tone.js synth
         console.log(`[CompositionScheduler] Creating Tone.js synth: ${instrumentName}`);
 
         const synth = new Tone.PolySynth(Tone.Synth).toDestination();
 
-        instance = {
+        return {
           name: instrumentName,
           instrument: synth,
           type: 'synth',
-        };
+        } as InstrumentInstance;
       }
+    })();
 
+    this.pendingLoads.set(instrumentName, loadPromise);
+
+    try {
+      instance = await loadPromise;
       this.instruments.set(instrumentName, instance);
+    } finally {
+      this.pendingLoads.delete(instrumentName);
     }
 
     return instance.instrument;
