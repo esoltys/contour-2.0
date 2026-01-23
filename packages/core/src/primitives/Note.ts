@@ -1,6 +1,37 @@
 import { MIDINote, Hz, Interval } from '../types/brands';
 import type { NoteName, Octave, NoteLetter, Accidental } from '../types/music';
 
+// Performance: cache these mappings
+const letterToPitch: Record<NoteLetter, number> = {
+  C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11,
+};
+
+const sharpToFlat: Record<string, { letter: NoteLetter; octave: number }> = {
+  'C#': { letter: 'D', octave: 0 },
+  'D#': { letter: 'E', octave: 0 },
+  'F#': { letter: 'G', octave: 0 },
+  'G#': { letter: 'A', octave: 0 },
+  'A#': { letter: 'B', octave: 0 },
+};
+
+const flatToSharp: Record<string, { letter: NoteLetter; octave: number }> = {
+  'Db': { letter: 'C', octave: 0 },
+  'Eb': { letter: 'D', octave: 0 },
+  'Gb': { letter: 'F', octave: 0 },
+  'Ab': { letter: 'G', octave: 0 },
+  'Bb': { letter: 'A', octave: 0 },
+};
+
+const midiNoteNames: NoteLetter[] = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
+const midiAccidentals: Accidental[] = ['', '#', '', '#', '', '', '#', '', '#', '', '#', ''];
+const midiNoteNamesWithAccidentals = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+const noteNameToMidiMap: { [key: string]: number } = {
+  'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
+  'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
+  'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
+};
+
 /**
  * Immutable representation of a musical note.
  */
@@ -36,26 +67,6 @@ export class Note {
 
     const [, letter, accidental, octaveStr] = match;
     const octave = parseInt(octaveStr, 10);
-
-    // Enharmonic equivalents map
-    // Note: B#/Cb and E#/Fb are special cases that involve natural notes
-    // B# = C natural, Cb = B natural, E# = F natural, Fb = E natural
-    const sharpToFlat: Record<string, { letter: NoteLetter; octave: number }> = {
-      'C#': { letter: 'D', octave: 0 },
-      'D#': { letter: 'E', octave: 0 },
-      'F#': { letter: 'G', octave: 0 },
-      'G#': { letter: 'A', octave: 0 },
-      'A#': { letter: 'B', octave: 0 },
-    };
-
-    const flatToSharp: Record<string, { letter: NoteLetter; octave: number }> = {
-      'Db': { letter: 'C', octave: 0 },
-      'Eb': { letter: 'D', octave: 0 },
-      'Gb': { letter: 'F', octave: 0 },
-      'Ab': { letter: 'G', octave: 0 },
-      'Bb': { letter: 'A', octave: 0 },
-    };
-
     const noteWithAccidental = `${letter}${accidental}`;
 
     if (accidental === '#' && sharpToFlat[noteWithAccidental]) {
@@ -88,11 +99,7 @@ export class Note {
     const octave = Math.floor(pitch / 12) - 1;
     const noteIndex = pitch % 12;
 
-    // Note names for each chromatic pitch (prefer sharps)
-    const noteNames: NoteLetter[] = ['C', 'C', 'D', 'D', 'E', 'F', 'F', 'G', 'G', 'A', 'A', 'B'];
-    const accidentals: Accidental[] = ['', '#', '', '#', '', '', '#', '', '#', '', '#', ''];
-
-    const name = `${noteNames[noteIndex]}${accidentals[noteIndex]}${octave}` as NoteName;
+    const name = `${midiNoteNames[noteIndex]}${midiAccidentals[noteIndex]}${octave}` as NoteName;
     return new Note(name);
   }
 
@@ -122,9 +129,8 @@ export class Note {
    * ```
    */
   static midiToNoteName(midi: number): string {
-    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     const octave = Math.floor(midi / 12) - 1;
-    const noteName = noteNames[midi % 12];
+    const noteName = midiNoteNamesWithAccidentals[midi % 12];
     return `${noteName}${octave}`;
   }
 
@@ -143,19 +149,13 @@ export class Note {
    * ```
    */
   static noteNameToMidi(name: string): number {
-    const noteMap: { [key: string]: number } = {
-      'C': 0, 'C#': 1, 'Db': 1, 'D': 2, 'D#': 3, 'Eb': 3,
-      'E': 4, 'F': 5, 'F#': 6, 'Gb': 6, 'G': 7, 'G#': 8,
-      'Ab': 8, 'A': 9, 'A#': 10, 'Bb': 10, 'B': 11
-    };
-
     const match = name.match(/^([A-G][#b]?)(-?\d+)$/);
     if (!match) return 60; // Default to C4
 
     const noteName = match[1];
     const octave = parseInt(match[2]);
 
-    return (octave + 1) * 12 + (noteMap[noteName] || 0);
+    return (octave + 1) * 12 + (noteNameToMidiMap[noteName] || 0);
   }
 
   private noteToPitch(name: NoteName): MIDINote {
@@ -169,17 +169,6 @@ export class Note {
 
     const [, letter, accidental, octaveStr] = match;
     const octave = parseInt(octaveStr, 10);
-
-    // Map letter to pitch class (C=0, D=2, E=4, F=5, G=7, A=9, B=11)
-    const letterToPitch: Record<NoteLetter, number> = {
-      C: 0,
-      D: 2,
-      E: 4,
-      F: 5,
-      G: 7,
-      A: 9,
-      B: 11,
-    };
 
     let pitch = letterToPitch[letter as NoteLetter] + (octave + 1) * 12;
 
