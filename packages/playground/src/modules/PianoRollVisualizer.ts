@@ -29,6 +29,8 @@ export class PianoRollVisualizer {
   private config: VisualizerConfig;
   private isRunning = false;
   private animationFrameId: number | null = null;
+  private cachedMaxPatternLength: number | null = null;
+  private lastStateVersion = -1;
 
   constructor(
     state: PlaygroundState,
@@ -133,6 +135,14 @@ export class PianoRollVisualizer {
   }
 
   private getMaxPatternLength(): number {
+    // Return cached value if state hasn't changed
+    if (
+      this.cachedMaxPatternLength !== null &&
+      this.state.version === this.lastStateVersion
+    ) {
+      return this.cachedMaxPatternLength;
+    }
+
     let maxPatternLengthBeats = 4;
 
     this.state.pads.forEach((pad) => {
@@ -145,6 +155,10 @@ export class PianoRollVisualizer {
         (lastEvent.time + lastEvent.duration) * (this.state.bpm / 60);
       maxPatternLengthBeats = Math.max(maxPatternLengthBeats, patternEndBeats);
     });
+
+    // Update cache
+    this.cachedMaxPatternLength = maxPatternLengthBeats;
+    this.lastStateVersion = this.state.version;
 
     return maxPatternLengthBeats;
   }
