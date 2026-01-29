@@ -13,9 +13,9 @@ export class Pattern {
   readonly events: ReadonlyArray<Event>;
   readonly duration: Duration;
 
-  constructor(events: Event[]) {
+  constructor(events: Event[], duration?: Duration) {
     this.events = Object.freeze([...events]);
-    this.duration = this.calculateDuration();
+    this.duration = duration ?? this.calculateDuration();
   }
 
   /**
@@ -38,7 +38,7 @@ export class Pattern {
       }
       return event;
     });
-    return new Pattern(newEvents);
+    return new Pattern(newEvents, this.duration);
   }
 
   /**
@@ -50,7 +50,7 @@ export class Pattern {
       ...event,
       time: Seconds(totalDuration - event.time - event.duration),
     }));
-    return new Pattern(newEvents);
+    return new Pattern(newEvents, this.duration);
   }
 
   /**
@@ -65,7 +65,7 @@ export class Pattern {
       time: Seconds(event.time / factor),
       duration: Duration(event.duration / factor),
     }));
-    return new Pattern(newEvents);
+    return new Pattern(newEvents, Duration(this.duration / factor));
   }
 
   /**
@@ -134,7 +134,10 @@ export class Pattern {
    * All patterns start at time 0.
    */
   stack(other: Pattern): Pattern {
-    return new Pattern([...this.events, ...other.events]);
+    return new Pattern(
+      [...this.events, ...other.events],
+      Duration(Math.max(this.duration, other.duration))
+    );
   }
 
   /**
@@ -147,7 +150,10 @@ export class Pattern {
       ...event,
       time: Seconds(event.time + thisEnd),
     }));
-    return new Pattern([...this.events, ...shiftedEvents]);
+    return new Pattern(
+      [...this.events, ...shiftedEvents],
+      Duration(this.duration + other.duration)
+    );
   }
 
   /**
@@ -485,7 +491,7 @@ export class Pattern {
     // Track which note event we're processing
     let noteIndex = 0;
 
-    return this.map((event) => {
+    const newEvents = this.events.map((event) => {
       if (event.type === 'rest') return event;
 
       // Linear interpolation based on position among note/chord events
@@ -499,6 +505,8 @@ export class Pattern {
         velocity: newVelocity,
       };
     });
+
+    return new Pattern(newEvents, this.duration);
   }
 
   /**
@@ -534,7 +542,7 @@ export class Pattern {
     // Track which note event we're processing
     let noteIndex = 0;
 
-    return this.map((event) => {
+    const newEvents = this.events.map((event) => {
       if (event.type === 'rest') return event;
 
       // Linear interpolation based on position among note/chord events
@@ -548,6 +556,8 @@ export class Pattern {
         velocity: newVelocity,
       };
     });
+
+    return new Pattern(newEvents, this.duration);
   }
 
   /**
@@ -581,7 +591,7 @@ export class Pattern {
       ? (index: number) => beats.includes(index)
       : beats;
 
-    return this.map((event, index) => {
+    const newEvents = this.events.map((event, index) => {
       if (event.type === 'rest' || !shouldAccent(index)) {
         return event;
       }
@@ -595,6 +605,8 @@ export class Pattern {
         velocity: newVelocity,
       };
     });
+
+    return new Pattern(newEvents, this.duration);
   }
 
   /**
