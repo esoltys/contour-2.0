@@ -103,10 +103,20 @@ export class Validator {
 
     // Calculate summary
     const summary = {
-      errors: issues.filter(i => i.severity === 'error').length,
-      warnings: issues.filter(i => i.severity === 'warning').length,
-      info: issues.filter(i => i.severity === 'info').length,
+      errors: 0,
+      warnings: 0,
+      info: 0,
     };
+
+    for (const issue of issues) {
+      if (issue.severity === 'error') {
+        summary.errors++;
+      } else if (issue.severity === 'warning') {
+        summary.warnings++;
+      } else if (issue.severity === 'info') {
+        summary.info++;
+      }
+    }
 
     const valid = summary.errors === 0;
 
