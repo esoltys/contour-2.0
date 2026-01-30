@@ -187,29 +187,87 @@ export class PatternInspector {
       return '(empty pattern)';
     }
 
-    // Collect all unique pitches and sort them (highest first)
-    const pitchSet = new Set<MIDINote>();
+    const duration = pattern.duration;
+
+    // Handle zero duration edge case
+    if (duration === 0) {
+      // Check if there are any notes to display
+      const hasNotes = pattern.events.some(e => e.type === 'note' || e.type === 'chord');
+      if (!hasNotes && !showRests) {
+        return '(no notes to display)';
+      }
+      return '(pattern has zero duration)';
+    }
+
+    const timeStep = duration / width;
+
+    // Grid to store rows for each pitch
+    const pitchRows = new Map<MIDINote, string[]>();
+
+    // Rest row
+    let restRow: string[] | null = null;
+    if (showRests) {
+      restRow = new Array(width).fill('.');
+    }
+
+    // Helper to get or create a row for a pitch
+    const getRow = (pitch: MIDINote): string[] => {
+      let row = pitchRows.get(pitch);
+      if (!row) {
+        row = new Array(width).fill('.');
+        pitchRows.set(pitch, row);
+      }
+      return row;
+    };
+
+    // Helper to fill cells for an event
+    const fillCells = (row: string[], event: Event) => {
+      const startCell = Math.floor(event.time / timeStep);
+      const endCell = Math.min(
+        Math.ceil((event.time + event.duration) / timeStep),
+        width
+      );
+
+      for (let i = startCell; i < endCell; i++) {
+        if (i < width && i >= 0) {
+          if (event.type === 'rest') {
+             row[i] = '-';
+          } else {
+            if (showVelocity) {
+              const vel = event.velocity;
+              if (vel >= 100) row[i] = '█';
+              else if (vel >= 80) row[i] = '▓';
+              else if (vel >= 60) row[i] = '▒';
+              else if (vel >= 40) row[i] = '░';
+              else row[i] = '·';
+            } else {
+              row[i] = '█';
+            }
+          }
+        }
+      }
+    };
+
+    // Single pass over events
     for (const event of pattern.events) {
       if (event.type === 'note') {
-        pitchSet.add(event.pitch);
+        const row = getRow(event.pitch);
+        fillCells(row, event);
       } else if (event.type === 'chord') {
         for (const note of event.notes) {
-          pitchSet.add(note.pitch);
+          const row = getRow(note.pitch);
+          fillCells(row, event);
         }
+      } else if (event.type === 'rest' && restRow) {
+        fillCells(restRow, event);
       }
     }
 
-    const pitches = Array.from(pitchSet).sort((a, b) => b - a);
+    const pitches = Array.from(pitchRows.keys()).sort((a, b) => b - a);
 
     if (pitches.length === 0 && !showRests) {
       return '(no notes to display)';
     }
-
-    const duration = pattern.duration;
-    if (duration === 0) {
-      return '(pattern has zero duration)';
-    }
-    const timeStep = duration / width;
 
     // Build the grid
     const lines: string[] = [];
@@ -221,14 +279,13 @@ export class PatternInspector {
     // Note rows
     for (const pitch of pitches) {
       const noteName = this.pitchToNoteName(pitch);
-      const row = this.buildNoteRow(pattern, pitch, width, timeStep, showVelocity);
+      const row = pitchRows.get(pitch)!.join('');
       lines.push(`${noteName.padEnd(6)} ${row}`);
     }
 
     // Optionally show rests
-    if (showRests) {
-      const restRow = this.buildRestRow(pattern, width, timeStep);
-      lines.push(`Rest:  ${restRow}`);
+    if (showRests && restRow) {
+      lines.push(`Rest:  ${restRow.join('')}`);
     }
 
     return lines.join('\n');
@@ -259,83 +316,6 @@ export class PatternInspector {
     }
 
     return header.join('');
-  }
-
-  /**
-   * Build a row for a specific pitch.
-   */
-  private static buildNoteRow(
-    pattern: Pattern,
-    pitch: MIDINote,
-    width: number,
-    timeStep: number,
-    showVelocity: boolean
-  ): string {
-    const cells: string[] = new Array(width).fill('.');
-
-    for (const event of pattern.events) {
-      const pitchMatches = (
-        (event.type === 'note' && event.pitch === pitch) ||
-        (event.type === 'chord' && event.notes.some(n => n.pitch === pitch))
-      );
-
-      if (!pitchMatches) continue;
-
-      // Calculate cell positions
-      const startCell = Math.floor(event.time / timeStep);
-      const endCell = Math.min(
-        Math.ceil((event.time + event.duration) / timeStep),
-        width
-      );
-
-      // Mark cells
-      for (let i = startCell; i < endCell; i++) {
-        if (i < width) {
-          if (showVelocity) {
-            // Show velocity as different characters
-            const vel = event.velocity;
-            if (vel >= 100) cells[i] = '█';
-            else if (vel >= 80) cells[i] = '▓';
-            else if (vel >= 60) cells[i] = '▒';
-            else if (vel >= 40) cells[i] = '░';
-            else cells[i] = '·';
-          } else {
-            cells[i] = '█';
-          }
-        }
-      }
-    }
-
-    return cells.join('');
-  }
-
-  /**
-   * Build a row showing rests.
-   */
-  private static buildRestRow(
-    pattern: Pattern,
-    width: number,
-    timeStep: number
-  ): string {
-    const cells: string[] = new Array(width).fill('.');
-
-    for (const event of pattern.events) {
-      if (event.type !== 'rest') continue;
-
-      const startCell = Math.floor(event.time / timeStep);
-      const endCell = Math.min(
-        Math.ceil((event.time + event.duration) / timeStep),
-        width
-      );
-
-      for (let i = startCell; i < endCell; i++) {
-        if (i < width) {
-          cells[i] = '-';
-        }
-      }
-    }
-
-    return cells.join('');
   }
 
   /**
