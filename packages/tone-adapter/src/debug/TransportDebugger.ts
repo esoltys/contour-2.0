@@ -1,6 +1,7 @@
 // packages/tone-adapter/src/debug/TransportDebugger.ts
 
 import * as Tone from 'tone';
+import { parseTransportTime } from './TimeParser.js';
 
 /**
  * Information about a scheduled event.
@@ -247,12 +248,24 @@ export class TransportDebugger {
    * Convert event time to seconds (approximate).
    */
   private eventTimeToSeconds(time: string | number): number | null {
-    if (typeof time === 'number') {
-      return time;
+    // Try robust pure parsing first (handles "B:Q:S" without Tone context issues)
+    // We access Tone.Transport values which should be available even if stopped
+    try {
+      const parsed = parseTransportTime(
+        time,
+        Tone.Transport.bpm.value,
+        Tone.Transport.timeSignature as number | number[]
+      );
+
+      if (parsed !== null) {
+        return parsed;
+      }
+    } catch (e) {
+      // Ignore errors accessing Tone.Transport (e.g. during testing if not mocked)
     }
 
-    // Parse transport time strings like "0:0:0"
-    // This is a simplified parser - real implementation would be more complex
+    // Fallback to Tone.Time for other formats (notation, expressions)
+    // This might fail if Tone context is not ready, but we made best effort
     if (typeof time === 'string') {
       try {
         return Tone.Time(time).toSeconds();
@@ -261,7 +274,7 @@ export class TransportDebugger {
       }
     }
 
-    return null;
+    return typeof time === 'number' ? time : null;
   }
 
   /**
