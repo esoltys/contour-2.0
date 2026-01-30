@@ -71,7 +71,8 @@ export class PlaygroundState {
   isAudioStarted = false;
   isPlaying = false;
   isDemoRunning = false;
-  bpm = DEFAULT_BPM;
+  private _bpm = DEFAULT_BPM;
+  private _version = 0;
   volume = 0;
   monaco: typeof Monaco | null = null;
   editor: Monaco.editor.IStandaloneCodeEditor | null = null;
@@ -119,6 +120,25 @@ export class PlaygroundState {
     this.initializePads();
   }
 
+  get bpm(): number {
+    return this._bpm;
+  }
+
+  set bpm(value: number) {
+    if (this._bpm !== value) {
+      this._bpm = value;
+      this.incVersion();
+    }
+  }
+
+  get version(): number {
+    return this._version;
+  }
+
+  private incVersion(): void {
+    this._version++;
+  }
+
   private initializePads(): void {
     PATTERN_PRESETS.forEach((preset, index) => {
       const padId = `pad-${index}`;
@@ -141,6 +161,7 @@ export class PlaygroundState {
     const pad = this.pads.get(padId);
     if (pad) {
       pad.pattern = pattern;
+      this.incVersion();
     }
   }
 
@@ -155,6 +176,7 @@ export class PlaygroundState {
     const pad = this.pads.get(padId);
     if (pad) {
       pad.isActive = active;
+      this.incVersion();
     }
   }
 
@@ -179,12 +201,16 @@ export class PlaygroundState {
   clearPadState(padId: string): void {
     const pad = this.pads.get(padId);
     if (pad) {
+      const wasActiveOrHasPattern = pad.isActive || pad.pattern !== null;
       pad.isActive = false;
       pad.pattern = null;
       if (pad.scheduler) {
         pad.scheduler.clear();
         pad.scheduler.dispose();
         pad.scheduler = null;
+      }
+      if (wasActiveOrHasPattern) {
+        this.incVersion();
       }
     }
   }
