@@ -385,34 +385,46 @@ class MockTime {
 const mockTransport = new MockTransport();
 const mockDestination = new MockDestination();
 
-// Export the mock Tone module
-export const Tone = {
-  Transport: mockTransport,
-  Synth: MockSynth,
-  PolySynth: MockPolySynth,
-  AMSynth: MockAMSynth,
-  Time: (value: string | number, units?: string) => new MockTime(value, units),
+// Named exports to match Tone.js structure
+export const Transport = mockTransport;
+export const Synth = MockSynth;
+export const PolySynth = MockPolySynth;
+export const AMSynth = MockAMSynth;
+export const Time = (value: string | number, units?: string) => new MockTime(value, units);
 
-  getDestination: () => mockDestination,
+export const getDestination = () => mockDestination;
 
-  start: vi.fn(async () => {
-    // Simulate starting the audio context
-    return Promise.resolve();
-  }),
+export const start = vi.fn(async () => {
+  // Simulate starting the audio context
+  return Promise.resolve();
+});
 
-  context: {
-    state: 'running',
-    sampleRate: 44100,
-    currentTime: 0,
-    destination: mockDestination,
-  },
-
-  now: vi.fn(() => Date.now() / 1000),
-
-  immediate: vi.fn(() => 0),
+export const context = {
+  state: 'running',
+  sampleRate: 44100,
+  currentTime: 0,
+  destination: mockDestination,
 };
 
-// Helper to reset all mocks
+export const now = vi.fn(() => Date.now() / 1000);
+
+export const immediate = vi.fn(() => 0);
+
+// Export the mock Tone module object for default imports or fallback
+export const Tone = {
+  Transport,
+  Synth,
+  PolySynth,
+  AMSynth,
+  Time,
+  getDestination,
+  start,
+  context,
+  now,
+  immediate,
+};
+
+// Also export helper function as named export
 export function resetToneMocks() {
   mockTransport._reset();
   vi.clearAllMocks();
