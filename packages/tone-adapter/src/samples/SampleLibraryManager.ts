@@ -21,13 +21,14 @@ import type {
   GMInstrument,
   QualifiedInstrumentName,
   SoundfontFormat,
+  SoundfontPlayer,
 } from './types.js';
 import { parseQualifiedName, isQualifiedName } from './types.js';
 
 // Access Soundfont from window global
 declare global {
   interface Window {
-    Soundfont: any;
+    Soundfont: SoundfontPlayer;
   }
 }
 
@@ -80,16 +81,19 @@ export class SampleLibraryManager {
     console.log(`[SampleLibraryManager] Loading ${instrument} from ${soundfont}...`);
     const startTime = performance.now();
 
+    if (!Soundfont) {
+      throw new Error('Soundfont player not initialized');
+    }
+
     // Load instrument using soundfont-player
-    // Note: soundfont-player doesn't have proper TS types, we cast to our interface
-    const loadedInstrument = await (Soundfont.instrument as any)(
+    const loadedInstrument = await Soundfont.instrument(
       this.audioContext,
       instrument,
       {
         format,
         soundfont,
       }
-    ) as SoundfontInstrument;
+    );
 
     const loadTime = performance.now() - startTime;
     console.log(`[SampleLibraryManager] Loaded ${instrument} in ${loadTime.toFixed(2)}ms`);

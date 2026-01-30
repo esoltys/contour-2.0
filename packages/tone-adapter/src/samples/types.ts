@@ -307,3 +307,24 @@ export function parseQualifiedName(qualifiedName: string): {
 export function isQualifiedName(name: string): boolean {
   return name.includes(':');
 }
+
+/**
+ * Options for loading a soundfont instrument.
+ */
+export interface SoundfontOptions {
+  format?: SoundfontFormat;
+  soundfont?: SoundfontLibrary | string;
+  destination?: AudioNode;
+  [key: string]: unknown;
+}
+
+/**
+ * Interface for the soundfont-player global object.
+ */
+export interface SoundfontPlayer {
+  instrument(
+    ac: AudioContext,
+    name: string,
+    options?: SoundfontOptions
+  ): Promise<SoundfontInstrument>;
+}
