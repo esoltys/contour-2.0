@@ -351,8 +351,8 @@ export class Validator {
     // Sort by time
     allEvents.sort((a, b) => a.event.time - b.event.time);
 
-    // Track active notes at each point in time
-    const activeNotes: Array<{ event: Event; endTime: number }> = [];
+    // Track active notes using a MinHeap for efficient removal of ended notes
+    const activeNotes = new MinHeap();
     let maxSimultaneous = 0;
     let maxTime = 0;
 
@@ -360,24 +360,24 @@ export class Validator {
       const time = event.time;
       const endTime = time + event.duration;
 
-      // Remove ended notes
-      const stillActive = activeNotes.filter(n => n.endTime > time);
-      activeNotes.length = 0;
-      activeNotes.push(...stillActive);
+      // Remove ended notes (endTime <= time)
+      while (activeNotes.size > 0 && activeNotes.peek()! <= time) {
+        activeNotes.pop();
+      }
 
       // Add current note(s)
       if (event.type === 'note') {
-        activeNotes.push({ event, endTime });
+        activeNotes.push(endTime);
       } else if (event.type === 'chord') {
         // Each note in chord counts separately
         for (let i = 0; i < event.notes.length; i++) {
-          activeNotes.push({ event, endTime });
+          activeNotes.push(endTime);
         }
       }
 
       // Track maximum
-      if (activeNotes.length > maxSimultaneous) {
-        maxSimultaneous = activeNotes.length;
+      if (activeNotes.size > maxSimultaneous) {
+        maxSimultaneous = activeNotes.size;
         maxTime = time;
       }
     }
@@ -437,5 +437,82 @@ export class Validator {
     }
 
     return lines.join('\n');
+  }
+}
+
+/**
+ * Minimal MinHeap implementation for polyphony tracking.
+ * Stores end times of active notes.
+ */
+class MinHeap {
+  private heap: number[] = [];
+
+  get size(): number {
+    return this.heap.length;
+  }
+
+  push(value: number): void {
+    this.heap.push(value);
+    this.siftUp(this.heap.length - 1);
+  }
+
+  peek(): number | undefined {
+    return this.heap[0];
+  }
+
+  pop(): number | undefined {
+    if (this.heap.length === 0) return undefined;
+    const min = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.heap.length > 0) {
+      this.heap[0] = last;
+      this.siftDown(0);
+    }
+    return min;
+  }
+
+  private siftUp(index: number): void {
+    let nodeIndex = index;
+    while (nodeIndex > 0) {
+      const parentIndex = (nodeIndex - 1) >>> 1;
+      if (this.heap[nodeIndex] >= this.heap[parentIndex]) break;
+      this.swap(nodeIndex, parentIndex);
+      nodeIndex = parentIndex;
+    }
+  }
+
+  private siftDown(index: number): void {
+    let nodeIndex = index;
+    const length = this.heap.length;
+    while (true) {
+      const leftIndex = (nodeIndex << 1) + 1;
+      const rightIndex = leftIndex + 1;
+      let swapIndex = -1;
+
+      if (leftIndex < length) {
+        if (this.heap[leftIndex] < this.heap[nodeIndex]) {
+          swapIndex = leftIndex;
+        }
+      }
+
+      if (rightIndex < length) {
+        if (
+          (swapIndex === -1 && this.heap[rightIndex] < this.heap[nodeIndex]) ||
+          (swapIndex !== -1 && this.heap[rightIndex] < this.heap[swapIndex])
+        ) {
+          swapIndex = rightIndex;
+        }
+      }
+
+      if (swapIndex === -1) break;
+      this.swap(nodeIndex, swapIndex);
+      nodeIndex = swapIndex;
+    }
+  }
+
+  private swap(i: number, j: number): void {
+    const temp = this.heap[i];
+    this.heap[i] = this.heap[j];
+    this.heap[j] = temp;
   }
 }
